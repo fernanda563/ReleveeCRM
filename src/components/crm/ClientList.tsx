@@ -57,7 +57,7 @@ const ClientList = ({
       {clients.map((client) => (
         <Card key={client.id} className="border-border hover:shadow-md transition-shadow">
           <CardContent className="pt-6">
-            <div className="flex items-start justify-between">
+            <div className="flex items-start justify-between flex-col lg:flex-row gap-4">
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-3">
                   <h3 
@@ -94,47 +94,56 @@ const ClientList = ({
                 </div>
               </div>
 
-              <div className="flex flex-wrap gap-2 ml-4">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => navigate(`/crm/${client.id}`)}
-                >
-                  <Eye className="h-4 w-4 mr-1" />
-                  Ver Detalle
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onEdit(client)}
-                >
-                  <Edit className="h-4 w-4 mr-1" />
-                  Editar
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onAddAppointment(client)}
-                >
-                  <Calendar className="h-4 w-4 mr-1" />
-                  Cita
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onAddProspect(client)}
-                >
-                  <Gem className="h-4 w-4 mr-1" />
-                  Prospecto
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onAddReminder(client)}
-                >
-                  <Bell className="h-4 w-4 mr-1" />
-                  Recordatorio
-                </Button>
+              <div className="flex flex-col gap-2 w-full lg:w-auto lg:min-w-[200px]">
+                {/* Botones principales */}
+                <div className="flex gap-2">
+                  <Button
+                    variant="default"
+                    size="sm"
+                    onClick={() => navigate(`/crm/${client.id}`)}
+                    className="flex-1"
+                  >
+                    <Eye className="h-4 w-4 mr-1" />
+                    Ver Detalle
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onEdit(client)}
+                    className="flex-1"
+                  >
+                    <Edit className="h-4 w-4 mr-1" />
+                    Editar
+                  </Button>
+                </div>
+                
+                {/* Botones de acciones rápidas */}
+                <div className="grid grid-cols-3 gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onAddAppointment(client)}
+                  >
+                    <Calendar className="h-4 w-4 mr-1" />
+                    Cita
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onAddProspect(client)}
+                  >
+                    <Gem className="h-4 w-4 mr-1" />
+                    Prospecto
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onAddReminder(client)}
+                  >
+                    <Bell className="h-4 w-4 mr-1" />
+                    Recordatorio
+                  </Button>
+                </div>
               </div>
             </div>
           </CardContent>

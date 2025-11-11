@@ -102,6 +102,16 @@ const CRM = () => {
     <div className="min-h-full bg-background">
       {/* Main Content */}
       <main className="container mx-auto px-6 py-8">
+        {/* Page Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-foreground mb-2">
+            Gestión de Clientes
+          </h1>
+          <p className="text-muted-foreground">
+            Administra tu cartera de clientes, citas, prospectos y recordatorios
+          </p>
+        </div>
+
         {/* Action Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <Card 
