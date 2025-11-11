@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, Upload, X } from "lucide-react";
+import { Loader2, Upload, X, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import type { Order } from "@/pages/Orders";
@@ -30,6 +30,7 @@ interface OrderDialogProps {
   onOpenChange: (open: boolean) => void;
   order?: Order | null;
   onSuccess: () => void;
+  onOpenClientDialog?: () => void;
 }
 
 interface Prospect {
@@ -47,7 +48,7 @@ interface Prospect {
   estilo_anillo: string | null;
 }
 
-const OrderDialog = ({ open, onOpenChange, order, onSuccess }: OrderDialogProps) => {
+const OrderDialog = ({ open, onOpenChange, order, onSuccess, onOpenClientDialog }: OrderDialogProps) => {
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [clients, setClients] = useState<Client[]>([]);
@@ -537,6 +538,24 @@ const OrderDialog = ({ open, onOpenChange, order, onSuccess }: OrderDialogProps)
                     <SelectValue placeholder="Selecciona un cliente" />
                   </SelectTrigger>
                   <SelectContent>
+                    {/* Botón para agregar nuevo cliente */}
+                    {onOpenClientDialog && (
+                      <div className="p-2 border-b border-border">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          className="w-full justify-start text-accent hover:text-accent hover:bg-accent/10"
+                          onClick={() => {
+                            onOpenClientDialog();
+                          }}
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Agregar Nuevo Cliente
+                        </Button>
+                      </div>
+                    )}
+                    
+                    {/* Lista de clientes existentes */}
                     {clients.map((c) => (
                       <SelectItem key={c.id} value={c.id}>
                         {c.nombre} {c.apellido}

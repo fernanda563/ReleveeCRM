@@ -8,6 +8,7 @@ import { Search, Plus, DollarSign, Package, TrendingUp } from "lucide-react";
 import OrderDialog from "@/components/orders/OrderDialog";
 import OrderList from "@/components/orders/OrderList";
 import { Badge } from "@/components/ui/badge";
+import ClientDialog from "@/components/crm/ClientDialog";
 
 export interface Order {
   id: string;
@@ -44,6 +45,7 @@ const Orders = () => {
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isOrderDialogOpen, setIsOrderDialogOpen] = useState(false);
+  const [isClientDialogOpen, setIsClientDialogOpen] = useState(false);
 
   // Stats
   const [stats, setStats] = useState({
@@ -120,6 +122,18 @@ const Orders = () => {
   const handleOrderAction = (order?: Order) => {
     setSelectedOrder(order || null);
     setIsOrderDialogOpen(true);
+  };
+
+  const handleOpenClientDialog = () => {
+    setIsOrderDialogOpen(false);
+    setIsClientDialogOpen(true);
+  };
+
+  const handleClientSuccess = () => {
+    fetchOrders();
+    setTimeout(() => {
+      setIsOrderDialogOpen(true);
+    }, 300);
   };
 
   return (
@@ -225,6 +239,14 @@ const Orders = () => {
         onOpenChange={setIsOrderDialogOpen}
         order={selectedOrder}
         onSuccess={fetchOrders}
+        onOpenClientDialog={handleOpenClientDialog}
+      />
+
+      {/* Client Dialog */}
+      <ClientDialog
+        open={isClientDialogOpen}
+        onOpenChange={setIsClientDialogOpen}
+        onSuccess={handleClientSuccess}
       />
     </div>
   );
