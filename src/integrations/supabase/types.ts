@@ -175,6 +175,7 @@ export type Database = {
           estatus_montura: string | null
           estatus_pago: string
           estatus_piedra: string | null
+          fecha_entrega_esperada: string | null
           forma_pago: string
           gema_observaciones: string | null
           id: string
@@ -204,6 +205,7 @@ export type Database = {
           estatus_montura?: string | null
           estatus_pago?: string
           estatus_piedra?: string | null
+          fecha_entrega_esperada?: string | null
           forma_pago: string
           gema_observaciones?: string | null
           id?: string
@@ -233,6 +235,7 @@ export type Database = {
           estatus_montura?: string | null
           estatus_pago?: string
           estatus_piedra?: string | null
+          fecha_entrega_esperada?: string | null
           forma_pago?: string
           gema_observaciones?: string | null
           id?: string

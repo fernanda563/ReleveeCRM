@@ -113,8 +113,18 @@ const OrderList = ({ orders, loading, onEdit }: OrderListProps) => {
                 </div>
 
                 {/* Date */}
-                <div className="text-sm text-muted-foreground">
-                  Creada el {format(new Date(order.created_at), "dd 'de' MMMM, yyyy", { locale: es })}
+                <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                  <span>
+                    Creada el {format(new Date(order.created_at), "dd 'de' MMMM, yyyy", { locale: es })}
+                  </span>
+                  {order.fecha_entrega_esperada && (
+                    <>
+                      <span className="text-muted-foreground">•</span>
+                      <span className="text-accent">
+                        Entrega: {format(new Date(order.fecha_entrega_esperada), "dd 'de' MMMM, yyyy", { locale: es })}
+                      </span>
+                    </>
+                  )}
                 </div>
               </div>
 

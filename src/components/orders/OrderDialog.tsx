@@ -17,11 +17,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, Upload, X, Plus, Trash2 } from "lucide-react";
+import { Loader2, Upload, X, Plus, Trash2, CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 import type { Order } from "@/pages/Orders";
 import type { Client } from "@/pages/CRM";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -93,6 +101,9 @@ const OrderDialog = ({ open, onOpenChange, order, onSuccess, onOpenClientDialog 
 
   // Notes
   const [notas, setNotas] = useState("");
+  
+  // Delivery date
+  const [fechaEntregaEsperada, setFechaEntregaEsperada] = useState<Date | undefined>();
 
   useEffect(() => {
     if (open) {
@@ -100,6 +111,8 @@ const OrderDialog = ({ open, onOpenChange, order, onSuccess, onOpenClientDialog 
       fetchClients();
       if (order) {
         setSelectedClientId(order.client_id);
+        setTipoAccesorio(order.tipo_accesorio || "");
+        setTalla(order.talla?.toString() || "");
         setPrecioVenta(formatCurrency(order.precio_venta.toString()));
         setImporteAnticipo(formatCurrency(order.importe_anticipo.toString()));
         setFormaPago(order.forma_pago);
@@ -115,6 +128,7 @@ const OrderDialog = ({ open, onOpenChange, order, onSuccess, onOpenClientDialog 
         setDiamanteQuilataje(order.diamante_quilataje?.toString() || "");
         setGemaObservaciones(order.gema_observaciones || "");
         setNotas(order.notas || "");
+        setFechaEntregaEsperada(order.fecha_entrega_esperada ? new Date(order.fecha_entrega_esperada) : undefined);
         setPaymentReceipts([]);
         setUploadedReceiptUrls([]);
         // NO cargar proyectos al editar una orden
@@ -165,6 +179,7 @@ const OrderDialog = ({ open, onOpenChange, order, onSuccess, onOpenClientDialog 
     setDiamanteForma("");
     setGemaObservaciones("");
     setNotas("");
+    setFechaEntregaEsperada(undefined);
     setPaymentReceipts([]);
     setUploadedReceiptUrls([]);
     setClientProspects([]);
@@ -584,6 +599,7 @@ const OrderDialog = ({ open, onOpenChange, order, onSuccess, onOpenClientDialog 
         piedra_tipo: piedraTipo,
         notas: notas || null,
         comprobantes_pago: receiptUrls,
+        fecha_entrega_esperada: fechaEntregaEsperada ? format(fechaEntregaEsperada, 'yyyy-MM-dd') : null,
       };
 
       if (piedraTipo === "diamante") {
@@ -965,6 +981,44 @@ const OrderDialog = ({ open, onOpenChange, order, onSuccess, onOpenClientDialog 
                     ))}
                   </div>
                 )}
+              </div>
+
+              <div className="space-y-2">
+                <Label>Fecha de Entrega Esperada</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !fechaEntregaEsperada && "text-muted-foreground"
+                      )}
+                      disabled={loading}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {fechaEntregaEsperada ? (
+                        format(fechaEntregaEsperada, "PPP", { locale: es })
+                      ) : (
+                        <span>Seleccionar fecha</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={fechaEntregaEsperada}
+                      onSelect={(date) => {
+                        setFechaEntregaEsperada(date);
+                      }}
+                      disabled={(date) => date < new Date()}
+                      initialFocus
+                      className={cn("p-3 pointer-events-auto")}
+                    />
+                  </PopoverContent>
+                </Popover>
+                <p className="text-xs text-muted-foreground">
+                  Fecha estimada de entrega del pedido
+                </p>
               </div>
               </div>
             )}

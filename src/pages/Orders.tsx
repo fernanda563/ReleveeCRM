@@ -34,6 +34,7 @@ export interface Order {
   estatus_montura: string;
   notas?: string;
   comprobantes_pago?: string[];
+  fecha_entrega_esperada?: string;
   created_at: string;
   clients?: {
     nombre: string;
