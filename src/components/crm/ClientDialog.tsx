@@ -109,10 +109,11 @@ const clientFormSchema = z.object({
   
   email: z
     .string()
-    .min(1, "El correo electrónico es obligatorio")
-    .email("Formato de correo electrónico inválido")
+    .email({ message: "Formato de correo electrónico inválido" })
     .max(255, "El correo no puede exceder 255 caracteres")
-    .transform((val) => val.toLowerCase()),
+    .transform((val) => val.toLowerCase())
+    .optional()
+    .or(z.literal("")),
   
   telefono_principal: z
     .string()
@@ -380,7 +381,7 @@ const ClientDialog = ({ open, onOpenChange, client, onSuccess }: ClientDialogPro
           .insert([{
             nombre: values.nombre,
             apellido: values.apellido,
-            email: values.email,
+            email: values.email || null,
             telefono_principal: values.telefono_principal,
             telefono_adicional: values.telefono_adicional || null,
             fuente_contacto: values.fuente_contacto,
@@ -577,7 +578,7 @@ const ClientDialog = ({ open, onOpenChange, client, onSuccess }: ClientDialogPro
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Correo Electrónico *</FormLabel>
+                  <FormLabel>Correo Electrónico</FormLabel>
                   <FormControl>
                     <div className="relative">
                       <Input
