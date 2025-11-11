@@ -1,19 +1,16 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { 
-  Users, 
   Search, 
   Plus, 
   Calendar,
   Bell,
   Gem,
-  LogOut,
-  ArrowLeft
+  Users,
 } from "lucide-react";
 import ClientDialog from "@/components/crm/ClientDialog";
 import AppointmentDialog from "@/components/crm/AppointmentDialog";
@@ -34,7 +31,6 @@ export interface Client {
 }
 
 const CRM = () => {
-  const navigate = useNavigate();
   const [clients, setClients] = useState<Client[]>([]);
   const [filteredClients, setFilteredClients] = useState<Client[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -46,7 +42,6 @@ const CRM = () => {
   const [isReminderDialogOpen, setIsReminderDialogOpen] = useState(false);
 
   useEffect(() => {
-    checkAuth();
     fetchClients();
   }, []);
 
@@ -65,13 +60,6 @@ const CRM = () => {
     }
   }, [searchTerm, clients]);
 
-  const checkAuth = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      navigate("/auth");
-    }
-  };
-
   const fetchClients = async () => {
     setLoading(true);
     const { data, error } = await supabase
@@ -87,12 +75,6 @@ const CRM = () => {
       setFilteredClients(data || []);
     }
     setLoading(false);
-  };
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate("/auth");
-    toast.success("Sesión cerrada");
   };
 
   const handleClientAction = (client?: Client) => {
@@ -116,38 +98,7 @@ const CRM = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border bg-card sticky top-0 z-10">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => navigate("/dashboard")}
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-              <div className="flex items-center gap-3">
-                <Gem className="h-6 w-6 text-accent" />
-                <div>
-                  <h1 className="text-2xl font-bold text-foreground">Gestión de Clientes</h1>
-                  <p className="text-sm text-muted-foreground">CRM - Joyería Relevée</p>
-                </div>
-              </div>
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleLogout}
-            >
-              <LogOut className="h-5 w-5" />
-            </Button>
-          </div>
-        </div>
-      </header>
-
+    <div className="min-h-full bg-background">
       {/* Main Content */}
       <main className="container mx-auto px-6 py-8">
         {/* Action Cards */}
