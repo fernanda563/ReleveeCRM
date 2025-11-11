@@ -16,6 +16,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -35,7 +43,7 @@ import {
 } from "@/components/ui/form";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, Upload, Trash2 } from "lucide-react";
+import { Loader2, Upload, Trash2, Search, X } from "lucide-react";
 import type { Client } from "@/pages/CRM";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -136,6 +144,10 @@ const ClientDialog = ({ open, onOpenChange, client, onSuccess }: ClientDialogPro
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
   const [checkingEmail, setCheckingEmail] = useState(false);
   const [emailExists, setEmailExists] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<Client[]>([]);
+  const [searchingClients, setSearchingClients] = useState(false);
+  const [showSearchResults, setShowSearchResults] = useState(false);
   const { isAdmin, loading: roleLoading } = useUserRole();
 
   const form = useForm<ClientFormValues>({
@@ -162,6 +174,8 @@ const ClientDialog = ({ open, onOpenChange, client, onSuccess }: ClientDialogPro
         fuente_contacto: client.fuente_contacto || "",
       });
       setEmailExists(false);
+      setSearchQuery("");
+      setSearchResults([]);
     } else if (!client && open) {
       form.reset({
         nombre: "",
@@ -173,8 +187,42 @@ const ClientDialog = ({ open, onOpenChange, client, onSuccess }: ClientDialogPro
       });
       setIneFile(null);
       setEmailExists(false);
+      setSearchQuery("");
+      setSearchResults([]);
     }
   }, [client, open, form]);
+
+  // Buscar clientes existentes (solo en modo creación)
+  useEffect(() => {
+    if (client || !open || !searchQuery || searchQuery.length < 2) {
+      setSearchResults([]);
+      setShowSearchResults(false);
+      return;
+    }
+
+    const timeoutId = setTimeout(async () => {
+      setSearchingClients(true);
+      try {
+        const { data, error } = await supabase
+          .from("clients")
+          .select("*")
+          .or(`nombre.ilike.%${searchQuery}%,apellido.ilike.%${searchQuery}%`)
+          .limit(5);
+
+        if (error) throw error;
+
+        setSearchResults(data || []);
+        setShowSearchResults(true);
+      } catch (error) {
+        console.error("Error searching clients:", error);
+        setSearchResults([]);
+      } finally {
+        setSearchingClients(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery, client, open]);
 
   // Verificar si el email ya existe (con debounce)
   useEffect(() => {
@@ -254,6 +302,21 @@ const ClientDialog = ({ open, onOpenChange, client, onSuccess }: ClientDialogPro
       .getPublicUrl(filePath);
 
     return data.publicUrl;
+  };
+
+  const handleSelectExistingClient = (selectedClient: Client) => {
+    form.reset({
+      nombre: selectedClient.nombre,
+      apellido: selectedClient.apellido,
+      email: selectedClient.email,
+      telefono_principal: selectedClient.telefono_principal,
+      telefono_adicional: selectedClient.telefono_adicional || "",
+      fuente_contacto: selectedClient.fuente_contacto || "",
+    });
+    setSearchQuery("");
+    setSearchResults([]);
+    setShowSearchResults(false);
+    toast.info("Datos del cliente cargados. Puedes modificarlos si lo necesitas.");
   };
 
   const handleDelete = async () => {
@@ -356,6 +419,72 @@ const ClientDialog = ({ open, onOpenChange, client, onSuccess }: ClientDialogPro
               : "Completa los datos del nuevo cliente"}
           </DialogDescription>
         </DialogHeader>
+
+        {/* Campo de Búsqueda Rápida (solo en modo creación) */}
+        {!client && (
+          <div className="space-y-2 pb-4 border-b">
+            <label className="text-sm font-medium text-foreground">
+              Buscar cliente existente
+            </label>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por nombre o apellido..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 pr-10"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchQuery("");
+                    setSearchResults([]);
+                    setShowSearchResults(false);
+                  }}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+              {searchingClients && (
+                <div className="absolute right-10 top-1/2 -translate-y-1/2">
+                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                </div>
+              )}
+            </div>
+
+            {/* Resultados de búsqueda */}
+            {showSearchResults && searchResults.length > 0 && (
+              <div className="bg-muted rounded-md border border-border p-2 space-y-1">
+                <p className="text-xs text-muted-foreground px-2 py-1">
+                  Se encontraron {searchResults.length} cliente(s) con ese nombre:
+                </p>
+                {searchResults.map((result) => (
+                  <button
+                    key={result.id}
+                    type="button"
+                    onClick={() => handleSelectExistingClient(result)}
+                    className="w-full text-left p-2 rounded hover:bg-background transition-colors"
+                  >
+                    <div className="font-medium text-sm">
+                      {result.nombre} {result.apellido}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {result.email} • {result.telefono_principal}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {showSearchResults && searchResults.length === 0 && searchQuery.length >= 2 && !searchingClients && (
+              <p className="text-sm text-muted-foreground px-2 py-1">
+                No se encontraron clientes con ese nombre
+              </p>
+            )}
+          </div>
+        )}
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
