@@ -245,6 +245,7 @@ export type Database = {
           color_oro: string | null
           created_at: string
           estado: string
+          estilo_anillo: string | null
           fecha_entrega_deseada: string | null
           id: string
           importe_previsto: number | null
@@ -260,6 +261,7 @@ export type Database = {
           color_oro?: string | null
           created_at?: string
           estado?: string
+          estilo_anillo?: string | null
           fecha_entrega_deseada?: string | null
           id?: string
           importe_previsto?: number | null
@@ -275,6 +277,7 @@ export type Database = {
           color_oro?: string | null
           created_at?: string
           estado?: string
+          estilo_anillo?: string | null
           fecha_entrega_deseada?: string | null
           id?: string
           importe_previsto?: number | null

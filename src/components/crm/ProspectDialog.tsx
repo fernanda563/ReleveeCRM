@@ -54,6 +54,7 @@ const ProspectDialog = ({
   const [tipoPiedra, setTipoPiedra] = useState<string>("");
   const [observaciones, setObservaciones] = useState("");
   const [largoAprox, setLargoAprox] = useState("");
+  const [estiloAnillo, setEstiloAnillo] = useState<string>("");
 
   // Funciones de formato de moneda
   const formatCurrency = (value: string): string => {
@@ -94,6 +95,7 @@ const ProspectDialog = ({
       setTipoPiedra("");
       setObservaciones("");
       setLargoAprox("");
+      setEstiloAnillo("");
     }
   }, [open, client]);
 
@@ -127,6 +129,7 @@ const ProspectDialog = ({
           pureza_oro: purezaOro || null,
           tipo_piedra: tipoPiedra || null,
           observaciones: observaciones || null,
+          estilo_anillo: estiloAnillo || null,
         },
       ]);
 
@@ -188,6 +191,7 @@ const ProspectDialog = ({
                       setIncluyePiedra("");
                       setTipoPiedra("");
                       setLargoAprox("");
+                      setEstiloAnillo("");
                     }}
                     disabled={loading}
                   >
@@ -391,12 +395,13 @@ const ProspectDialog = ({
                     <Label>¿Incluye Piedra?</Label>
                     <Select
                       value={incluyePiedra}
-                      onValueChange={(value) => {
-                        setIncluyePiedra(value);
-                        if (value === "no") {
-                          setTipoPiedra("");
-                        }
-                      }}
+                onValueChange={(value) => {
+                  setIncluyePiedra(value);
+                  if (value === "no") {
+                    setTipoPiedra("");
+                    setEstiloAnillo("");
+                  }
+                }}
                       disabled={loading}
                     >
                       <SelectTrigger>
@@ -428,6 +433,32 @@ const ProspectDialog = ({
                       </Select>
                     </div>
                   )}
+                </div>
+              )}
+
+              {/* Estilo de Anillo - Condicional */}
+              {tipoAccesorio === "anillo" && 
+               incluyePiedra === "si" && 
+               (tipoPiedra === "diamante" || tipoPiedra === "gema") && (
+                <div className="space-y-2">
+                  <Label>Estilo de Anillo</Label>
+                  <Select
+                    value={estiloAnillo}
+                    onValueChange={setEstiloAnillo}
+                    disabled={loading}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar estilo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="solitario">Solitario</SelectItem>
+                      <SelectItem value="3_piedras">3 Piedras</SelectItem>
+                      <SelectItem value="piedra_lateral">Piedra lateral</SelectItem>
+                      <SelectItem value="aureola">Aureola</SelectItem>
+                      <SelectItem value="two_stone">Two Stone</SelectItem>
+                      <SelectItem value="otro">Otro</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               )}
 
