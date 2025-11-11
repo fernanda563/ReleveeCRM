@@ -10,6 +10,7 @@ import CRM from "./pages/CRM";
 import ClientDetail from "./pages/ClientDetail";
 import Orders from "./pages/Orders";
 import Production from "./pages/Production";
+import Users from "./pages/Users";
 import NotFound from "./pages/NotFound";
 import { DashboardLayout } from "./components/DashboardLayout";
 
@@ -29,6 +30,7 @@ const App = () => (
           <Route path="/crm/:clientId" element={<ClientDetail />} />
           <Route path="/orders" element={<Orders />} />
           <Route path="/production" element={<Production />} />
+          <Route path="/users" element={<Users />} />
         </Route>
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />

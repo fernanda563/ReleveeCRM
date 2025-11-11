@@ -178,7 +178,57 @@ export type Database = {
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "orders_disenador_id_fkey"
+            columns: ["disenador_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_joyero_id_fkey"
+            columns: ["joyero_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      profiles: {
+        Row: {
+          apellido_materno: string | null
+          apellido_paterno: string
+          avatar_url: string | null
+          created_at: string
+          email: string
+          id: string
+          nombre: string
+          telefono: string | null
+          updated_at: string
+        }
+        Insert: {
+          apellido_materno?: string | null
+          apellido_paterno: string
+          avatar_url?: string | null
+          created_at?: string
+          email: string
+          id: string
+          nombre: string
+          telefono?: string | null
+          updated_at?: string
+        }
+        Update: {
+          apellido_materno?: string | null
+          apellido_paterno?: string
+          avatar_url?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          nombre?: string
+          telefono?: string | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       prospects: {
         Row: {
@@ -284,15 +334,59 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_roles: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["app_role"][]
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role:
+        | "administrador"
+        | "disenador"
+        | "joyero"
+        | "gerente_tienda"
+        | "contador"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -419,6 +513,14 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: [
+        "administrador",
+        "disenador",
+        "joyero",
+        "gerente_tienda",
+        "contador",
+      ],
+    },
   },
 } as const

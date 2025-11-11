@@ -6,7 +6,9 @@ import {
   ShoppingCart,
   Gem,
   LogOut,
+  Shield,
 } from "lucide-react";
+import { useUserRole } from "@/hooks/useUserRole";
 import {
   Sidebar,
   SidebarContent,
@@ -30,21 +32,31 @@ const menuItems = [
     title: "Dashboard",
     url: "/dashboard",
     icon: LayoutDashboard,
+    adminOnly: false,
   },
   {
     title: "Gestión de Clientes",
     url: "/crm",
     icon: Users,
+    adminOnly: false,
   },
   {
     title: "Órdenes de Compra",
     url: "/orders",
     icon: ShoppingCart,
+    adminOnly: false,
   },
   {
     title: "Producción",
     url: "/production",
     icon: Gem,
+    adminOnly: false,
+  },
+  {
+    title: "Gestión de Usuarios",
+    url: "/users",
+    icon: Shield,
+    adminOnly: true,
   },
 ];
 
@@ -52,10 +64,15 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const location = useLocation();
   const navigate = useNavigate();
+  const { isAdmin } = useUserRole();
   const currentPath = location.pathname;
   const collapsed = state === "collapsed";
 
   const isActive = (path: string) => currentPath === path;
+  
+  const visibleMenuItems = menuItems.filter(
+    (item) => !item.adminOnly || isAdmin()
+  );
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -88,7 +105,7 @@ export function AppSidebar() {
           <SidebarGroupLabel>Navegación</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {menuItems.map((item) => (
+              {visibleMenuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
                     asChild
