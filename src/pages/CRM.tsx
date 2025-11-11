@@ -35,6 +35,7 @@ const CRM = () => {
   const [clients, setClients] = useState<Client[]>([]);
   const [filteredClients, setFilteredClients] = useState<Client[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedLetter, setSelectedLetter] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [isClientDialogOpen, setIsClientDialogOpen] = useState(false);
@@ -47,19 +48,28 @@ const CRM = () => {
   }, []);
 
   useEffect(() => {
+    let filtered = clients;
+
+    // Filtro por letra
+    if (selectedLetter) {
+      filtered = filtered.filter((client) =>
+        client.nombre.toUpperCase().startsWith(selectedLetter)
+      );
+    }
+
+    // Filtro por búsqueda de texto
     if (searchTerm) {
-      const filtered = clients.filter(
+      filtered = filtered.filter(
         (client) =>
           client.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
           client.apellido.toLowerCase().includes(searchTerm.toLowerCase()) ||
           client.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
           client.telefono_principal.includes(searchTerm)
       );
-      setFilteredClients(filtered);
-    } else {
-      setFilteredClients(clients);
     }
-  }, [searchTerm, clients]);
+
+    setFilteredClients(filtered);
+  }, [searchTerm, selectedLetter, clients]);
 
   const fetchClients = async () => {
     setLoading(true);
@@ -191,6 +201,50 @@ const CRM = () => {
                 <Plus className="h-4 w-4 mr-2" />
                 Nuevo Cliente
               </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Alphabet Filter */}
+        <Card className="mb-6">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-muted-foreground whitespace-nowrap mr-2">
+                Filtrar por letra:
+              </span>
+              <div className="flex items-center gap-1 overflow-x-auto pb-2">
+                {/* Botón "Todas" */}
+                <Button
+                  variant={selectedLetter === null ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setSelectedLetter(null)}
+                  className="h-8 px-3 min-w-[60px]"
+                >
+                  Todas
+                </Button>
+                
+                {/* Letras A-Z */}
+                {Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i)).map((letter) => {
+                  const hasClients = clients.some((client) =>
+                    client.nombre.toUpperCase().startsWith(letter)
+                  );
+                  
+                  return (
+                    <Button
+                      key={letter}
+                      variant={selectedLetter === letter ? "default" : "ghost"}
+                      size="sm"
+                      onClick={() => setSelectedLetter(letter)}
+                      disabled={!hasClients}
+                      className={`h-8 w-8 p-0 ${
+                        !hasClients ? "opacity-30" : ""
+                      }`}
+                    >
+                      {letter}
+                    </Button>
+                  );
+                })}
+              </div>
             </div>
           </CardContent>
         </Card>
