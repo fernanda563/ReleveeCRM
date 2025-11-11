@@ -24,6 +24,7 @@ import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import type { Order } from "@/pages/Orders";
 import type { Client } from "@/pages/CRM";
+import { useUserRole } from "@/hooks/useUserRole";
 
 interface OrderDialogProps {
   open: boolean;
@@ -49,6 +50,7 @@ interface Prospect {
 }
 
 const OrderDialog = ({ open, onOpenChange, order, onSuccess, onOpenClientDialog }: OrderDialogProps) => {
+  const { isAdmin } = useUserRole();
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [clients, setClients] = useState<Client[]>([]);
@@ -1118,7 +1120,7 @@ const OrderDialog = ({ open, onOpenChange, order, onSuccess, onOpenClientDialog 
           <div className="flex justify-between gap-3 pt-6 mt-6 border-t">
             {/* Lado izquierdo: Eliminar o Anterior */}
             <div className="flex gap-3">
-              {order ? (
+              {order && isAdmin ? (
                 <Button
                   type="button"
                   variant="destructive"
@@ -1129,6 +1131,7 @@ const OrderDialog = ({ open, onOpenChange, order, onSuccess, onOpenClientDialog 
                   Eliminar Orden
                 </Button>
               ) : (
+                !order &&
                 currentStep > 1 && (
                   <Button
                     type="button"
