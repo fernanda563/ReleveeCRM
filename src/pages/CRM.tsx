@@ -11,6 +11,7 @@ import {
   Bell,
   Gem,
   Users,
+  UserPlus,
 } from "lucide-react";
 import ClientDialog from "@/components/crm/ClientDialog";
 import AppointmentDialog from "@/components/crm/AppointmentDialog";
