@@ -4,12 +4,22 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Gem, DollarSign, Calendar } from "lucide-react";
+import { Gem, DollarSign, Calendar, Trash2 } from "lucide-react";
 import { generateProspectTitle } from "./prospect-utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -50,6 +60,7 @@ export const ProspectDetailDialog = ({
 
   // Edición de proyecto
   const [isEditing, setIsEditing] = React.useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = React.useState(false);
   const [estado, setEstado] = React.useState<string>(prospect.estado);
   const [estiloAnillo, setEstiloAnillo] = React.useState<string>(prospect.estilo_anillo || "");
   const [importePrevisto, setImportePrevisto] = React.useState<string>(
@@ -67,6 +78,26 @@ export const ProspectDetailDialog = ({
     setImportePrevisto(prospect.importe_previsto !== null ? String(prospect.importe_previsto) : "");
     setFechaEntrega(prospect.fecha_entrega_deseada || "");
     setObservaciones(prospect.observaciones || "");
+  };
+
+  const handleDelete = async () => {
+    const { error } = await supabase
+      .from("prospects")
+      .delete()
+      .eq("id", prospect.id);
+
+    if (error) {
+      console.error(error);
+      toast.error("No se pudo eliminar el proyecto");
+      return;
+    }
+
+    toast.success("Proyecto eliminado");
+    setShowDeleteDialog(false);
+    onOpenChange(false);
+    if (onSaved) {
+      onSaved(prospect);
+    }
   };
 
   const handleSave = async () => {
@@ -312,13 +343,23 @@ export const ProspectDetailDialog = ({
 
           {/* Botones de edición */}
           {isEditing && (
-            <div className="flex gap-2 justify-end pt-4 border-t">
-              <Button variant="outline" onClick={handleCancel}>
-                Cancelar
+            <div className="flex items-center justify-between pt-4 border-t">
+              <Button 
+                variant="destructive" 
+                onClick={() => setShowDeleteDialog(true)}
+                className="gap-2"
+              >
+                <Trash2 className="h-4 w-4" />
+                Eliminar
               </Button>
-              <Button onClick={handleSave}>
-                Guardar cambios
-              </Button>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={handleCancel}>
+                  Cancelar
+                </Button>
+                <Button onClick={handleSave}>
+                  Guardar cambios
+                </Button>
+              </div>
             </div>
           )}
 
@@ -330,6 +371,27 @@ export const ProspectDetailDialog = ({
           </div>
         </div>
       </DialogContent>
+
+      {/* Diálogo de confirmación de eliminación */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar proyecto?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción no se puede deshacer. El proyecto será eliminado permanentemente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Eliminar proyecto
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 };
