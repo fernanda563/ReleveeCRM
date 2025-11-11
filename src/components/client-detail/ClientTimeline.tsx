@@ -4,6 +4,26 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Gem, Bell, ShoppingCart, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { ProspectDetailDialog } from "./ProspectDetailDialog";
+import { cn } from "@/lib/utils";
+
+interface Prospect {
+  id: string;
+  tipo_accesorio: string | null;
+  subtipo_accesorio: string | null;
+  tipo_piedra: string | null;
+  metal_tipo: string | null;
+  color_oro: string | null;
+  pureza_oro: string | null;
+  incluye_piedra: string | null;
+  largo_aprox: string | null;
+  estilo_anillo: string | null;
+  importe_previsto: number | null;
+  fecha_entrega_deseada: string | null;
+  estado: string;
+  observaciones: string | null;
+  created_at: string;
+}
 
 interface TimelineEvent {
   id: string;
@@ -12,6 +32,7 @@ interface TimelineEvent {
   description: string;
   date: string;
   status?: string;
+  prospectData?: Prospect;
 }
 
 interface ClientTimelineProps {
@@ -21,6 +42,7 @@ interface ClientTimelineProps {
 export const ClientTimeline = ({ clientId }: ClientTimelineProps) => {
   const [events, setEvents] = useState<TimelineEvent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedProspect, setSelectedProspect] = useState<Prospect | null>(null);
 
   useEffect(() => {
     fetchTimeline();
@@ -72,9 +94,10 @@ export const ClientTimeline = ({ clientId }: ClientTimelineProps) => {
           id: pros.id,
           type: "prospect",
           title: "Proyecto registrado",
-          description: `${pros.tipo_accesorio || "N/A"}${pros.subtipo_accesorio ? ` - ${pros.subtipo_accesorio}` : ""} - ${pros.tipo_piedra || "Sin piedra"}`,
+          description: `${pros.tipo_accesorio || "N/A"}${pros.subtipo_accesorio ? ` - ${pros.subtipo_accesorio}` : ""}`,
           date: pros.created_at,
           status: pros.estado,
+          prospectData: pros,
         });
       });
 
@@ -175,9 +198,21 @@ export const ClientTimeline = ({ clientId }: ClientTimelineProps) => {
   }
 
   return (
-    <div className="space-y-4">
-      {events.map((event, index) => (
-        <Card key={event.id} className="relative">
+    <>
+      <div className="space-y-4">
+        {events.map((event, index) => (
+          <Card 
+            key={event.id} 
+            className={cn(
+              "relative",
+              event.type === "prospect" && "cursor-pointer hover:shadow-lg transition-shadow"
+            )}
+            onClick={() => {
+              if (event.type === "prospect" && event.prospectData) {
+                setSelectedProspect(event.prospectData);
+              }
+            }}
+          >
           {index !== events.length - 1 && (
             <div className="absolute left-8 top-16 bottom-0 w-0.5 bg-border -mb-4" />
           )}
@@ -205,5 +240,12 @@ export const ClientTimeline = ({ clientId }: ClientTimelineProps) => {
         </Card>
       ))}
     </div>
+
+    <ProspectDetailDialog
+      prospect={selectedProspect}
+      open={!!selectedProspect}
+      onOpenChange={(open) => !open && setSelectedProspect(null)}
+    />
+    </>
   );
 };

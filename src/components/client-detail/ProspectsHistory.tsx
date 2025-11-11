@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Gem, DollarSign, Calendar, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { ProspectDetailDialog } from "./ProspectDetailDialog";
 
 interface Prospect {
   id: string;
@@ -30,6 +31,7 @@ interface ProspectsHistoryProps {
 export const ProspectsHistory = ({ clientId }: ProspectsHistoryProps) => {
   const [prospects, setProspects] = useState<Prospect[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedProspect, setSelectedProspect] = useState<Prospect | null>(null);
 
   useEffect(() => {
     fetchProspects();
@@ -103,10 +105,15 @@ export const ProspectsHistory = ({ clientId }: ProspectsHistoryProps) => {
   }
 
   return (
-    <div className="grid gap-4 md:grid-cols-2">
-      {prospects.map((prospect) => (
-        <Card key={prospect.id}>
-          <CardHeader>
+    <>
+      <div className="grid gap-4 md:grid-cols-2">
+        {prospects.map((prospect) => (
+          <Card 
+            key={prospect.id}
+            className="cursor-pointer hover:shadow-lg transition-shadow"
+            onClick={() => setSelectedProspect(prospect)}
+          >
+            <CardHeader>
             <div className="flex items-start justify-between">
               <div>
                 <CardTitle className="text-lg capitalize">
@@ -202,5 +209,12 @@ export const ProspectsHistory = ({ clientId }: ProspectsHistoryProps) => {
         </Card>
       ))}
     </div>
+
+    <ProspectDetailDialog
+      prospect={selectedProspect}
+      open={!!selectedProspect}
+      onOpenChange={(open) => !open && setSelectedProspect(null)}
+    />
+    </>
   );
 };
