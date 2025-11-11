@@ -21,6 +21,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Loader2, Upload, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 import type { Order } from "@/pages/Orders";
 import type { Client } from "@/pages/CRM";
 
@@ -31,10 +32,28 @@ interface OrderDialogProps {
   onSuccess: () => void;
 }
 
+interface Prospect {
+  id: string;
+  tipo_piedra: string | null;
+  metal_tipo: string | null;
+  color_oro: string | null;
+  pureza_oro: string | null;
+  incluye_piedra: string | null;
+  observaciones: string | null;
+  importe_previsto: number | null;
+  estado: string;
+  tipo_accesorio: string | null;
+  subtipo_accesorio: string | null;
+  estilo_anillo: string | null;
+}
+
 const OrderDialog = ({ open, onOpenChange, order, onSuccess }: OrderDialogProps) => {
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [clients, setClients] = useState<Client[]>([]);
+  const [clientProspects, setClientProspects] = useState<Prospect[]>([]);
+  const [selectedProspectId, setSelectedProspectId] = useState("");
+  const [isLoadingProspects, setIsLoadingProspects] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 4;
 
@@ -74,28 +93,42 @@ const OrderDialog = ({ open, onOpenChange, order, onSuccess }: OrderDialogProps)
       setCurrentStep(1);
       fetchClients();
       if (order) {
-        // Load order data
         setSelectedClientId(order.client_id);
-        setPrecioVenta(order.precio_venta.toString());
-        setImporteAnticipo(order.importe_anticipo.toString());
+        setPrecioVenta(formatCurrency(order.precio_venta.toString()));
+        setImporteAnticipo(formatCurrency(order.importe_anticipo.toString()));
         setFormaPago(order.forma_pago);
         setEstatusPago(order.estatus_pago);
-        setMetalTipo(order.metal_tipo as any);
+        setMetalTipo(order.metal_tipo as "oro" | "plata" | "platino");
         setMetalPureza(order.metal_pureza || "");
         setMetalColor(order.metal_color || "");
-        setPiedraTipo(order.piedra_tipo as any);
+        setPiedraTipo(order.piedra_tipo as "diamante" | "gema");
         setDiamanteColor(order.diamante_color || "");
         setDiamanteClaridad(order.diamante_claridad || "");
         setDiamanteCorte(order.diamante_corte || "");
-        setDiamanteQuilataje(order.diamante_quilataje?.toString() || "");
         setDiamanteForma(order.diamante_forma || "");
+        setDiamanteQuilataje(order.diamante_quilataje?.toString() || "");
         setGemaObservaciones(order.gema_observaciones || "");
         setNotas(order.notas || "");
+        setPaymentReceipts([]);
+        setUploadedReceiptUrls([]);
+        // NO cargar proyectos al editar una orden
+        setClientProspects([]);
+        setSelectedProspectId("");
       } else {
         resetForm();
       }
     }
   }, [open, order]);
+
+  useEffect(() => {
+    if (selectedClientId && !order) {
+      fetchClientProspects(selectedClientId);
+      setSelectedProspectId("");
+    } else {
+      setClientProspects([]);
+      setSelectedProspectId("");
+    }
+  }, [selectedClientId, order]);
 
   const resetForm = () => {
     setCurrentStep(1);
@@ -118,6 +151,8 @@ const OrderDialog = ({ open, onOpenChange, order, onSuccess }: OrderDialogProps)
     setNotas("");
     setPaymentReceipts([]);
     setUploadedReceiptUrls([]);
+    setClientProspects([]);
+    setSelectedProspectId("");
   };
 
   const fetchClients = async () => {
@@ -126,6 +161,86 @@ const OrderDialog = ({ open, onOpenChange, order, onSuccess }: OrderDialogProps)
       .select("*")
       .order("nombre");
     if (data) setClients(data);
+  };
+
+  const fetchClientProspects = async (clientId: string) => {
+    if (!clientId) {
+      setClientProspects([]);
+      return;
+    }
+    
+    setIsLoadingProspects(true);
+    try {
+      const { data, error } = await supabase
+        .from("prospects")
+        .select("*")
+        .eq("client_id", clientId)
+        .eq("estado", "activo")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setClientProspects(data || []);
+    } catch (error) {
+      console.error("Error al cargar proyectos:", error);
+      setClientProspects([]);
+    } finally {
+      setIsLoadingProspects(false);
+    }
+  };
+
+  const generateProspectTitle = (prospect: Prospect): string => {
+    const parts: string[] = [];
+    
+    if (prospect.tipo_accesorio) {
+      parts.push(prospect.tipo_accesorio.charAt(0).toUpperCase() + prospect.tipo_accesorio.slice(1));
+    }
+    
+    if (prospect.subtipo_accesorio) {
+      parts.push(prospect.subtipo_accesorio);
+    }
+    
+    if (prospect.estilo_anillo) {
+      const estiloFormatted = prospect.estilo_anillo
+        .replace(/_/g, ' ')
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+      parts.push(`(${estiloFormatted})`);
+    }
+    
+    return parts.length > 0 ? parts.join(' - ') : "Proyecto sin título";
+  };
+
+  const applyProspectData = (prospectId: string) => {
+    const prospect = clientProspects.find(p => p.id === prospectId);
+    if (!prospect) return;
+
+    // Prellenar Metal (Paso 2)
+    if (prospect.metal_tipo) {
+      setMetalTipo(prospect.metal_tipo as "oro" | "plata" | "platino");
+      
+      if (prospect.metal_tipo === "oro") {
+        if (prospect.color_oro) setMetalColor(prospect.color_oro);
+        if (prospect.pureza_oro) setMetalPureza(prospect.pureza_oro);
+      }
+    }
+
+    // Prellenar Piedra (Paso 3)
+    if (prospect.tipo_piedra && prospect.incluye_piedra === "sí") {
+      setPiedraTipo(prospect.tipo_piedra as "diamante" | "gema");
+    }
+
+    // Prellenar Precio de Venta (Paso 1) - como sugerencia
+    if (prospect.importe_previsto) {
+      setPrecioVenta(formatCurrency(prospect.importe_previsto.toString()));
+    }
+
+    // Prellenar Notas (Paso 4)
+    if (prospect.observaciones) {
+      setNotas(prospect.observaciones);
+    }
+
+    toast.success("Datos del proyecto aplicados al formulario");
   };
 
   const formatCurrency = (value: string): string => {
@@ -403,6 +518,47 @@ const OrderDialog = ({ open, onOpenChange, order, onSuccess }: OrderDialogProps)
                   </SelectContent>
                 </Select>
               </div>
+
+              {/* Dropdown de Proyectos (solo si hay proyectos activos) */}
+              {clientProspects.length > 0 && (
+                <div className="space-y-2 mt-4 p-4 bg-accent/5 border border-accent/20 rounded-md">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="prospect">¿Deseas usar un proyecto existente?</Label>
+                    <Badge variant="secondary" className="text-xs">
+                      {clientProspects.length} {clientProspects.length === 1 ? "proyecto" : "proyectos"} activo{clientProspects.length > 1 ? "s" : ""}
+                    </Badge>
+                  </div>
+                  <Select
+                    value={selectedProspectId}
+                    onValueChange={(value) => {
+                      setSelectedProspectId(value);
+                      if (value) {
+                        applyProspectData(value);
+                      }
+                    }}
+                    disabled={loading || isLoadingProspects}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona un proyecto (opcional)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {clientProspects.map((prospect) => (
+                        <SelectItem key={prospect.id} value={prospect.id}>
+                          {generateProspectTitle(prospect)}
+                          {prospect.importe_previsto && (
+                            <span className="text-muted-foreground ml-2">
+                              ({formatCurrency(prospect.importe_previsto.toString())})
+                            </span>
+                          )}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    Al seleccionar un proyecto, se rellenarán automáticamente los campos relacionados (metal, piedra, precio sugerido y notas).
+                  </p>
+                </div>
+              )}
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
