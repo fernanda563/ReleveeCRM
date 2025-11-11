@@ -528,6 +528,35 @@ const OrderDialog = ({ open, onOpenChange, order, onSuccess, onOpenClientDialog 
       return;
     }
 
+    // Validar campos obligatorios de diamante
+    if (piedraTipo === "diamante") {
+      if (!diamanteForma) {
+        toast.error("Por favor selecciona el corte del diamante");
+        setCurrentStep(3); // Volver al paso de la piedra
+        return;
+      }
+      if (!diamanteQuilataje) {
+        toast.error("Por favor ingresa el quilataje del diamante");
+        setCurrentStep(3);
+        return;
+      }
+      if (!diamanteColor) {
+        toast.error("Por favor selecciona el color del diamante");
+        setCurrentStep(3);
+        return;
+      }
+      if (!diamanteClaridad) {
+        toast.error("Por favor selecciona la claridad del diamante");
+        setCurrentStep(3);
+        return;
+      }
+      if (!diamanteCorte) {
+        toast.error("Por favor selecciona la calidad del corte del diamante");
+        setCurrentStep(3);
+        return;
+      }
+    }
+
     setLoading(true);
 
     try {
