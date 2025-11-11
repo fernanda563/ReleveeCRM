@@ -128,7 +128,7 @@ const ClientList = ({
 
                   {/* Deuda */}
                   {client.total_debt && client.total_debt > 0 && (
-                    <Badge variant="destructive" className="flex items-center gap-1.5">
+                    <Badge variant="destructive" className="flex items-center gap-1.5 whitespace-nowrap">
                       <DollarSign className="h-3 w-3" />
                       <span className="text-xs">
                         Debe {formatCurrency(client.total_debt)}
