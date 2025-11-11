@@ -104,6 +104,7 @@ const OrderDialog = ({ open, onOpenChange, order, onSuccess, onOpenClientDialog 
   
   // Delivery date
   const [fechaEntregaEsperada, setFechaEntregaEsperada] = useState<Date | undefined>();
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -985,7 +986,7 @@ const OrderDialog = ({ open, onOpenChange, order, onSuccess, onOpenClientDialog 
 
               <div className="space-y-2">
                 <Label>Fecha de Entrega Esperada</Label>
-                <Popover>
+                <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
                   <PopoverTrigger asChild>
                     <Button
                       variant="outline"
@@ -1009,6 +1010,7 @@ const OrderDialog = ({ open, onOpenChange, order, onSuccess, onOpenClientDialog 
                       selected={fechaEntregaEsperada}
                       onSelect={(date) => {
                         setFechaEntregaEsperada(date);
+                        setIsCalendarOpen(false);
                       }}
                       disabled={(date) => date < new Date()}
                       initialFocus
