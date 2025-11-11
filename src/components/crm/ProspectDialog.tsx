@@ -188,9 +188,9 @@ const ProspectDialog = ({
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-full p-0 bg-popover z-50" align="start">
+              <PopoverContent className="p-0 bg-popover z-50" align="start" style={{ width: 'var(--radix-popover-trigger-width)' }}>
                 <Command>
-                  <CommandInput placeholder="Buscar cliente..." />
+                  <CommandInput placeholder="Buscar cliente..." className="h-10" />
                   <CommandList>
                     <CommandEmpty>No se encontró ningún cliente.</CommandEmpty>
                     <CommandGroup>
