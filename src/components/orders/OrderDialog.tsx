@@ -124,6 +124,31 @@ const OrderDialog = ({ open, onOpenChange, order, onSuccess }: OrderDialogProps)
     if (data) setClients(data);
   };
 
+  const formatCurrency = (value: string): string => {
+    // Remove all non-numeric characters except decimal point
+    const numericValue = value.replace(/[^\d.]/g, '');
+    
+    // Prevent multiple decimal points
+    const parts = numericValue.split('.');
+    if (parts.length > 2) {
+      return formatCurrency(parts[0] + '.' + parts.slice(1).join(''));
+    }
+    
+    // Format with commas
+    if (numericValue === '') return '';
+    
+    const [integer, decimal] = numericValue.split('.');
+    const formattedInteger = integer.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    
+    return decimal !== undefined 
+      ? `$${formattedInteger}.${decimal}`
+      : `$${formattedInteger}`;
+  };
+
+  const unformatCurrency = (value: string): string => {
+    return value.replace(/[^\d.]/g, '');
+  };
+
   const handleReceiptUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     const validFiles = files.filter(file => {
@@ -178,7 +203,10 @@ const OrderDialog = ({ open, onOpenChange, order, onSuccess }: OrderDialogProps)
       return;
     }
 
-    if (parseFloat(importeAnticipo) > parseFloat(precioVenta)) {
+    const precioVentaNumeric = parseFloat(unformatCurrency(precioVenta));
+    const importeAnticipoNumeric = parseFloat(unformatCurrency(importeAnticipo));
+
+    if (importeAnticipoNumeric > precioVentaNumeric) {
       toast.error("El anticipo no puede ser mayor al precio de venta");
       return;
     }
@@ -198,8 +226,8 @@ const OrderDialog = ({ open, onOpenChange, order, onSuccess }: OrderDialogProps)
 
       const orderData: any = {
         client_id: selectedClientId,
-        precio_venta: parseFloat(precioVenta),
-        importe_anticipo: parseFloat(importeAnticipo),
+        precio_venta: precioVentaNumeric,
+        importe_anticipo: importeAnticipoNumeric,
         forma_pago: formaPago,
         estatus_pago: estatusPago,
         metal_tipo: metalTipo,
@@ -299,14 +327,26 @@ const OrderDialog = ({ open, onOpenChange, order, onSuccess }: OrderDialogProps)
                   <Label htmlFor="precio">Precio de Venta *</Label>
                   <Input
                     id="precio"
-                    type="number"
-                    step="0.01"
-                    min="0"
+                    type="text"
                     value={precioVenta}
-                    onChange={(e) => setPrecioVenta(e.target.value)}
+                    onChange={(e) => {
+                      const formatted = formatCurrency(e.target.value);
+                      setPrecioVenta(formatted);
+                      
+                      // Revalidate anticipo if it exists
+                      if (importeAnticipo) {
+                        const precioNum = parseFloat(unformatCurrency(formatted));
+                        const anticipoNum = parseFloat(unformatCurrency(importeAnticipo));
+                        if (anticipoNum > precioNum) {
+                          setAnticipoError("El anticipo no puede ser mayor al precio de venta");
+                        } else {
+                          setAnticipoError("");
+                        }
+                      }
+                    }}
                     required
                     disabled={loading}
-                    placeholder="0.00"
+                    placeholder="$0.00"
                   />
                 </div>
 
@@ -314,23 +354,25 @@ const OrderDialog = ({ open, onOpenChange, order, onSuccess }: OrderDialogProps)
                   <Label htmlFor="anticipo">Anticipo *</Label>
                   <Input
                     id="anticipo"
-                    type="number"
-                    step="0.01"
-                    min="0"
+                    type="text"
                     value={importeAnticipo}
                     onChange={(e) => {
-                      const value = e.target.value;
-                      setImporteAnticipo(value);
+                      const formatted = formatCurrency(e.target.value);
+                      setImporteAnticipo(formatted);
                       
-                      if (precioVenta && parseFloat(value) > parseFloat(precioVenta)) {
-                        setAnticipoError("El anticipo no puede ser mayor al precio de venta");
-                      } else {
-                        setAnticipoError("");
+                      if (precioVenta) {
+                        const precioNum = parseFloat(unformatCurrency(precioVenta));
+                        const anticipoNum = parseFloat(unformatCurrency(formatted));
+                        if (anticipoNum > precioNum) {
+                          setAnticipoError("El anticipo no puede ser mayor al precio de venta");
+                        } else {
+                          setAnticipoError("");
+                        }
                       }
                     }}
                     required
                     disabled={loading}
-                    placeholder="0.00"
+                    placeholder="$0.00"
                   />
                   {anticipoError && (
                     <p className="text-sm text-destructive">{anticipoError}</p>
@@ -372,7 +414,7 @@ const OrderDialog = ({ open, onOpenChange, order, onSuccess }: OrderDialogProps)
                 <div className="p-4 bg-muted rounded-lg">
                   <p className="text-sm font-medium text-foreground">Saldo Pendiente:</p>
                   <p className="text-2xl font-bold text-warning">
-                    ${(parseFloat(precioVenta) - parseFloat(importeAnticipo)).toLocaleString("es-MX")}
+                    ${(parseFloat(unformatCurrency(precioVenta)) - parseFloat(unformatCurrency(importeAnticipo))).toLocaleString("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </p>
                 </div>
               )}
