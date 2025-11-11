@@ -5,6 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Search, Package, Clock, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { ProductionCard } from "@/components/production/ProductionCard";
+import {
+  ProductionFiltersComponent,
+  ProductionFilters,
+} from "@/components/production/ProductionFilters";
 
 interface Order {
   id: string;
@@ -42,6 +46,14 @@ const Production = () => {
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState<ProductionFilters>({
+    estatusPiedra: "",
+    estatusMontura: "",
+    disenadorId: "",
+    joyeroId: "",
+    fechaDesde: undefined,
+    fechaHasta: undefined,
+  });
 
   const fetchOrders = async () => {
     try {
@@ -93,21 +105,77 @@ const Production = () => {
   }, []);
 
   useEffect(() => {
-    if (searchTerm === "") {
+    if (searchTerm === "" && !hasActiveFilters()) {
       setFilteredOrders(orders);
     } else {
-      const filtered = orders.filter((order) => {
-        const clientName = `${order.clients.nombre} ${order.clients.apellido}`.toLowerCase();
-        const search = searchTerm.toLowerCase();
-        return (
-          clientName.includes(search) ||
-          order.estatus_piedra?.toLowerCase().includes(search) ||
-          order.estatus_montura?.toLowerCase().includes(search)
+      let filtered = orders;
+
+      // Apply search term
+      if (searchTerm) {
+        filtered = filtered.filter((order) => {
+          const clientName = `${order.clients.nombre} ${order.clients.apellido}`.toLowerCase();
+          const search = searchTerm.toLowerCase();
+          return (
+            clientName.includes(search) ||
+            order.estatus_piedra?.toLowerCase().includes(search) ||
+            order.estatus_montura?.toLowerCase().includes(search)
+          );
+        });
+      }
+
+      // Apply filters
+      if (filters.estatusPiedra) {
+        filtered = filtered.filter((o) => o.estatus_piedra === filters.estatusPiedra);
+      }
+
+      if (filters.estatusMontura) {
+        filtered = filtered.filter((o) => o.estatus_montura === filters.estatusMontura);
+      }
+
+      if (filters.disenadorId) {
+        if (filters.disenadorId === "sin_asignar") {
+          filtered = filtered.filter((o) => !o.disenador_id);
+        } else {
+          filtered = filtered.filter((o) => o.disenador_id === filters.disenadorId);
+        }
+      }
+
+      if (filters.joyeroId) {
+        if (filters.joyeroId === "sin_asignar") {
+          filtered = filtered.filter((o) => !o.joyero_id);
+        } else {
+          filtered = filtered.filter((o) => o.joyero_id === filters.joyeroId);
+        }
+      }
+
+      if (filters.fechaDesde) {
+        filtered = filtered.filter(
+          (o) => new Date(o.created_at) >= filters.fechaDesde!
         );
-      });
+      }
+
+      if (filters.fechaHasta) {
+        const fechaHastaEnd = new Date(filters.fechaHasta);
+        fechaHastaEnd.setHours(23, 59, 59, 999);
+        filtered = filtered.filter(
+          (o) => new Date(o.created_at) <= fechaHastaEnd
+        );
+      }
+
       setFilteredOrders(filtered);
     }
-  }, [searchTerm, orders]);
+  }, [searchTerm, orders, filters]);
+
+  const hasActiveFilters = () => {
+    return (
+      filters.estatusPiedra ||
+      filters.estatusMontura ||
+      filters.disenadorId ||
+      filters.joyeroId ||
+      filters.fechaDesde ||
+      filters.fechaHasta
+    );
+  };
 
   const calculateStats = () => {
     const enProceso = orders.filter(
@@ -179,6 +247,9 @@ const Production = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Filters */}
+        <ProductionFiltersComponent filters={filters} onFiltersChange={setFilters} />
 
         {/* Search */}
         <div className="relative">
