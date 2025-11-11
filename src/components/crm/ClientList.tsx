@@ -105,7 +105,7 @@ const ClientList = ({
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Phone className="h-4 w-4 shrink-0" />
                     <span className="truncate">{client.telefono_principal}</span>
-                    {client.telefono_adicional && (
+                    {client.telefono_adicional && client.telefono_adicional.length >= 10 && client.telefono_adicional !== "000" && (
                       <>
                         <span className="mx-2">•</span>
                         <span className="truncate">{client.telefono_adicional}</span>
