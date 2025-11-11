@@ -55,6 +55,7 @@ const OrderDialog = ({ open, onOpenChange, order, onSuccess }: OrderDialogProps)
   const [selectedProspectId, setSelectedProspectId] = useState("");
   const [isLoadingProspects, setIsLoadingProspects] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
+  const [step4Visited, setStep4Visited] = useState(false);
   const totalSteps = 4;
 
   // Financial data
@@ -130,8 +131,16 @@ const OrderDialog = ({ open, onOpenChange, order, onSuccess }: OrderDialogProps)
     }
   }, [selectedClientId, order]);
 
+  useEffect(() => {
+    if (currentStep === 4) {
+      // Pequeño delay para prevenir clicks/enters accidentales
+      setTimeout(() => setStep4Visited(true), 100);
+    }
+  }, [currentStep]);
+
   const resetForm = () => {
     setCurrentStep(1);
+    setStep4Visited(false);
     setSelectedClientId("");
     setPrecioVenta("");
     setImporteAnticipo("");
@@ -352,7 +361,13 @@ const OrderDialog = ({ open, onOpenChange, order, onSuccess }: OrderDialogProps)
 
   const handleNext = () => {
     if (canGoNext()) {
-      setCurrentStep((prev) => Math.min(prev + 1, totalSteps));
+      const nextStep = Math.min(currentStep + 1, totalSteps);
+      setCurrentStep(nextStep);
+      
+      // Resetear la bandera cuando avanzamos al último paso
+      if (nextStep === totalSteps) {
+        setStep4Visited(false);
+      }
     }
   };
 
@@ -362,6 +377,12 @@ const OrderDialog = ({ open, onOpenChange, order, onSuccess }: OrderDialogProps)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Prevenir submit si no estamos en el paso final
+    if (currentStep !== totalSteps) {
+      console.warn("Submit bloqueado: usuario no está en el paso final");
+      return;
+    }
 
     if (!selectedClientId) {
       toast.error("Selecciona un cliente");
@@ -813,6 +834,12 @@ const OrderDialog = ({ open, onOpenChange, order, onSuccess }: OrderDialogProps)
                         min="0"
                         value={diamanteQuilataje}
                         onChange={(e) => setDiamanteQuilataje(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            handleNext();
+                          }
+                        }}
                         disabled={loading}
                         placeholder="0.00"
                       />
@@ -970,7 +997,7 @@ const OrderDialog = ({ open, onOpenChange, order, onSuccess }: OrderDialogProps)
               ) : (
                 <Button
                   type="submit"
-                  disabled={loading || uploading}
+                  disabled={loading || uploading || !step4Visited}
                   className="bg-accent hover:bg-accent/90 text-accent-foreground"
                 >
                   {loading || uploading ? (
