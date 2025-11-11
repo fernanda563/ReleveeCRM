@@ -9,6 +9,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Loader2, Upload } from "lucide-react";
@@ -237,15 +244,26 @@ const ClientDialog = ({ open, onOpenChange, client, onSuccess }: ClientDialogPro
 
           <div className="space-y-2">
             <Label htmlFor="fuente_contacto">¿Cómo se enteró de nosotros?</Label>
-            <Input
-              id="fuente_contacto"
+            <Select
               value={formData.fuente_contacto}
-              onChange={(e) =>
-                setFormData({ ...formData, fuente_contacto: e.target.value })
+              onValueChange={(value) =>
+                setFormData({ ...formData, fuente_contacto: value })
               }
-              placeholder="Redes sociales, recomendación, etc."
               disabled={loading}
-            />
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Seleccione una opción" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Facebook">Facebook</SelectItem>
+                <SelectItem value="Instagram">Instagram</SelectItem>
+                <SelectItem value="TikTok">TikTok</SelectItem>
+                <SelectItem value="Recomendación">Recomendación</SelectItem>
+                <SelectItem value="Tienda física">Tienda física</SelectItem>
+                <SelectItem value="Google">Google</SelectItem>
+                <SelectItem value="Otro">Otro</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-2">
