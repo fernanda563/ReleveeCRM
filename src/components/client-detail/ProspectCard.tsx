@@ -11,6 +11,7 @@ export interface Prospect extends ProspectLike {
   color_oro: string | null;
   pureza_oro: string | null;
   incluye_piedra: string | null;
+  estilo_anillo: string | null;
   largo_aprox: string | null;
   importe_previsto: number | null;
   fecha_entrega_deseada: string | null;
@@ -88,12 +89,27 @@ export const ProspectCard = ({ prospect, onClick, className }: ProspectCardProps
           </div>
         )}
 
-        {prospect.incluye_piedra === "si" && prospect.tipo_piedra && (
+        <div>
+          <p className="text-xs font-medium text-muted-foreground mb-2">PIEDRA</p>
+          <div className="text-sm space-y-1">
+            <div>
+              <p className="text-muted-foreground">Incluye piedra:</p>
+              <p className="font-medium capitalize">{prospect.incluye_piedra || "No especificado"}</p>
+            </div>
+            {prospect.incluye_piedra === "si" && prospect.tipo_piedra && (
+              <div>
+                <p className="text-muted-foreground">Tipo:</p>
+                <p className="font-medium capitalize">{prospect.tipo_piedra}</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {prospect.estilo_anillo && (
           <div>
-            <p className="text-xs font-medium text-muted-foreground mb-2">PIEDRA</p>
+            <p className="text-xs font-medium text-muted-foreground mb-2">ESTILO</p>
             <div className="text-sm">
-              <p className="text-muted-foreground">Tipo:</p>
-              <p className="font-medium capitalize">{prospect.tipo_piedra}</p>
+              <p className="font-medium capitalize">{prospect.estilo_anillo.replace(/_/g, " ")}</p>
             </div>
           </div>
         )}
