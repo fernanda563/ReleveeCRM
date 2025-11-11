@@ -7,6 +7,7 @@ import {
   Gem,
   LogOut,
   Shield,
+  BarChart3,
 } from "lucide-react";
 import { useUserRole } from "@/hooks/useUserRole";
 import {
@@ -50,6 +51,12 @@ const menuItems = [
     title: "Producción",
     url: "/production",
     icon: Gem,
+    adminOnly: false,
+  },
+  {
+    title: "Estadísticas de Producción",
+    url: "/production/dashboard",
+    icon: BarChart3,
     adminOnly: false,
   },
   {
