@@ -116,10 +116,12 @@ const clientFormSchema = z.object({
   
   telefono_principal: z
     .string()
-    .min(1, "El teléfono principal es obligatorio"),
+    .min(1, "El teléfono principal es obligatorio")
+    .regex(/^\+\d+\d{10}$/, "El teléfono debe tener exactamente 10 dígitos"),
   
   telefono_adicional: z
     .string()
+    .regex(/^(\+\d+\d{10})?$/, "El teléfono debe tener exactamente 10 dígitos")
     .optional()
     .or(z.literal("")),
   

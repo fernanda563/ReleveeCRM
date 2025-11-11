@@ -78,10 +78,15 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, PhoneInputProps>(
     };
 
     const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const newNumber = e.target.value;
-      setPhoneNumber(newNumber);
-      const fullNumber = newNumber ? `${countryCode}${newNumber}` : countryCode;
-      onChange?.(fullNumber);
+      // Solo permitir dígitos
+      const newNumber = e.target.value.replace(/\D/g, '');
+      
+      // Limitar a 10 dígitos
+      if (newNumber.length <= 10) {
+        setPhoneNumber(newNumber);
+        const fullNumber = newNumber ? `${countryCode}${newNumber}` : countryCode;
+        onChange?.(fullNumber);
+      }
     };
 
     return (
@@ -109,6 +114,7 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, PhoneInputProps>(
           disabled={disabled}
           placeholder={placeholder || "1234567890"}
           className="flex-1"
+          maxLength={10}
         />
       </div>
     );
