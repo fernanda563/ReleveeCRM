@@ -134,6 +134,8 @@ const ClientDialog = ({ open, onOpenChange, client, onSuccess }: ClientDialogPro
   const [uploading, setUploading] = useState(false);
   const [ineFile, setIneFile] = useState<File | null>(null);
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
+  const [checkingEmail, setCheckingEmail] = useState(false);
+  const [emailExists, setEmailExists] = useState(false);
   const { isAdmin, loading: roleLoading } = useUserRole();
 
   const form = useForm<ClientFormValues>({
@@ -159,6 +161,7 @@ const ClientDialog = ({ open, onOpenChange, client, onSuccess }: ClientDialogPro
         telefono_adicional: client.telefono_adicional || "",
         fuente_contacto: client.fuente_contacto || "",
       });
+      setEmailExists(false);
     } else if (!client && open) {
       form.reset({
         nombre: "",
@@ -169,8 +172,47 @@ const ClientDialog = ({ open, onOpenChange, client, onSuccess }: ClientDialogPro
         fuente_contacto: "",
       });
       setIneFile(null);
+      setEmailExists(false);
     }
   }, [client, open, form]);
+
+  // Verificar si el email ya existe (con debounce)
+  useEffect(() => {
+    const email = form.watch("email");
+    
+    if (!email || !open) {
+      setEmailExists(false);
+      return;
+    }
+
+    // Si estamos editando, ignorar el email del cliente actual
+    if (client && email.toLowerCase() === client.email.toLowerCase()) {
+      setEmailExists(false);
+      return;
+    }
+
+    const timeoutId = setTimeout(async () => {
+      setCheckingEmail(true);
+      try {
+        const { data, error } = await supabase
+          .from("clients")
+          .select("id, email")
+          .ilike("email", email)
+          .limit(1);
+
+        if (error) throw error;
+
+        setEmailExists(data && data.length > 0);
+      } catch (error) {
+        console.error("Error checking email:", error);
+        setEmailExists(false);
+      } finally {
+        setCheckingEmail(false);
+      }
+    }, 500); // Debounce de 500ms
+
+    return () => clearTimeout(timeoutId);
+  }, [form.watch("email"), client, open]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -378,13 +420,27 @@ const ClientDialog = ({ open, onOpenChange, client, onSuccess }: ClientDialogPro
                 <FormItem>
                   <FormLabel>Correo Electrónico *</FormLabel>
                   <FormControl>
-                    <Input
-                      {...field}
-                      type="email"
-                      placeholder="ejemplo@correo.com"
-                      disabled={loading}
-                    />
+                    <div className="relative">
+                      <Input
+                        {...field}
+                        type="email"
+                        placeholder="ejemplo@correo.com"
+                        disabled={loading}
+                        className={emailExists ? "border-destructive" : ""}
+                      />
+                      {checkingEmail && (
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                        </div>
+                      )}
+                    </div>
                   </FormControl>
+                  {emailExists && (
+                    <p className="text-sm font-medium text-destructive flex items-center gap-1">
+                      <span>⚠️</span>
+                      <span>Este correo electrónico ya está registrado</span>
+                    </p>
+                  )}
                   <FormMessage />
                 </FormItem>
               )}
@@ -532,7 +588,7 @@ const ClientDialog = ({ open, onOpenChange, client, onSuccess }: ClientDialogPro
                 </Button>
                 <Button
                   type="submit"
-                  disabled={loading || uploading || !form.formState.isValid}
+                  disabled={loading || uploading || !form.formState.isValid || emailExists}
                   className="bg-accent hover:bg-accent/90 text-accent-foreground"
                 >
                   {loading || uploading ? (
