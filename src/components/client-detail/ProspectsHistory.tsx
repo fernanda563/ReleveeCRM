@@ -23,6 +23,7 @@ interface Prospect {
   estado: string;
   observaciones: string | null;
   created_at: string;
+  updated_at: string;
 }
 
 interface ProspectsHistoryProps {

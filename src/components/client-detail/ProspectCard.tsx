@@ -20,6 +20,7 @@ export interface Prospect extends ProspectLike {
   estado: string;
   observaciones: string | null;
   created_at: string;
+  updated_at: string;
 }
 
 interface ProspectCardProps {
@@ -39,9 +40,9 @@ const formatCurrency = (amount: number | null) => {
 const formatDate = (dateString: string | null) => {
   if (!dateString) return "N/A";
   return new Date(dateString).toLocaleDateString("es-MX", {
+    day: "2-digit",
+    month: "short",
     year: "numeric",
-    month: "long",
-    day: "numeric",
   });
 };
 
@@ -86,7 +87,7 @@ export const ProspectCard = ({ prospect, onClick, className }: ProspectCardProps
 
       <CardContent className="pt-0 space-y-3">
         {/* Información siempre visible (compacta) */}
-        <div className="flex flex-wrap gap-4 text-sm">
+        <div className="flex flex-col gap-3 text-sm">
           {prospect.importe_previsto && (
             <div className="flex items-center gap-1.5">
               <DollarSign className="h-4 w-4 text-muted-foreground" />
@@ -94,12 +95,23 @@ export const ProspectCard = ({ prospect, onClick, className }: ProspectCardProps
             </div>
           )}
 
-          {prospect.fecha_entrega_deseada && (
-            <div className="flex items-center gap-1.5 text-muted-foreground">
-              <Calendar className="h-4 w-4" />
-              <span>{formatDate(prospect.fecha_entrega_deseada)}</span>
+          {/* Fechas siempre visibles */}
+          <div className="grid grid-cols-1 gap-2 pt-2 border-t text-xs">
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Creado:</span>
+              <span className="font-medium">{formatDate(prospect.created_at)}</span>
             </div>
-          )}
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Última edición:</span>
+              <span className="font-medium">{formatDate(prospect.updated_at)}</span>
+            </div>
+            {prospect.fecha_entrega_deseada && (
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Entrega deseada:</span>
+                <span className="font-medium text-primary">{formatDate(prospect.fecha_entrega_deseada)}</span>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Detalles expandibles */}
