@@ -54,9 +54,9 @@ export const ProductionCard = ({ order, onUpdate }: ProductionCardProps) => {
     <>
       <Card className="hover:shadow-md transition-shadow">
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex-1">
-              <CardTitle className="text-lg">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex-1 min-w-0">
+              <CardTitle className="text-lg truncate">
                 {order.clients.nombre} {order.clients.apellido}
               </CardTitle>
               <div className="flex gap-2 mt-2 flex-wrap">
@@ -70,14 +70,15 @@ export const ProductionCard = ({ order, onUpdate }: ProductionCardProps) => {
                 <Badge variant="secondary">{formatCurrency(order.precio_venta)}</Badge>
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-shrink-0">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setAssignmentDialogOpen(true)}
+                className="flex-1 sm:flex-initial"
               >
-                <User className="h-4 w-4 mr-2" />
-                Asignar
+                <User className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Asignar</span>
               </Button>
               <Button
                 variant="ghost"
@@ -97,7 +98,7 @@ export const ProductionCard = ({ order, onUpdate }: ProductionCardProps) => {
         {expanded && (
           <CardContent className="space-y-6">
             {/* Info General */}
-            <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
               <div>
                 <span className="text-muted-foreground">Fecha de Orden:</span>
                 <p className="font-medium">{formatDate(order.created_at)}</p>
@@ -132,17 +133,17 @@ export const ProductionCard = ({ order, onUpdate }: ProductionCardProps) => {
             {(order.disenador_id || order.joyero_id) && (
               <div className="pt-4 border-t">
                 <h4 className="font-semibold mb-2">Asignaciones</h4>
-                <div className="flex gap-4 text-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                   {order.disenador_id && (
                     <div>
                       <span className="text-muted-foreground">Diseñador:</span>
-                      <p className="font-medium">{order.disenador_id}</p>
+                      <p className="font-medium break-words">{order.disenador_id}</p>
                     </div>
                   )}
                   {order.joyero_id && (
                     <div>
                       <span className="text-muted-foreground">Joyero:</span>
-                      <p className="font-medium">{order.joyero_id}</p>
+                      <p className="font-medium break-words">{order.joyero_id}</p>
                     </div>
                   )}
                 </div>
