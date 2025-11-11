@@ -621,7 +621,7 @@ const OrderDialog = ({ open, onOpenChange, order, onSuccess }: OrderDialogProps)
               {precioVenta && importeAnticipo && (
                 <div className="flex items-center justify-between py-2 px-3 border-l-2 border-warning bg-warning/5">
                   <span className="text-sm text-muted-foreground">Saldo Pendiente:</span>
-                  <span className="text-lg font-semibold text-warning">
+                  <span className="text-base font-semibold text-warning">
                     ${(parseFloat(unformatCurrency(precioVenta)) - parseFloat(unformatCurrency(importeAnticipo))).toLocaleString("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </span>
                 </div>
