@@ -59,6 +59,9 @@ const OrderList = ({ orders, loading, onEdit }: OrderListProps) => {
                     {order.clients?.nombre} {order.clients?.apellido}
                   </h3>
                   <span className="text-sm text-muted-foreground">
+                    {order.custom_id || `#${order.id.slice(0, 8)}`}
+                  </span>
+                  <span className="text-sm text-muted-foreground">
                     #{order.id.slice(0, 8)}
                   </span>
                   {getPaymentStatusBadge(order.estatus_pago)}

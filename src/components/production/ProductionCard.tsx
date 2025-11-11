@@ -35,8 +35,9 @@ const MOUNTING_STATUSES = [
   "no_aplica",
 ];
 
-interface Order {
+interface ProductionOrder {
   id: string;
+  custom_id?: string;
   client_id: string;
   precio_venta: number;
   metal_tipo: string;
@@ -55,7 +56,7 @@ interface Order {
 }
 
 interface ProductionCardProps {
-  order: Order;
+  order: ProductionOrder;
   onUpdate: () => void;
 }
 
@@ -158,6 +159,10 @@ export const ProductionCard = ({ order, onUpdate }: ProductionCardProps) => {
           <CardContent className="space-y-6">
             {/* Info General */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+              <div>
+                <span className="text-muted-foreground">ID de Orden:</span>
+                <p className="font-medium">{order.custom_id || `#${order.id.slice(0, 8)}`}</p>
+              </div>
               <div>
                 <span className="text-muted-foreground">Fecha de Orden:</span>
                 <p className="font-medium">{formatDate(order.created_at)}</p>

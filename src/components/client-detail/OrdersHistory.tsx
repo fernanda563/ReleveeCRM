@@ -7,6 +7,7 @@ import { toast } from "sonner";
 
 interface Order {
   id: string;
+  custom_id?: string;
   precio_venta: number;
   importe_anticipo: number;
   estatus_pago: string;
@@ -35,7 +36,7 @@ export const OrdersHistory = ({ clientId }: OrdersHistoryProps) => {
     try {
       const { data, error } = await supabase
         .from("orders")
-        .select("*")
+        .select("*, custom_id")
         .eq("client_id", clientId)
         .order("created_at", { ascending: false });
 

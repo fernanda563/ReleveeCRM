@@ -12,7 +12,10 @@ import ClientDialog from "@/components/crm/ClientDialog";
 
 export interface Order {
   id: string;
+  custom_id?: string;
   client_id: string;
+  tipo_accesorio?: string;
+  talla?: number;
   precio_venta: number;
   importe_anticipo: number;
   forma_pago: string;

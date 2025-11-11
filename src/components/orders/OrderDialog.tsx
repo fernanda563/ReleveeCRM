@@ -61,6 +61,8 @@ const OrderDialog = ({ open, onOpenChange, order, onSuccess, onOpenClientDialog 
 
   // Financial data
   const [selectedClientId, setSelectedClientId] = useState("");
+  const [tipoAccesorio, setTipoAccesorio] = useState("");
+  const [talla, setTalla] = useState("");
   const [precioVenta, setPrecioVenta] = useState("");
   const [importeAnticipo, setImporteAnticipo] = useState("");
   const [anticipoError, setAnticipoError] = useState("");
@@ -143,6 +145,8 @@ const OrderDialog = ({ open, onOpenChange, order, onSuccess, onOpenClientDialog 
     setCurrentStep(1);
     setStep4Visited(false);
     setSelectedClientId("");
+    setTipoAccesorio("");
+    setTalla("");
     setPrecioVenta("");
     setImporteAnticipo("");
     setAnticipoError("");
@@ -331,6 +335,15 @@ const OrderDialog = ({ open, onOpenChange, order, onSuccess, onOpenClientDialog 
         toast.error("Selecciona un cliente");
         return false;
       }
+      if (!tipoAccesorio) {
+        toast.error("Selecciona el tipo de accesorio");
+        return false;
+      }
+      // Talla solo es obligatoria para anillos
+      if (tipoAccesorio === "anillo" && !talla) {
+        toast.error("La talla es obligatoria para anillos");
+        return false;
+      }
       if (!precioVenta || !importeAnticipo || !formaPago) {
         toast.error("Completa todos los campos obligatorios");
         return false;
@@ -419,6 +432,8 @@ const OrderDialog = ({ open, onOpenChange, order, onSuccess, onOpenClientDialog 
 
       const orderData: any = {
         client_id: selectedClientId,
+        tipo_accesorio: tipoAccesorio.toLowerCase(),
+        talla: talla !== "" ? parseFloat(talla) : null,
         precio_venta: precioVentaNumeric,
         importe_anticipo: importeAnticipoNumeric,
         forma_pago: formaPago,
@@ -670,6 +685,44 @@ const OrderDialog = ({ open, onOpenChange, order, onSuccess, onOpenClientDialog 
                   <span className="text-base font-semibold text-warning">
                     ${(parseFloat(unformatCurrency(precioVenta)) - parseFloat(unformatCurrency(importeAnticipo))).toLocaleString("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </span>
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <Label htmlFor="tipo_accesorio">Tipo de Accesorio *</Label>
+                <Select value={tipoAccesorio} onValueChange={setTipoAccesorio} disabled={loading}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecciona el tipo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="anillo">Anillo</SelectItem>
+                    <SelectItem value="collar">Collar</SelectItem>
+                    <SelectItem value="pulsera">Pulsera</SelectItem>
+                    <SelectItem value="arete">Arete</SelectItem>
+                    <SelectItem value="dije">Dije</SelectItem>
+                    <SelectItem value="cadena">Cadena</SelectItem>
+                    <SelectItem value="toby">Toby</SelectItem>
+                    <SelectItem value="piercing">Piercing</SelectItem>
+                    <SelectItem value="brazalete">Brazalete</SelectItem>
+                    <SelectItem value="otro">Otro</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {tipoAccesorio === "anillo" && (
+                <div className="space-y-2">
+                  <Label htmlFor="talla">Talla *</Label>
+                  <Input
+                    id="talla"
+                    type="number"
+                    step="0.25"
+                    min="0"
+                    max="20"
+                    placeholder="Ej: 6.75"
+                    value={talla}
+                    onChange={(e) => setTalla(e.target.value)}
+                    disabled={loading}
+                  />
                 </div>
               )}
 

@@ -61,6 +61,7 @@ const Production = () => {
         .from("orders")
         .select(`
           *,
+          custom_id,
           clients (
             nombre,
             apellido,

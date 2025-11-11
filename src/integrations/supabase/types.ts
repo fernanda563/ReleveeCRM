@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      accessory_type_config: {
+        Row: {
+          codigo: string
+          created_at: string
+          id: string
+          requiere_talla: boolean
+          tipo_accesorio: string
+        }
+        Insert: {
+          codigo: string
+          created_at?: string
+          id?: string
+          requiere_talla?: boolean
+          tipo_accesorio: string
+        }
+        Update: {
+          codigo?: string
+          created_at?: string
+          id?: string
+          requiere_talla?: boolean
+          tipo_accesorio?: string
+        }
+        Relationships: []
+      }
       appointments: {
         Row: {
           client_id: string
@@ -64,6 +88,7 @@ export type Database = {
           fuente_contacto: string | null
           id: string
           nombre: string
+          numero_incremental: number
           telefono_adicional: string | null
           telefono_adicional_codigo_pais: string | null
           telefono_principal: string
@@ -78,6 +103,7 @@ export type Database = {
           fuente_contacto?: string | null
           id?: string
           nombre: string
+          numero_incremental?: number
           telefono_adicional?: string | null
           telefono_adicional_codigo_pais?: string | null
           telefono_principal: string
@@ -92,6 +118,7 @@ export type Database = {
           fuente_contacto?: string | null
           id?: string
           nombre?: string
+          numero_incremental?: number
           telefono_adicional?: string | null
           telefono_adicional_codigo_pais?: string | null
           telefono_principal?: string
@@ -105,6 +132,7 @@ export type Database = {
           client_id: string
           comprobantes_pago: Json | null
           created_at: string
+          custom_id: string | null
           diamante_claridad: string | null
           diamante_color: string | null
           diamante_corte: string | null
@@ -125,12 +153,15 @@ export type Database = {
           notas: string | null
           piedra_tipo: string
           precio_venta: number
+          talla: number | null
+          tipo_accesorio: string | null
           updated_at: string
         }
         Insert: {
           client_id: string
           comprobantes_pago?: Json | null
           created_at?: string
+          custom_id?: string | null
           diamante_claridad?: string | null
           diamante_color?: string | null
           diamante_corte?: string | null
@@ -151,12 +182,15 @@ export type Database = {
           notas?: string | null
           piedra_tipo: string
           precio_venta: number
+          talla?: number | null
+          tipo_accesorio?: string | null
           updated_at?: string
         }
         Update: {
           client_id?: string
           comprobantes_pago?: Json | null
           created_at?: string
+          custom_id?: string | null
           diamante_claridad?: string | null
           diamante_color?: string | null
           diamante_corte?: string | null
@@ -177,6 +211,8 @@ export type Database = {
           notas?: string | null
           piedra_tipo?: string
           precio_venta?: number
+          talla?: number | null
+          tipo_accesorio?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -392,6 +428,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_custom_order_id: {
+        Args: {
+          p_client_id: string
+          p_metal_color: string
+          p_metal_tipo: string
+          p_talla: number
+          p_tipo_accesorio: string
+        }
+        Returns: string
+      }
       get_user_roles: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"][]
