@@ -78,14 +78,23 @@ const ClientList = ({
             <div className="flex items-start justify-between gap-4">
               {/* Información del Cliente */}
               <div className="flex-1 min-w-0">
-                {/* Nombre y Badge INE */}
-                <div className="flex items-center gap-3 mb-3">
+                {/* Nombre y Badges */}
+                <div className="flex items-center gap-2 mb-3 flex-wrap">
                   <h3 
-                    className="text-xl font-semibold text-foreground hover:text-primary cursor-pointer transition-colors truncate"
+                    className="text-xl font-semibold text-foreground hover:text-primary cursor-pointer transition-colors"
                     onClick={() => navigate(`/crm/${client.id}`)}
                   >
                     {client.nombre} {client.apellido}
                   </h3>
+                  
+                  {/* Badge de Total de Pedidos */}
+                  <Badge variant="outline" className="flex items-center gap-1.5 shrink-0">
+                    <ShoppingBag className="h-3 w-3" />
+                    <span className="text-xs">
+                      {client.total_orders ?? 0} {(client.total_orders ?? 0) === 1 ? 'pedido' : 'pedidos'}
+                    </span>
+                  </Badge>
+                  
                   {client.documento_id_url && (
                     <Badge variant="secondary" className="shrink-0">INE registrada</Badge>
                   )}
@@ -107,14 +116,6 @@ const ClientList = ({
 
                 {/* Métricas de Negocio */}
                 <div className="flex flex-wrap gap-2">
-                  {/* Total de Pedidos */}
-                  <Badge variant="outline" className="flex items-center gap-1.5">
-                    <ShoppingBag className="h-3 w-3" />
-                    <span className="text-xs">
-                      {client.total_orders || 0} {client.total_orders === 1 ? 'pedido' : 'pedidos'}
-                    </span>
-                  </Badge>
-
                   {/* Órdenes Activas */}
                   {client.active_orders && client.active_orders > 0 && (
                     <Badge variant="default" className="flex items-center gap-1.5 bg-blue-500 hover:bg-blue-600">
