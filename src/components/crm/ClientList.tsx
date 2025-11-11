@@ -94,14 +94,14 @@ const ClientList = ({
                 </div>
               </div>
 
-              <div className="flex flex-col gap-2 w-full lg:w-auto lg:min-w-[200px]">
-                {/* Botones principales */}
-                <div className="flex gap-2">
+              <div className="flex flex-col gap-3 w-full lg:w-auto lg:min-w-[280px]">
+                <div className="grid grid-cols-3 gap-3">
+                  {/* Fila 1 */}
                   <Button
                     variant="default"
                     size="sm"
                     onClick={() => navigate(`/crm/${client.id}`)}
-                    className="flex-1"
+                    className="w-full"
                   >
                     <Eye className="h-4 w-4 mr-1" />
                     Ver Detalle
@@ -110,27 +110,27 @@ const ClientList = ({
                     variant="outline"
                     size="sm"
                     onClick={() => onEdit(client)}
-                    className="flex-1"
+                    className="w-full"
                   >
                     <Edit className="h-4 w-4 mr-1" />
                     Editar
                   </Button>
-                </div>
-                
-                {/* Botones de acciones rápidas */}
-                <div className="grid grid-cols-3 gap-2">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => onAddAppointment(client)}
+                    className="w-full"
                   >
                     <Calendar className="h-4 w-4 mr-1" />
                     Cita
                   </Button>
+                  
+                  {/* Fila 2 */}
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => onAddProspect(client)}
+                    className="w-full"
                   >
                     <Gem className="h-4 w-4 mr-1" />
                     Prospecto
@@ -139,6 +139,7 @@ const ClientList = ({
                     variant="outline"
                     size="sm"
                     onClick={() => onAddReminder(client)}
+                    className="w-full"
                   >
                     <Bell className="h-4 w-4 mr-1" />
                     Recordatorio
