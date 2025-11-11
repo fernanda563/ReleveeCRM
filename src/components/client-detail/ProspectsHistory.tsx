@@ -107,15 +107,16 @@ export const ProspectsHistory = ({ clientId }: ProspectsHistoryProps) => {
 
   return (
     <>
-      <div className="grid gap-4 md:grid-cols-2">
-{prospects.map((prospect) => (
-  <ProspectCard
-    key={prospect.id}
-    prospect={prospect}
-    onClick={() => setSelectedProspect(prospect)}
-  />
-))}
-    </div>
+      <div className="space-y-4">
+        {prospects.map((prospect) => (
+          <ProspectCard
+            key={prospect.id}
+            prospect={prospect}
+            onClick={() => setSelectedProspect(prospect)}
+            className="w-full"
+          />
+        ))}
+      </div>
 
     <ProspectDetailDialog
       prospect={selectedProspect}
