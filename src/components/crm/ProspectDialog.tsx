@@ -55,6 +55,7 @@ const ProspectDialog = ({
   const [observaciones, setObservaciones] = useState("");
   const [largoAprox, setLargoAprox] = useState("");
   const [estiloAnillo, setEstiloAnillo] = useState<string>("");
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
 
   // Funciones de formato de moneda
   const formatCurrency = (value: string): string => {
@@ -213,7 +214,7 @@ const ProspectDialog = ({
 
                 <div className="space-y-2">
                   <Label>Fecha de Entrega Deseada</Label>
-                  <Popover>
+                  <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
@@ -231,7 +232,10 @@ const ProspectDialog = ({
                       <Calendar
                         mode="single"
                         selected={fechaEntrega}
-                        onSelect={setFechaEntrega}
+                        onSelect={(date) => {
+                          setFechaEntrega(date);
+                          setDatePickerOpen(false);
+                        }}
                         disabled={(date) => date < new Date()}
                         initialFocus
                         className="p-3 pointer-events-auto"
