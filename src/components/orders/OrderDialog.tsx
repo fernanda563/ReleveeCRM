@@ -350,9 +350,15 @@ const OrderDialog = ({ open, onOpenChange, order, onSuccess }: OrderDialogProps)
     }
     if (currentStep === 3) {
       // Validar paso 3
-      if (piedraTipo === "diamante" && (!diamanteForma || !diamanteQuilataje)) {
-        toast.error("Completa el corte y quilataje del diamante");
-        return false;
+      if (piedraTipo === "diamante") {
+        if (!diamanteForma || !diamanteQuilataje) {
+          toast.error("Completa el corte y quilataje del diamante");
+          return false;
+        }
+        if (!diamanteColor || !diamanteClaridad || !diamanteCorte) {
+          toast.error("Completa el color, claridad y calidad de corte del diamante");
+          return false;
+        }
       }
       return true;
     }
@@ -848,7 +854,7 @@ const OrderDialog = ({ open, onOpenChange, order, onSuccess }: OrderDialogProps)
 
                   <div className="grid grid-cols-3 gap-4">
                     <div className="space-y-2">
-                      <Label>Color</Label>
+                      <Label>Color *</Label>
                       <Select
                         value={diamanteColor}
                         onValueChange={setDiamanteColor}
@@ -876,7 +882,7 @@ const OrderDialog = ({ open, onOpenChange, order, onSuccess }: OrderDialogProps)
                     </div>
 
                     <div className="space-y-2">
-                      <Label>Claridad</Label>
+                      <Label>Claridad *</Label>
                       <Select
                         value={diamanteClaridad}
                         onValueChange={setDiamanteClaridad}
@@ -905,7 +911,7 @@ const OrderDialog = ({ open, onOpenChange, order, onSuccess }: OrderDialogProps)
                     </div>
 
                     <div className="space-y-2">
-                      <Label>Calidad del Corte</Label>
+                      <Label>Calidad del Corte *</Label>
                       <Select
                         value={diamanteCorte}
                         onValueChange={setDiamanteCorte}
