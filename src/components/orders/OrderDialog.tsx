@@ -591,11 +591,46 @@ const OrderDialog = ({ open, onOpenChange, order, onSuccess, onOpenClientDialog 
       onSuccess();
       onOpenChange(false);
     } catch (error: any) {
-      toast.error(error.message || "Error al guardar orden");
       console.error(error);
+      const friendlyMessage = getFriendlyErrorMessage(error);
+      toast.error(friendlyMessage);
     } finally {
       setLoading(false);
     }
+  };
+
+  const getFriendlyErrorMessage = (error: any): string => {
+    const errorMessage = error?.message || "";
+    
+    // Check constraint violations
+    if (errorMessage.includes("orders_diamante_forma_check")) {
+      return "Por favor selecciona un corte válido para el diamante";
+    }
+    if (errorMessage.includes("orders_diamante_color_check")) {
+      return "Por favor selecciona un color válido para el diamante";
+    }
+    if (errorMessage.includes("orders_diamante_claridad_check")) {
+      return "Por favor selecciona una claridad válida para el diamante";
+    }
+    if (errorMessage.includes("orders_diamante_corte_check")) {
+      return "Por favor selecciona una calidad de corte válida para el diamante";
+    }
+    if (errorMessage.includes("check constraint")) {
+      return "Uno o más campos contienen valores no válidos. Por favor verifica tu información.";
+    }
+    
+    // Foreign key violations
+    if (errorMessage.includes("foreign key") || errorMessage.includes("violates")) {
+      return "Error de relación en la base de datos. Por favor contacta al administrador.";
+    }
+    
+    // Required field errors
+    if (errorMessage.includes("not null") || errorMessage.includes("required")) {
+      return "Por favor completa todos los campos obligatorios";
+    }
+    
+    // Default message
+    return "Error al guardar la orden. Por favor verifica la información e intenta nuevamente.";
   };
 
   return (
