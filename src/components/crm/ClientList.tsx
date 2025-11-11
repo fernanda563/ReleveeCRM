@@ -95,12 +95,12 @@ const ClientList = ({
                     </span>
                   </Badge>
                   
-                  {/* Badge de Prospectos Activos */}
+                  {/* Badge de Wish Lists Activas */}
                   {Number(client.active_prospects ?? 0) > 0 && (
                     <Badge variant="outline" className="flex items-center gap-1.5 shrink-0 text-warning border-warning">
                       <Gem className="h-3 w-3" />
                       <span className="text-xs">
-                        {client.active_prospects} {client.active_prospects === 1 ? 'prospecto' : 'prospectos'}
+                        {client.active_prospects} {client.active_prospects === 1 ? 'wish list' : 'wish lists'}
                       </span>
                     </Badge>
                   )}
@@ -195,8 +195,8 @@ const ClientList = ({
                     </DropdownMenuItem>
                     
                     <DropdownMenuItem onClick={() => onAddProspect(client)}>
-                      <Gem className="h-4 w-4 mr-2" />
-                      Añadir Prospecto
+                  <Gem className="h-4 w-4 mr-2" />
+                  Añadir Wish List
                     </DropdownMenuItem>
                     
                     <DropdownMenuItem onClick={() => onAddReminder(client)}>

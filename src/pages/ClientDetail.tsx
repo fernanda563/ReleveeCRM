@@ -213,7 +213,7 @@ const ClientDetail = () => {
             </TabsTrigger>
             <TabsTrigger value="prospects" className="flex items-center gap-2">
               <Gem className="h-4 w-4" />
-              Prospectos
+              Wish Lists
             </TabsTrigger>
             <TabsTrigger value="reminders" className="flex items-center gap-2">
               <Bell className="h-4 w-4" />

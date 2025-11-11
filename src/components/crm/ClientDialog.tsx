@@ -340,7 +340,7 @@ const ClientDialog = ({ open, onOpenChange, client, onSuccess }: ClientDialogPro
 
       if (error) throw error;
 
-      toast.success("Cliente eliminado exitosamente. Todas las órdenes, citas, prospectos y recordatorios asociados también fueron eliminados.");
+      toast.success("Cliente eliminado exitosamente. Todas las órdenes, citas, wish lists y recordatorios asociados también fueron eliminados.");
       onSuccess();
       onOpenChange(false);
       setShowDeleteAlert(false);
@@ -761,7 +761,7 @@ const ClientDialog = ({ open, onOpenChange, client, onSuccess }: ClientDialogPro
               <ul className="list-disc list-inside mt-2 space-y-1">
                 <li>Todas las órdenes de compra</li>
                 <li>Todas las citas programadas</li>
-                <li>Todos los prospectos</li>
+                <li>Todas las wish lists</li>
                 <li>Todos los recordatorios</li>
               </ul>
             </AlertDialogDescription>

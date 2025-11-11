@@ -140,7 +140,7 @@ const ProspectDialog = ({
 
       onSuccess();
     } catch (error: any) {
-      toast.error(error.message || "Error al registrar prospecto");
+      toast.error(error.message || "Error al registrar wish list");
       console.error(error);
     } finally {
       setLoading(false);
@@ -151,9 +151,9 @@ const ProspectDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Registrar Prospecto</DialogTitle>
+          <DialogTitle>Registrar Wish List</DialogTitle>
           <DialogDescription>
-            Guarda información de seguimiento para clientes potenciales
+            Registra proyectos de joyería que el cliente desea crear
           </DialogDescription>
         </DialogHeader>
 
