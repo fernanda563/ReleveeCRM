@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { DollarSign, Calendar } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { DollarSign, Calendar, ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { generateProspectTitle, getStatusColor, type ProspectLike } from "./prospect-utils";
 
@@ -44,107 +46,132 @@ const formatDate = (dateString: string | null) => {
 };
 
 export const ProspectCard = ({ prospect, onClick, className }: ProspectCardProps) => {
+  const [isExpanded, setIsExpanded] = useState(false);
   const title = generateProspectTitle(prospect);
+
+  const handleExpandClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsExpanded(!isExpanded);
+  };
 
   return (
     <Card
       className={cn(
-        "cursor-pointer hover:shadow-lg transition-shadow",
+        "cursor-pointer hover:shadow-lg transition-all duration-300",
         className
       )}
       onClick={onClick}
       role={onClick ? "button" : undefined}
     >
-      <CardHeader>
-        <div className="flex items-start justify-between">
-          <div>
-            <CardTitle className="text-lg capitalize">{title}</CardTitle>
+      <CardHeader className="pb-3">
+        <div className="flex items-start justify-between gap-2">
+          <CardTitle className="text-lg capitalize flex-1">{title}</CardTitle>
+          <div className="flex items-center gap-2">
+            <Badge className={getStatusColor(prospect.estado)}>{prospect.estado}</Badge>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 shrink-0"
+              onClick={handleExpandClick}
+            >
+              {isExpanded ? (
+                <ChevronUp className="h-4 w-4" />
+              ) : (
+                <ChevronDown className="h-4 w-4" />
+              )}
+            </Button>
           </div>
-          <Badge className={getStatusColor(prospect.estado)}>{prospect.estado}</Badge>
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-4">
-        {prospect.metal_tipo && (
-          <div>
-            <p className="text-xs font-medium text-muted-foreground mb-2">METAL</p>
-            <div className="grid grid-cols-3 gap-2 text-sm">
-              <div>
-                <p className="text-muted-foreground">Tipo:</p>
-                <p className="font-medium capitalize">{prospect.metal_tipo}</p>
+      <CardContent className="pt-0 space-y-3">
+        {/* Información siempre visible (compacta) */}
+        <div className="flex flex-wrap gap-4 text-sm">
+          {prospect.importe_previsto && (
+            <div className="flex items-center gap-1.5">
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
+              <span className="font-medium">{formatCurrency(prospect.importe_previsto)}</span>
+            </div>
+          )}
+
+          {prospect.fecha_entrega_deseada && (
+            <div className="flex items-center gap-1.5 text-muted-foreground">
+              <Calendar className="h-4 w-4" />
+              <span>{formatDate(prospect.fecha_entrega_deseada)}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Detalles expandibles */}
+        <div
+          className={cn(
+            "space-y-3 overflow-hidden transition-all duration-300",
+            isExpanded ? "max-h-[1000px] opacity-100" : "max-h-0 opacity-0"
+          )}
+        >
+          {prospect.metal_tipo && (
+            <div className="pt-3 border-t">
+              <p className="text-xs font-medium text-muted-foreground mb-2">METAL</p>
+              <div className="grid grid-cols-3 gap-2 text-sm">
+                <div>
+                  <p className="text-muted-foreground">Tipo:</p>
+                  <p className="font-medium capitalize">{prospect.metal_tipo}</p>
+                </div>
+                {prospect.metal_tipo === "oro" && (
+                  <>
+                    <div>
+                      <p className="text-muted-foreground">Color:</p>
+                      <p className="font-medium capitalize">{prospect.color_oro || "N/A"}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Pureza:</p>
+                      <p className="font-medium">{prospect.pureza_oro || "N/A"}</p>
+                    </div>
+                  </>
+                )}
               </div>
-              {prospect.metal_tipo === "oro" && (
-                <>
-                  <div>
-                    <p className="text-muted-foreground">Color:</p>
-                    <p className="font-medium capitalize">{prospect.color_oro || "N/A"}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Pureza:</p>
-                    <p className="font-medium">{prospect.pureza_oro || "N/A"}</p>
-                  </div>
-                </>
+            </div>
+          )}
+
+          <div>
+            <p className="text-xs font-medium text-muted-foreground mb-2">PIEDRA</p>
+            <div className="text-sm space-y-1">
+              <div>
+                <p className="text-muted-foreground">Incluye piedra:</p>
+                <p className="font-medium capitalize">{prospect.incluye_piedra || "No especificado"}</p>
+              </div>
+              {prospect.incluye_piedra === "si" && prospect.tipo_piedra && (
+                <div>
+                  <p className="text-muted-foreground">Tipo:</p>
+                  <p className="font-medium capitalize">{prospect.tipo_piedra}</p>
+                </div>
               )}
             </div>
           </div>
-        )}
 
-        <div>
-          <p className="text-xs font-medium text-muted-foreground mb-2">PIEDRA</p>
-          <div className="text-sm space-y-1">
+          {prospect.estilo_anillo && (
             <div>
-              <p className="text-muted-foreground">Incluye piedra:</p>
-              <p className="font-medium capitalize">{prospect.incluye_piedra || "No especificado"}</p>
-            </div>
-            {prospect.incluye_piedra === "si" && prospect.tipo_piedra && (
-              <div>
-                <p className="text-muted-foreground">Tipo:</p>
-                <p className="font-medium capitalize">{prospect.tipo_piedra}</p>
+              <p className="text-xs font-medium text-muted-foreground mb-2">ESTILO</p>
+              <div className="text-sm">
+                <p className="font-medium capitalize">{prospect.estilo_anillo.replace(/_/g, " ")}</p>
               </div>
-            )}
-          </div>
-        </div>
+            </div>
+          )}
 
-        {prospect.estilo_anillo && (
-          <div>
-            <p className="text-xs font-medium text-muted-foreground mb-2">ESTILO</p>
+          {prospect.largo_aprox && (
             <div className="text-sm">
-              <p className="font-medium capitalize">{prospect.estilo_anillo.replace(/_/g, " ")}</p>
+              <p className="text-muted-foreground">Largo aproximado:</p>
+              <p className="font-medium">{prospect.largo_aprox}</p>
             </div>
-          </div>
-        )}
+          )}
 
-        {prospect.largo_aprox && (
-          <div className="text-sm">
-            <p className="text-muted-foreground">Largo aproximado:</p>
-            <p className="font-medium">{prospect.largo_aprox}</p>
-          </div>
-        )}
-
-        {(prospect.importe_previsto || prospect.fecha_entrega_deseada) && (
-          <div className="flex flex-wrap gap-3 pt-2 border-t">
-            {prospect.importe_previsto && (
-              <div className="flex items-center gap-2 text-sm">
-                <DollarSign className="h-4 w-4 text-muted-foreground" />
-                <span className="font-medium">{formatCurrency(prospect.importe_previsto)}</span>
-              </div>
-            )}
-
-            {prospect.fecha_entrega_deseada && (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Calendar className="h-4 w-4" />
-                <span>Entrega: {formatDate(prospect.fecha_entrega_deseada)}</span>
-              </div>
-            )}
-          </div>
-        )}
-
-        {prospect.observaciones && (
-          <div className="text-sm pt-2 border-t">
-            <p className="font-medium mb-1">Observaciones:</p>
-            <p className="text-muted-foreground">{prospect.observaciones}</p>
-          </div>
-        )}
+          {prospect.observaciones && (
+            <div className="text-sm pt-2 border-t">
+              <p className="font-medium mb-1">Observaciones:</p>
+              <p className="text-muted-foreground">{prospect.observaciones}</p>
+            </div>
+          )}
+        </div>
       </CardContent>
     </Card>
   );
