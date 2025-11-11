@@ -1,16 +1,27 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useNavigate } from "react-router-dom";
 import { 
-  Mail, 
   Phone, 
   Edit, 
   Calendar, 
   Gem, 
   Bell,
   Loader2,
-  Eye
+  Eye,
+  MoreVertical,
+  ShoppingBag,
+  AlertCircle,
+  DollarSign,
 } from "lucide-react";
 import type { Client } from "@/pages/CRM";
 
@@ -23,6 +34,13 @@ interface ClientListProps {
   onAddReminder: (client: Client) => void;
   onRefresh: () => void;
 }
+
+const formatCurrency = (amount: number): string => {
+  return new Intl.NumberFormat('es-MX', {
+    style: 'currency',
+    currency: 'MXN',
+  }).format(amount);
+};
 
 const ClientList = ({
   clients,
@@ -57,94 +75,122 @@ const ClientList = ({
       {clients.map((client) => (
         <Card key={client.id} className="border-border hover:shadow-md transition-shadow">
           <CardContent className="pt-6">
-            <div className="flex items-start justify-between flex-col lg:flex-row gap-4">
-              <div className="flex-1">
+            <div className="flex items-start justify-between gap-4">
+              {/* Información del Cliente */}
+              <div className="flex-1 min-w-0">
+                {/* Nombre y Badge INE */}
                 <div className="flex items-center gap-3 mb-3">
                   <h3 
-                    className="text-xl font-semibold text-foreground hover:text-primary cursor-pointer transition-colors"
+                    className="text-xl font-semibold text-foreground hover:text-primary cursor-pointer transition-colors truncate"
                     onClick={() => navigate(`/crm/${client.id}`)}
                   >
                     {client.nombre} {client.apellido}
                   </h3>
                   {client.documento_id_url && (
-                    <Badge variant="secondary">INE registrada</Badge>
+                    <Badge variant="secondary" className="shrink-0">INE registrada</Badge>
                   )}
                 </div>
 
-                <div className="space-y-2">
+                {/* Información de Contacto */}
+                <div className="space-y-2 mb-4">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Mail className="h-4 w-4" />
-                    <span>{client.email}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Phone className="h-4 w-4" />
-                    <span>{client.telefono_principal}</span>
+                    <Phone className="h-4 w-4 shrink-0" />
+                    <span className="truncate">{client.telefono_principal}</span>
                     {client.telefono_adicional && (
                       <>
                         <span className="mx-2">•</span>
-                        <span>{client.telefono_adicional}</span>
+                        <span className="truncate">{client.telefono_adicional}</span>
                       </>
                     )}
                   </div>
-                  {client.fuente_contacto && (
-                    <div className="text-sm text-muted-foreground">
-                      <span className="font-medium">Fuente:</span> {client.fuente_contacto}
-                    </div>
+                </div>
+
+                {/* Métricas de Negocio */}
+                <div className="flex flex-wrap gap-2">
+                  {/* Total de Pedidos */}
+                  <Badge variant="outline" className="flex items-center gap-1.5">
+                    <ShoppingBag className="h-3 w-3" />
+                    <span className="text-xs">
+                      {client.total_orders || 0} {client.total_orders === 1 ? 'pedido' : 'pedidos'}
+                    </span>
+                  </Badge>
+
+                  {/* Órdenes Activas */}
+                  {client.active_orders && client.active_orders > 0 && (
+                    <Badge variant="default" className="flex items-center gap-1.5 bg-blue-500 hover:bg-blue-600">
+                      <AlertCircle className="h-3 w-3" />
+                      <span className="text-xs">
+                        {client.active_orders} {client.active_orders === 1 ? 'orden activa' : 'órdenes activas'}
+                      </span>
+                    </Badge>
+                  )}
+
+                  {/* Deuda */}
+                  {client.total_debt && client.total_debt > 0 && (
+                    <Badge variant="destructive" className="flex items-center gap-1.5">
+                      <DollarSign className="h-3 w-3" />
+                      <span className="text-xs">
+                        Debe {formatCurrency(client.total_debt)}
+                      </span>
+                    </Badge>
+                  )}
+
+                  {/* Cliente al corriente */}
+                  {(!client.total_debt || client.total_debt === 0) && client.total_orders && client.total_orders > 0 && (
+                    <Badge variant="outline" className="flex items-center gap-1.5 text-green-600 border-green-600">
+                      <DollarSign className="h-3 w-3" />
+                      <span className="text-xs">Al corriente</span>
+                    </Badge>
                   )}
                 </div>
               </div>
 
-              <div className="flex flex-col gap-3 w-full lg:w-auto lg:min-w-[280px]">
-                <div className="grid grid-cols-3 gap-3">
-                  {/* Fila 1 */}
-                  <Button
-                    variant="default"
-                    size="sm"
-                    onClick={() => navigate(`/crm/${client.id}`)}
-                    className="w-full"
-                  >
-                    <Eye className="h-4 w-4 mr-1" />
-                    Ver Detalle
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onEdit(client)}
-                    className="w-full"
-                  >
-                    <Edit className="h-4 w-4 mr-1" />
-                    Editar
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onAddAppointment(client)}
-                    className="w-full"
-                  >
-                    <Calendar className="h-4 w-4 mr-1" />
-                    Cita
-                  </Button>
-                  
-                  {/* Fila 2 */}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onAddProspect(client)}
-                    className="w-full"
-                  >
-                    <Gem className="h-4 w-4 mr-1" />
-                    Prospecto
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onAddReminder(client)}
-                    className="w-full"
-                  >
-                    <Bell className="h-4 w-4 mr-1" />
-                    Recordatorio
-                  </Button>
-                </div>
+              {/* Botones de Acción */}
+              <div className="flex items-center gap-2 shrink-0">
+                {/* Botón Ver Detalle (prominente) */}
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => navigate(`/crm/${client.id}`)}
+                >
+                  <Eye className="h-4 w-4 mr-2" />
+                  Ver Detalle
+                </Button>
+
+                {/* Dropdown Menu para más acciones */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    
+                    <DropdownMenuItem onClick={() => onEdit(client)}>
+                      <Edit className="h-4 w-4 mr-2" />
+                      Editar Cliente
+                    </DropdownMenuItem>
+                    
+                    <DropdownMenuSeparator />
+                    
+                    <DropdownMenuItem onClick={() => onAddAppointment(client)}>
+                      <Calendar className="h-4 w-4 mr-2" />
+                      Agendar Cita
+                    </DropdownMenuItem>
+                    
+                    <DropdownMenuItem onClick={() => onAddProspect(client)}>
+                      <Gem className="h-4 w-4 mr-2" />
+                      Añadir Prospecto
+                    </DropdownMenuItem>
+                    
+                    <DropdownMenuItem onClick={() => onAddReminder(client)}>
+                      <Bell className="h-4 w-4 mr-2" />
+                      Crear Recordatorio
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
           </CardContent>

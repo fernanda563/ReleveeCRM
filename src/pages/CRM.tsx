@@ -29,6 +29,10 @@ export interface Client {
   fuente_contacto?: string;
   documento_id_url?: string;
   created_at: string;
+  // Métricas de negocio
+  total_orders?: number;
+  active_orders?: number;
+  total_debt?: number;
 }
 
 const CRM = () => {
@@ -64,18 +68,62 @@ const CRM = () => {
 
   const fetchClients = async () => {
     setLoading(true);
-    const { data, error } = await supabase
+    
+    // Primero obtenemos todos los clientes
+    const { data: clientsData, error: clientsError } = await supabase
       .from("clients")
       .select("*")
       .order("created_at", { ascending: false });
 
-    if (error) {
+    if (clientsError) {
       toast.error("Error al cargar clientes");
-      console.error(error);
-    } else {
-      setClients(data || []);
-      setFilteredClients(data || []);
+      console.error(clientsError);
+      setLoading(false);
+      return;
     }
+
+    // Luego obtenemos los datos agregados de órdenes para cada cliente
+    const clientsWithStats = await Promise.all(
+      (clientsData || []).map(async (client) => {
+        // Obtener todas las órdenes del cliente
+        const { data: orders, error: ordersError } = await supabase
+          .from("orders")
+          .select("id, precio_venta, importe_anticipo, estatus_pago")
+          .eq("client_id", client.id);
+
+        if (ordersError) {
+          console.error("Error al cargar órdenes del cliente:", ordersError);
+          return {
+            ...client,
+            total_orders: 0,
+            active_orders: 0,
+            total_debt: 0,
+          };
+        }
+
+        // Calcular estadísticas
+        const totalOrders = orders?.length || 0;
+        const activeOrders = orders?.filter(
+          (order) => order.estatus_pago !== "liquidado"
+        ).length || 0;
+        const totalDebt = orders
+          ?.filter((order) => order.estatus_pago !== "liquidado")
+          .reduce((sum, order) => {
+            const debt = Number(order.precio_venta) - Number(order.importe_anticipo);
+            return sum + debt;
+          }, 0) || 0;
+
+        return {
+          ...client,
+          total_orders: totalOrders,
+          active_orders: activeOrders,
+          total_debt: totalDebt,
+        };
+      })
+    );
+
+    setClients(clientsWithStats);
+    setFilteredClients(clientsWithStats);
     setLoading(false);
   };
 
