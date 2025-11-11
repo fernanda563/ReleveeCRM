@@ -43,13 +43,17 @@ const ProspectDialog = ({
   const [loading, setLoading] = useState(false);
   const [clients, setClients] = useState<Client[]>([]);
   const [selectedClientId, setSelectedClientId] = useState("");
-  const [tipoAnillo, setTipoAnillo] = useState("");
+  const [tipoAccesorio, setTipoAccesorio] = useState("");
+  const [subtipoAccesorio, setSubtipoAccesorio] = useState("");
   const [fechaEntrega, setFechaEntrega] = useState<Date>();
   const [importePrevisto, setImportePrevisto] = useState("");
+  const [tipoMetal, setTipoMetal] = useState<string>("");
   const [colorOro, setColorOro] = useState<string>("");
   const [purezaOro, setPurezaOro] = useState<string>("");
+  const [incluyePiedra, setIncluyePiedra] = useState<string>("");
   const [tipoPiedra, setTipoPiedra] = useState<string>("");
   const [observaciones, setObservaciones] = useState("");
+  const [largoAprox, setLargoAprox] = useState("");
 
   useEffect(() => {
     if (open) {
@@ -60,13 +64,17 @@ const ProspectDialog = ({
         setSelectedClientId("");
       }
       // Reset form
-      setTipoAnillo("");
+      setTipoAccesorio("");
+      setSubtipoAccesorio("");
       setFechaEntrega(undefined);
       setImportePrevisto("");
+      setTipoMetal("");
       setColorOro("");
       setPurezaOro("");
+      setIncluyePiedra("");
       setTipoPiedra("");
       setObservaciones("");
+      setLargoAprox("");
     }
   }, [open, client]);
 
@@ -92,7 +100,8 @@ const ProspectDialog = ({
       const { error } = await supabase.from("prospects").insert([
         {
           client_id: selectedClientId,
-          tipo_anillo: tipoAnillo || null,
+          tipo_accesorio: tipoAccesorio || null,
+          subtipo_accesorio: subtipoAccesorio || null,
           fecha_entrega_deseada: fechaEntrega?.toISOString().split('T')[0] || null,
           importe_previsto: importePrevisto ? parseFloat(importePrevisto) : null,
           color_oro: colorOro || null,
@@ -146,14 +155,32 @@ const ProspectDialog = ({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="tipo_anillo">Tipo de Anillo</Label>
-              <Input
-                id="tipo_anillo"
-                value={tipoAnillo}
-                onChange={(e) => setTipoAnillo(e.target.value)}
-                placeholder="Ej: Compromiso, Matrimonio..."
+              <Label htmlFor="tipo_accesorio">Tipo de Accesorio *</Label>
+              <Select
+                value={tipoAccesorio}
+                onValueChange={(value) => {
+                  setTipoAccesorio(value);
+                  setSubtipoAccesorio("");
+                  setTipoMetal("");
+                  setColorOro("");
+                  setPurezaOro("");
+                  setIncluyePiedra("");
+                  setTipoPiedra("");
+                  setLargoAprox("");
+                }}
                 disabled={loading}
-              />
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="anillo">Anillo</SelectItem>
+                  <SelectItem value="collar">Collar</SelectItem>
+                  <SelectItem value="pulsera">Pulsera</SelectItem>
+                  <SelectItem value="arete">Arete</SelectItem>
+                  <SelectItem value="otro">Otro</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
@@ -186,6 +213,57 @@ const ProspectDialog = ({
             </div>
           </div>
 
+          {/* Subtipo - Condicional según tipo de accesorio */}
+          {tipoAccesorio && tipoAccesorio !== "otro" && (
+            <div className="space-y-2">
+              <Label>Subtipo / Estilo</Label>
+              <Select
+                value={subtipoAccesorio}
+                onValueChange={setSubtipoAccesorio}
+                disabled={loading}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar" />
+                </SelectTrigger>
+                <SelectContent>
+                  {tipoAccesorio === "anillo" && (
+                    <>
+                      <SelectItem value="compromiso">Compromiso</SelectItem>
+                      <SelectItem value="matrimonio">Matrimonio</SelectItem>
+                      <SelectItem value="aniversario">Aniversario</SelectItem>
+                      <SelectItem value="casual">Casual</SelectItem>
+                      <SelectItem value="otro">Otro</SelectItem>
+                    </>
+                  )}
+                  {tipoAccesorio === "collar" && (
+                    <>
+                      <SelectItem value="cadena">Cadena</SelectItem>
+                      <SelectItem value="dije">Dije</SelectItem>
+                      <SelectItem value="collar_completo">Collar completo</SelectItem>
+                      <SelectItem value="gargantilla">Gargantilla</SelectItem>
+                    </>
+                  )}
+                  {tipoAccesorio === "pulsera" && (
+                    <>
+                      <SelectItem value="cadena">Cadena</SelectItem>
+                      <SelectItem value="brazalete">Brazalete</SelectItem>
+                      <SelectItem value="esclava">Esclava</SelectItem>
+                      <SelectItem value="charm">Charm</SelectItem>
+                    </>
+                  )}
+                  {tipoAccesorio === "arete" && (
+                    <>
+                      <SelectItem value="arracada">Arracada</SelectItem>
+                      <SelectItem value="boton">Botón</SelectItem>
+                      <SelectItem value="colgante">Colgante</SelectItem>
+                      <SelectItem value="argolla">Argolla</SelectItem>
+                    </>
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
           <div className="space-y-2">
             <Label htmlFor="importe">Importe de Inversión Previsto</Label>
             <Input
@@ -200,43 +278,115 @@ const ProspectDialog = ({
             />
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
+          {/* Campos de Metal */}
+          {tipoAccesorio && (
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label>Tipo de Metal</Label>
+                <Select
+                  value={tipoMetal}
+                  onValueChange={(value) => {
+                    setTipoMetal(value);
+                    if (value !== "oro") {
+                      setColorOro("");
+                    }
+                  }}
+                  disabled={loading}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="oro">Oro</SelectItem>
+                    <SelectItem value="plata">Plata</SelectItem>
+                    <SelectItem value="platino">Platino</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {tipoMetal === "oro" && (
+                <>
+                  <div className="space-y-2">
+                    <Label>Color del Oro</Label>
+                    <Select
+                      value={colorOro}
+                      onValueChange={setColorOro}
+                      disabled={loading}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="amarillo">Amarillo</SelectItem>
+                        <SelectItem value="blanco">Blanco</SelectItem>
+                        <SelectItem value="rosado">Rosado</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Pureza del Oro</Label>
+                    <Select
+                      value={purezaOro}
+                      onValueChange={setPurezaOro}
+                      disabled={loading}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="10k">10k</SelectItem>
+                        <SelectItem value="14k">14k</SelectItem>
+                        <SelectItem value="18k">18k</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* Largo Aproximado - Solo para collar y pulsera */}
+          {(tipoAccesorio === "collar" || tipoAccesorio === "pulsera") && (
             <div className="space-y-2">
-              <Label>Color del Oro</Label>
+              <Label htmlFor="largo">Largo Aproximado</Label>
+              <Input
+                id="largo"
+                value={largoAprox}
+                onChange={(e) => setLargoAprox(e.target.value)}
+                placeholder="Ej: 45cm, 18 pulgadas..."
+                disabled={loading}
+              />
+            </div>
+          )}
+
+          {/* Incluye Piedra */}
+          {tipoAccesorio && (
+            <div className="space-y-2">
+              <Label>¿Incluye Piedra?</Label>
               <Select
-                value={colorOro}
-                onValueChange={setColorOro}
+                value={incluyePiedra}
+                onValueChange={(value) => {
+                  setIncluyePiedra(value);
+                  if (value === "no") {
+                    setTipoPiedra("");
+                  }
+                }}
                 disabled={loading}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Seleccionar" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="amarillo">Amarillo</SelectItem>
-                  <SelectItem value="blanco">Blanco</SelectItem>
-                  <SelectItem value="rosado">Rosado</SelectItem>
+                  <SelectItem value="si">Sí</SelectItem>
+                  <SelectItem value="no">No</SelectItem>
                 </SelectContent>
               </Select>
             </div>
+          )}
 
-            <div className="space-y-2">
-              <Label>Pureza del Oro</Label>
-              <Select
-                value={purezaOro}
-                onValueChange={setPurezaOro}
-                disabled={loading}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="10k">10k</SelectItem>
-                  <SelectItem value="14k">14k</SelectItem>
-                  <SelectItem value="18k">18k</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
+          {/* Tipo de Piedra - Solo si incluye piedra */}
+          {incluyePiedra === "si" && (
             <div className="space-y-2">
               <Label>Tipo de Piedra</Label>
               <Select
@@ -253,7 +403,7 @@ const ProspectDialog = ({
                 </SelectContent>
               </Select>
             </div>
-          </div>
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="observaciones">Observaciones</Label>

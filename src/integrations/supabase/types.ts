@@ -250,7 +250,8 @@ export type Database = {
           importe_previsto: number | null
           observaciones: string | null
           pureza_oro: string | null
-          tipo_anillo: string | null
+          subtipo_accesorio: string | null
+          tipo_accesorio: string | null
           tipo_piedra: string | null
           updated_at: string
         }
@@ -264,7 +265,8 @@ export type Database = {
           importe_previsto?: number | null
           observaciones?: string | null
           pureza_oro?: string | null
-          tipo_anillo?: string | null
+          subtipo_accesorio?: string | null
+          tipo_accesorio?: string | null
           tipo_piedra?: string | null
           updated_at?: string
         }
@@ -278,7 +280,8 @@ export type Database = {
           importe_previsto?: number | null
           observaciones?: string | null
           pureza_oro?: string | null
-          tipo_anillo?: string | null
+          subtipo_accesorio?: string | null
+          tipo_accesorio?: string | null
           tipo_piedra?: string | null
           updated_at?: string
         }

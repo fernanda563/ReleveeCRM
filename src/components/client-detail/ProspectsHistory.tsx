@@ -7,7 +7,8 @@ import { toast } from "sonner";
 
 interface Prospect {
   id: string;
-  tipo_anillo: string | null;
+  tipo_accesorio: string | null;
+  subtipo_accesorio: string | null;
   tipo_piedra: string | null;
   color_oro: string | null;
   pureza_oro: string | null;
@@ -103,8 +104,9 @@ export const ProspectsHistory = ({ clientId }: ProspectsHistoryProps) => {
         <Card key={prospect.id}>
           <CardHeader>
             <div className="flex items-start justify-between">
-              <CardTitle className="text-lg">
-                {prospect.tipo_anillo || "Tipo no especificado"}
+              <CardTitle className="text-lg capitalize">
+                {prospect.tipo_accesorio || "Tipo no especificado"}
+                {prospect.subtipo_accesorio && ` - ${prospect.subtipo_accesorio}`}
               </CardTitle>
               <Badge className={getStatusColor(prospect.estado)}>
                 {prospect.estado}

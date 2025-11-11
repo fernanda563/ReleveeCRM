@@ -72,7 +72,7 @@ export const ClientTimeline = ({ clientId }: ClientTimelineProps) => {
           id: pros.id,
           type: "prospect",
           title: "Prospecto registrado",
-          description: `${pros.tipo_anillo || "N/A"} - ${pros.tipo_piedra || "N/A"}`,
+          description: `${pros.tipo_accesorio || "N/A"}${pros.subtipo_accesorio ? ` - ${pros.subtipo_accesorio}` : ""} - ${pros.tipo_piedra || "Sin piedra"}`,
           date: pros.created_at,
           status: pros.estado,
         });
