@@ -405,6 +405,7 @@ const OrderDialog = ({ open, onOpenChange, order, onSuccess, onOpenClientDialog 
       "Esta acción:\n" +
       "• Eliminará la orden permanentemente\n" +
       "• Eliminará todos los comprobantes de pago asociados\n" +
+      "• Se registrará en el log de auditoría\n" +
       "• No se puede deshacer\n\n" +
       "¿Deseas continuar?"
     );
@@ -414,7 +415,39 @@ const OrderDialog = ({ open, onOpenChange, order, onSuccess, onOpenClientDialog 
     setLoading(true);
 
     try {
-      // 1. Eliminar archivos de comprobantes de pago del Storage
+      // 0. Get current user for audit log
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error("Usuario no autenticado");
+      }
+
+      // 1. Create audit log entry BEFORE deleting
+      const clientName = order.clients 
+        ? `${order.clients.nombre} ${order.clients.apellido}`
+        : "Cliente desconocido";
+
+      const { error: auditError } = await supabase
+        .from("order_deletion_logs")
+        .insert({
+          order_id: order.id,
+          order_custom_id: order.custom_id || null,
+          deleted_by: user.id,
+          order_data: {
+            ...order,
+            // Include client data in snapshot
+            client_info: order.clients
+          },
+          client_name: clientName
+        });
+
+      if (auditError) {
+        console.error("Error al crear log de auditoría:", auditError);
+        toast.error("Error al registrar auditoría. Eliminación cancelada.");
+        setLoading(false);
+        return;
+      }
+
+      // 2. Eliminar archivos de comprobantes de pago del Storage
       if (order.comprobantes_pago && Array.isArray(order.comprobantes_pago)) {
         for (const url of order.comprobantes_pago) {
           try {
@@ -438,7 +471,7 @@ const OrderDialog = ({ open, onOpenChange, order, onSuccess, onOpenClientDialog 
         }
       }
 
-      // 2. Intentar eliminar carpeta completa del order_id en storage
+      // 3. Intentar eliminar carpeta completa del order_id en storage
       try {
         const { data: files } = await supabase.storage
           .from('payment-receipts')
@@ -454,7 +487,7 @@ const OrderDialog = ({ open, onOpenChange, order, onSuccess, onOpenClientDialog 
         console.error("Error en limpieza de carpeta:", cleanupError);
       }
 
-      // 3. Eliminar la orden de la base de datos
+      // 4. Eliminar la orden de la base de datos
       const { error: deleteError } = await supabase
         .from("orders")
         .delete()
@@ -462,7 +495,7 @@ const OrderDialog = ({ open, onOpenChange, order, onSuccess, onOpenClientDialog 
 
       if (deleteError) throw deleteError;
 
-      toast.success("Orden eliminada exitosamente");
+      toast.success("Orden eliminada y registrada en auditoría");
       onSuccess();
       onOpenChange(false);
     } catch (error: any) {

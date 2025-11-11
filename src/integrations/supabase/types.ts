@@ -127,6 +127,39 @@ export type Database = {
         }
         Relationships: []
       }
+      order_deletion_logs: {
+        Row: {
+          client_name: string | null
+          created_at: string
+          deleted_at: string
+          deleted_by: string
+          id: string
+          order_custom_id: string | null
+          order_data: Json
+          order_id: string
+        }
+        Insert: {
+          client_name?: string | null
+          created_at?: string
+          deleted_at?: string
+          deleted_by: string
+          id?: string
+          order_custom_id?: string | null
+          order_data: Json
+          order_id: string
+        }
+        Update: {
+          client_name?: string | null
+          created_at?: string
+          deleted_at?: string
+          deleted_by?: string
+          id?: string
+          order_custom_id?: string | null
+          order_data?: Json
+          order_id?: string
+        }
+        Relationships: []
+      }
       orders: {
         Row: {
           client_id: string
