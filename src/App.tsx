@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import Auth from "./pages/Auth";
 import CRM from "./pages/CRM";
+import ClientDetail from "./pages/ClientDetail";
 import Orders from "./pages/Orders";
 import Production from "./pages/Production";
 import NotFound from "./pages/NotFound";
@@ -25,6 +26,7 @@ const App = () => (
         <Route element={<DashboardLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/crm" element={<CRM />} />
+          <Route path="/crm/:clientId" element={<ClientDetail />} />
           <Route path="/orders" element={<Orders />} />
           <Route path="/production" element={<Production />} />
         </Route>

@@ -1,6 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useNavigate } from "react-router-dom";
 import { 
   Mail, 
   Phone, 
@@ -8,7 +9,8 @@ import {
   Calendar, 
   Gem, 
   Bell,
-  Loader2
+  Loader2,
+  Eye
 } from "lucide-react";
 import type { Client } from "@/pages/CRM";
 
@@ -30,6 +32,8 @@ const ClientList = ({
   onAddProspect,
   onAddReminder,
 }: ClientListProps) => {
+  const navigate = useNavigate();
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -56,7 +60,10 @@ const ClientList = ({
             <div className="flex items-start justify-between">
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-3">
-                  <h3 className="text-xl font-semibold text-foreground">
+                  <h3 
+                    className="text-xl font-semibold text-foreground hover:text-primary cursor-pointer transition-colors"
+                    onClick={() => navigate(`/crm/${client.id}`)}
+                  >
                     {client.nombre} {client.apellido}
                   </h3>
                   {client.documento_id_url && (
@@ -88,6 +95,14 @@ const ClientList = ({
               </div>
 
               <div className="flex flex-wrap gap-2 ml-4">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate(`/crm/${client.id}`)}
+                >
+                  <Eye className="h-4 w-4 mr-1" />
+                  Ver Detalle
+                </Button>
                 <Button
                   variant="outline"
                   size="sm"
