@@ -19,9 +19,17 @@ import {
 } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, Calendar as CalendarIcon } from "lucide-react";
+import { Loader2, Calendar as CalendarIcon, Check, ChevronsUpDown } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -43,6 +51,7 @@ const ProspectDialog = ({
   const [loading, setLoading] = useState(false);
   const [clients, setClients] = useState<Client[]>([]);
   const [selectedClientId, setSelectedClientId] = useState("");
+  const [clientComboOpen, setClientComboOpen] = useState(false);
   const [tipoAccesorio, setTipoAccesorio] = useState("");
   const [subtipoAccesorio, setSubtipoAccesorio] = useState("");
   const [fechaEntrega, setFechaEntrega] = useState<Date>();
@@ -164,22 +173,50 @@ const ProspectDialog = ({
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="client">Cliente *</Label>
-            <Select
-              value={selectedClientId}
-              onValueChange={setSelectedClientId}
-              disabled={loading || !!client}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Selecciona un cliente" />
-              </SelectTrigger>
-              <SelectContent>
-                {clients.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>
-                    {c.nombre} {c.apellido}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Popover open={clientComboOpen} onOpenChange={setClientComboOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={clientComboOpen}
+                  className="w-full justify-between"
+                  disabled={loading || !!client}
+                >
+                  {selectedClientId
+                    ? clients.find((c) => c.id === selectedClientId)?.nombre + " " + clients.find((c) => c.id === selectedClientId)?.apellido
+                    : "Selecciona un cliente"}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-full p-0 bg-popover z-50" align="start">
+                <Command>
+                  <CommandInput placeholder="Buscar cliente..." />
+                  <CommandList>
+                    <CommandEmpty>No se encontró ningún cliente.</CommandEmpty>
+                    <CommandGroup>
+                      {clients.map((c) => (
+                        <CommandItem
+                          key={c.id}
+                          value={`${c.nombre} ${c.apellido}`}
+                          onSelect={() => {
+                            setSelectedClientId(c.id);
+                            setClientComboOpen(false);
+                          }}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              selectedClientId === c.id ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          {c.nombre} {c.apellido}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
           </div>
 
           {selectedClientId && (
