@@ -105,18 +105,6 @@ const ClientDialog = ({ open, onOpenChange, client, onSuccess }: ClientDialogPro
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
   const { isAdmin, loading: roleLoading } = useUserRole();
 
-  // Debug: mostrar información del rol
-  useEffect(() => {
-    if (open && client) {
-      console.log("🔍 Debug - Botón Eliminar:", {
-        hasClient: !!client,
-        isAdmin: isAdmin(),
-        roleLoading,
-        shouldShowButton: !!client && isAdmin(),
-      });
-    }
-  }, [open, client, isAdmin, roleLoading]);
-
   const form = useForm<ClientFormValues>({
     resolver: zodResolver(clientFormSchema),
     mode: "onChange",
