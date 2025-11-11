@@ -14,7 +14,190 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      appointments: {
+        Row: {
+          client_id: string
+          created_at: string
+          estado: string
+          fecha: string
+          id: string
+          notas: string | null
+          tipo: string
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          estado?: string
+          fecha: string
+          id?: string
+          notas?: string | null
+          tipo: string
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          estado?: string
+          fecha?: string
+          id?: string
+          notas?: string | null
+          tipo?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clients: {
+        Row: {
+          apellido: string
+          created_at: string
+          documento_id_url: string | null
+          email: string
+          fuente_contacto: string | null
+          id: string
+          nombre: string
+          telefono_adicional: string | null
+          telefono_principal: string
+          updated_at: string
+        }
+        Insert: {
+          apellido: string
+          created_at?: string
+          documento_id_url?: string | null
+          email: string
+          fuente_contacto?: string | null
+          id?: string
+          nombre: string
+          telefono_adicional?: string | null
+          telefono_principal: string
+          updated_at?: string
+        }
+        Update: {
+          apellido?: string
+          created_at?: string
+          documento_id_url?: string | null
+          email?: string
+          fuente_contacto?: string | null
+          id?: string
+          nombre?: string
+          telefono_adicional?: string | null
+          telefono_principal?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      prospects: {
+        Row: {
+          client_id: string
+          color_oro: string | null
+          created_at: string
+          estado: string
+          fecha_entrega_deseada: string | null
+          id: string
+          importe_previsto: number | null
+          observaciones: string | null
+          pureza_oro: string | null
+          tipo_anillo: string | null
+          tipo_piedra: string | null
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          color_oro?: string | null
+          created_at?: string
+          estado?: string
+          fecha_entrega_deseada?: string | null
+          id?: string
+          importe_previsto?: number | null
+          observaciones?: string | null
+          pureza_oro?: string | null
+          tipo_anillo?: string | null
+          tipo_piedra?: string | null
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          color_oro?: string | null
+          created_at?: string
+          estado?: string
+          fecha_entrega_deseada?: string | null
+          id?: string
+          importe_previsto?: number | null
+          observaciones?: string | null
+          pureza_oro?: string | null
+          tipo_anillo?: string | null
+          tipo_piedra?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prospects_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reminders: {
+        Row: {
+          client_id: string
+          completado: boolean
+          created_at: string
+          descripcion: string | null
+          fecha_recordatorio: string
+          id: string
+          prospect_id: string | null
+          titulo: string
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          completado?: boolean
+          created_at?: string
+          descripcion?: string | null
+          fecha_recordatorio: string
+          id?: string
+          prospect_id?: string | null
+          titulo: string
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          completado?: boolean
+          created_at?: string
+          descripcion?: string | null
+          fecha_recordatorio?: string
+          id?: string
+          prospect_id?: string | null
+          titulo?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reminders_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reminders_prospect_id_fkey"
+            columns: ["prospect_id"]
+            isOneToOne: false
+            referencedRelation: "prospects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
