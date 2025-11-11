@@ -6,6 +6,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -25,11 +35,12 @@ import {
 } from "@/components/ui/form";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, Upload } from "lucide-react";
+import { Loader2, Upload, Trash2 } from "lucide-react";
 import type { Client } from "@/pages/CRM";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useUserRole } from "@/hooks/useUserRole";
 
 // Helper function to capitalize first letter of each word
 function capitalizeFirstLetter(str: string): string {
@@ -91,6 +102,8 @@ const ClientDialog = ({ open, onOpenChange, client, onSuccess }: ClientDialogPro
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [ineFile, setIneFile] = useState<File | null>(null);
+  const [showDeleteAlert, setShowDeleteAlert] = useState(false);
+  const { isAdmin } = useUserRole();
 
   const form = useForm<ClientFormValues>({
     resolver: zodResolver(clientFormSchema),
@@ -168,6 +181,30 @@ const ClientDialog = ({ open, onOpenChange, client, onSuccess }: ClientDialogPro
       .getPublicUrl(filePath);
 
     return data.publicUrl;
+  };
+
+  const handleDelete = async () => {
+    if (!client) return;
+
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from("clients")
+        .delete()
+        .eq("id", client.id);
+
+      if (error) throw error;
+
+      toast.success("Cliente eliminado exitosamente. Todas las órdenes, citas, prospectos y recordatorios asociados también fueron eliminados.");
+      onSuccess();
+      onOpenChange(false);
+      setShowDeleteAlert(false);
+    } catch (error: any) {
+      toast.error(error.message || "Error al eliminar cliente");
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const onSubmit = async (values: ClientFormValues) => {
@@ -427,36 +464,93 @@ const ClientDialog = ({ open, onOpenChange, client, onSuccess }: ClientDialogPro
               </p>
             </div>
 
-            <div className="flex justify-end gap-3 pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                disabled={loading}
-              >
-                Cancelar
-              </Button>
-              <Button
-                type="submit"
-                disabled={loading || uploading || !form.formState.isValid}
-                className="bg-accent hover:bg-accent/90 text-accent-foreground"
-              >
-                {loading || uploading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    {uploading ? "Subiendo archivo..." : "Guardando..."}
-                  </>
-                ) : (
-                  <>
-                    <Upload className="mr-2 h-4 w-4" />
-                    {client ? "Actualizar" : "Crear"} Cliente
-                  </>
-                )}
-              </Button>
+            <div className="flex justify-between items-center gap-3 pt-4">
+              {/* Botón de eliminar (solo visible para administradores y cuando se edita un cliente) */}
+              {client && isAdmin() && (
+                <Button
+                  type="button"
+                  variant="destructive"
+                  onClick={() => setShowDeleteAlert(true)}
+                  disabled={loading}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Eliminar Cliente
+                </Button>
+              )}
+              
+              <div className="flex gap-3 ml-auto">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => onOpenChange(false)}
+                  disabled={loading}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={loading || uploading || !form.formState.isValid}
+                  className="bg-accent hover:bg-accent/90 text-accent-foreground"
+                >
+                  {loading || uploading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      {uploading ? "Subiendo archivo..." : "Guardando..."}
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="mr-2 h-4 w-4" />
+                      {client ? "Actualizar" : "Crear"} Cliente
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
           </form>
         </Form>
       </DialogContent>
+
+      {/* Alert Dialog de Confirmación de Eliminación */}
+      <AlertDialog open={showDeleteAlert} onOpenChange={setShowDeleteAlert}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Está seguro de eliminar este cliente?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción no se puede deshacer. Se eliminará permanentemente el cliente{" "}
+              <span className="font-semibold">
+                {client?.nombre} {client?.apellido}
+              </span>{" "}
+              y todos los registros asociados:
+              <ul className="list-disc list-inside mt-2 space-y-1">
+                <li>Todas las órdenes de compra</li>
+                <li>Todas las citas programadas</li>
+                <li>Todos los prospectos</li>
+                <li>Todos los recordatorios</li>
+              </ul>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={loading}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={loading}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Eliminando...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Eliminar Definitivamente
+                </>
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 };
