@@ -4,11 +4,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Search, Plus, DollarSign, Package, TrendingUp } from "lucide-react";
+import { Search, Plus, DollarSign, Package, TrendingUp, Calendar as CalendarIcon, X } from "lucide-react";
 import OrderDialog from "@/components/orders/OrderDialog";
 import OrderList from "@/components/orders/OrderList";
 import { Badge } from "@/components/ui/badge";
 import ClientDialog from "@/components/crm/ClientDialog";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
+import { cn } from "@/lib/utils";
 
 export interface Order {
   id: string;
@@ -51,6 +56,10 @@ const Orders = () => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isOrderDialogOpen, setIsOrderDialogOpen] = useState(false);
   const [isClientDialogOpen, setIsClientDialogOpen] = useState(false);
+  const [fechaDesde, setFechaDesde] = useState<Date | undefined>();
+  const [fechaHasta, setFechaHasta] = useState<Date | undefined>();
+  const [isDateFromOpen, setIsDateFromOpen] = useState(false);
+  const [isDateToOpen, setIsDateToOpen] = useState(false);
 
   // Stats
   const [stats, setStats] = useState({
@@ -65,8 +74,11 @@ const Orders = () => {
   }, []);
 
   useEffect(() => {
+    let filtered = [...orders];
+
+    // Filtrar por término de búsqueda
     if (searchTerm) {
-      const filtered = orders.filter((order) => {
+      filtered = filtered.filter((order) => {
         const clientName = `${order.clients?.nombre} ${order.clients?.apellido}`.toLowerCase();
         const orderNum = order.id.slice(0, 8).toLowerCase();
         return (
@@ -74,11 +86,29 @@ const Orders = () => {
           orderNum.includes(searchTerm.toLowerCase())
         );
       });
-      setFilteredOrders(filtered);
-    } else {
-      setFilteredOrders(orders);
     }
-  }, [searchTerm, orders]);
+
+    // Filtrar por rango de fechas de entrega
+    if (fechaDesde || fechaHasta) {
+      filtered = filtered.filter((order) => {
+        if (!order.fecha_entrega_esperada) return false;
+        
+        const fechaEntrega = new Date(order.fecha_entrega_esperada);
+        
+        if (fechaDesde && fechaHasta) {
+          return fechaEntrega >= fechaDesde && fechaEntrega <= fechaHasta;
+        } else if (fechaDesde) {
+          return fechaEntrega >= fechaDesde;
+        } else if (fechaHasta) {
+          return fechaEntrega <= fechaHasta;
+        }
+        
+        return true;
+      });
+    }
+
+    setFilteredOrders(filtered);
+  }, [searchTerm, orders, fechaDesde, fechaHasta]);
 
   useEffect(() => {
     calculateStats();
@@ -214,23 +244,113 @@ const Orders = () => {
         {/* Search and Actions */}
         <Card className="mb-6">
           <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar por cliente o número de orden..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
+            <div className="space-y-4">
+              <div className="flex items-center gap-4">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Buscar por cliente o número de orden..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+                <Button
+                  onClick={() => handleOrderAction()}
+                  className="bg-accent hover:bg-accent/90 text-accent-foreground"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Nueva Orden
+                </Button>
               </div>
-              <Button
-                onClick={() => handleOrderAction()}
-                className="bg-accent hover:bg-accent/90 text-accent-foreground"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Nueva Orden
-              </Button>
+
+              {/* Date Range Filter */}
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2 flex-1">
+                  <span className="text-sm text-muted-foreground whitespace-nowrap">
+                    Fecha de entrega:
+                  </span>
+                  
+                  {/* Fecha Desde */}
+                  <Popover open={isDateFromOpen} onOpenChange={setIsDateFromOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "justify-start text-left font-normal",
+                          !fechaDesde && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {fechaDesde ? format(fechaDesde, "PPP", { locale: es }) : "Desde"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={fechaDesde}
+                        onSelect={(date) => {
+                          setFechaDesde(date);
+                          setIsDateFromOpen(false);
+                        }}
+                        initialFocus
+                        className="p-3 pointer-events-auto"
+                      />
+                    </PopoverContent>
+                  </Popover>
+
+                  {/* Fecha Hasta */}
+                  <Popover open={isDateToOpen} onOpenChange={setIsDateToOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "justify-start text-left font-normal",
+                          !fechaHasta && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {fechaHasta ? format(fechaHasta, "PPP", { locale: es }) : "Hasta"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={fechaHasta}
+                        onSelect={(date) => {
+                          setFechaHasta(date);
+                          setIsDateToOpen(false);
+                        }}
+                        disabled={(date) => fechaDesde ? date < fechaDesde : false}
+                        initialFocus
+                        className="p-3 pointer-events-auto"
+                      />
+                    </PopoverContent>
+                  </Popover>
+
+                  {/* Botón para limpiar filtros de fecha */}
+                  {(fechaDesde || fechaHasta) && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setFechaDesde(undefined);
+                        setFechaHasta(undefined);
+                      }}
+                      className="h-9 px-2"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+
+                {/* Active Filters Badge */}
+                {(fechaDesde || fechaHasta) && (
+                  <Badge variant="secondary" className="whitespace-nowrap">
+                    {filteredOrders.length} {filteredOrders.length === 1 ? 'resultado' : 'resultados'}
+                  </Badge>
+                )}
+              </div>
             </div>
           </CardContent>
         </Card>
