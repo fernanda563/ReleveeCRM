@@ -170,20 +170,15 @@ export const ProspectDetailDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <div className="flex items-start justify-between gap-4">
-            {/* Lado izquierdo: Título + Botón Editar */}
-            <div className="flex items-center gap-3 flex-1">
-              <DialogTitle className="text-2xl capitalize">
-                {generateProspectTitle(prospect)}
-              </DialogTitle>
-              {!isEditing && (
-                <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
-                  Editar
-                </Button>
-              )}
-            </div>
-            
-            {/* Lado derecho: Badge del status (debajo del X de cerrar) */}
+          <div className="flex items-center gap-3">
+            <DialogTitle className="text-2xl capitalize">
+              {generateProspectTitle(prospect)}
+            </DialogTitle>
+            {!isEditing && (
+              <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
+                Editar
+              </Button>
+            )}
             <Badge className={getStatusColor(isEditing ? estado : prospect.estado)}>
               {isEditing ? estado : prospect.estado}
             </Badge>

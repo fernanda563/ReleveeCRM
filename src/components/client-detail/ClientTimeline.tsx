@@ -205,15 +205,17 @@ export const ClientTimeline = ({ clientId }: ClientTimelineProps) => {
           // Si es proyecto, usar ProspectCard
           if (event.type === "prospect" && event.prospectData) {
             return (
-              <div key={event.id} className="relative">
+              <div key={event.id} className="relative w-full">
                 {index !== events.length - 1 && (
                   <div className="absolute left-0 top-full h-4 w-0.5 bg-border z-10" />
                 )}
-                <ProspectCard
-                  prospect={event.prospectData}
-                  onClick={() => setSelectedProspect(event.prospectData!)}
-                  className="w-full"
-                />
+                <div className="w-full">
+                  <ProspectCard
+                    prospect={event.prospectData}
+                    onClick={() => setSelectedProspect(event.prospectData!)}
+                    className="w-full"
+                  />
+                </div>
               </div>
             );
           }
