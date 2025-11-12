@@ -28,28 +28,51 @@ export function STLViewer({ fileUrl, height = "400px", width = "100%" }: STLView
     const camera = new THREE.PerspectiveCamera(50, widthPx / heightPx, 0.1, 5000);
     camera.position.set(0, 0, 150);
 
-    let renderer: THREE.WebGLRenderer | null = null;
+    // Forzar WebGL1 para mayor compatibilidad en iframes/sandboxes
+    const canvas = document.createElement('canvas');
+    canvas.style.width = '100%';
+    canvas.style.height = '100%';
+
+    const contextAttributes: WebGLContextAttributes = {
+      alpha: true,
+      antialias: true,
+      depth: true,
+      stencil: false,
+      desynchronized: false,
+      failIfMajorPerformanceCaveat: false,
+      powerPreference: 'low-power',
+      preserveDrawingBuffer: false,
+      premultipliedAlpha: true,
+    };
+
+    let gl: WebGLRenderingContext | null = null;
     try {
-      renderer = new THREE.WebGLRenderer({ 
-        antialias: true, 
-        alpha: false,
-        powerPreference: 'high-performance'
-      });
-    } catch (error) {
-      console.error("Error creando WebGLRenderer, probando WebGL1Renderer:", error);
-      try {
-        // @ts-ignore: WebGL1Renderer existe en three
-        renderer = new THREE.WebGL1Renderer({ 
-          antialias: true, 
-          alpha: false 
-        });
-      } catch (error2) {
-        console.error("Error creando WebGL1Renderer:", error2);
-        return;
-      }
+      gl = (canvas.getContext('webgl', contextAttributes) ||
+            canvas.getContext('experimental-webgl', contextAttributes)) as WebGLRenderingContext | null;
+    } catch (e) {
+      console.error('Error solicitando contexto WebGL1:', e);
     }
 
-    if (!renderer) return;
+    if (!gl) {
+      console.error('No fue posible crear un contexto WebGL1');
+      const overlay = document.createElement('div');
+      overlay.className = 'absolute inset-0 flex items-center justify-center p-4 text-center text-sm text-red-600';
+      overlay.textContent = 'No se pudo inicializar WebGL en este entorno. Intenta actualizar tu navegador o habilitar aceleración por hardware.';
+      container.appendChild(overlay);
+      return;
+    }
+
+    let renderer: THREE.WebGLRenderer | null = null;
+    try {
+      renderer = new THREE.WebGLRenderer({ canvas, context: gl, antialias: true, alpha: true });
+    } catch (error) {
+      console.error('Error creando WebGLRenderer con contexto WebGL1:', error);
+      const overlay = document.createElement('div');
+      overlay.className = 'absolute inset-0 flex items-center justify-center p-4 text-center text-sm text-red-600';
+      overlay.textContent = 'No fue posible crear el renderizador 3D en este dispositivo.';
+      container.appendChild(overlay);
+      return;
+    }
 
     renderer.setSize(widthPx, heightPx);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
