@@ -168,6 +168,12 @@ const OrderDialog = ({ open, onOpenChange, order, onSuccess, onOpenClientDialog 
   }, [open, order]);
 
   useEffect(() => {
+    if (open) {
+      fetchSTLFiles();
+    }
+  }, [open]);
+
+  useEffect(() => {
     if (selectedClientId && !order) {
       fetchClientProspects(selectedClientId);
       setSelectedProspectId("");
