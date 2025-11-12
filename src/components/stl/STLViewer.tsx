@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { STLLoader } from "three/examples/jsm/loaders/STLLoader.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { SVGRenderer } from "three/examples/jsm/renderers/SVGRenderer.js";
 
 interface STLViewerProps {
   fileUrl: string;
@@ -11,7 +12,7 @@ interface STLViewerProps {
 
 export function STLViewer({ fileUrl, height = "400px", width = "100%" }: STLViewerProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
+  const rendererRef = useRef<any>(null);
   const frameRef = useRef<number | null>(null);
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
 
@@ -53,30 +54,39 @@ export function STLViewer({ fileUrl, height = "400px", width = "100%" }: STLView
       console.error('Error solicitando contexto WebGL1:', e);
     }
 
+    let renderer: any = null;
+    let isSVG = false;
+
     if (!gl) {
-      console.error('No fue posible crear un contexto WebGL1');
+      console.warn('WebGL1 no disponible, usando SVGRenderer como fallback');
+      const svgRenderer = new SVGRenderer();
+      svgRenderer.setSize(widthPx, heightPx);
+      renderer = svgRenderer;
+      isSVG = true;
+      rendererRef.current = svgRenderer;
+    } else {
+      try {
+        renderer = new THREE.WebGLRenderer({ canvas, context: gl, antialias: true, alpha: true });
+      } catch (error) {
+        console.error('Error creando WebGLRenderer con contexto WebGL1, intentando SVGRenderer:', error);
+        const svgRenderer = new SVGRenderer();
+        svgRenderer.setSize(widthPx, heightPx);
+        renderer = svgRenderer;
+        isSVG = true;
+        rendererRef.current = svgRenderer;
+      }
+    }
+
+    if (!renderer) {
       const overlay = document.createElement('div');
       overlay.className = 'absolute inset-0 flex items-center justify-center p-4 text-center text-sm text-red-600';
-      overlay.textContent = 'No se pudo inicializar WebGL en este entorno. Intenta actualizar tu navegador o habilitar aceleración por hardware.';
+      overlay.textContent = 'No fue posible inicializar el visor 3D.';
       container.appendChild(overlay);
       return;
     }
 
-    let renderer: THREE.WebGLRenderer | null = null;
-    try {
-      renderer = new THREE.WebGLRenderer({ canvas, context: gl, antialias: true, alpha: true });
-    } catch (error) {
-      console.error('Error creando WebGLRenderer con contexto WebGL1:', error);
-      const overlay = document.createElement('div');
-      overlay.className = 'absolute inset-0 flex items-center justify-center p-4 text-center text-sm text-red-600';
-      overlay.textContent = 'No fue posible crear el renderizador 3D en este dispositivo.';
-      container.appendChild(overlay);
-      return;
-    }
-
-    renderer.setSize(widthPx, heightPx);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.shadowMap.enabled = true;
+    if (renderer.setPixelRatio) renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    if (renderer.setSize) renderer.setSize(widthPx, heightPx);
     container.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
@@ -126,11 +136,15 @@ export function STLViewer({ fileUrl, height = "400px", width = "100%" }: STLView
         geometry.computeBoundingBox();
         geometry.center();
 
-        const material = new THREE.MeshStandardMaterial({
-          color: new THREE.Color("#b3b3b3"),
-          metalness: 0.6,
-          roughness: 0.4,
-        });
+        const material = isSVG
+          ? new THREE.MeshBasicMaterial({
+              color: new THREE.Color("#b3b3b3"),
+            })
+          : new THREE.MeshStandardMaterial({
+              color: new THREE.Color("#b3b3b3"),
+              metalness: 0.6,
+              roughness: 0.4,
+            });
         mesh = new THREE.Mesh(geometry, material);
         mesh.castShadow = true;
         mesh.receiveShadow = true;
@@ -192,8 +206,10 @@ export function STLViewer({ fileUrl, height = "400px", width = "100%" }: STLView
         scene.remove(mesh);
       }
       if (renderer) {
-        renderer.dispose();
-        if (container.contains(renderer.domElement)) {
+        if (typeof renderer.dispose === 'function') {
+          renderer.dispose();
+        }
+        if (renderer.domElement && container.contains(renderer.domElement)) {
           container.removeChild(renderer.domElement);
         }
       }
