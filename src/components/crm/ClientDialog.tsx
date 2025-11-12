@@ -109,11 +109,10 @@ const clientFormSchema = z.object({
   
   email: z
     .string()
+    .min(1, "El correo electrónico es obligatorio")
     .email({ message: "Formato de correo electrónico inválido" })
     .max(255, "El correo no puede exceder 255 caracteres")
-    .transform((val) => val.toLowerCase())
-    .optional()
-    .or(z.literal("")),
+    .transform((val) => val.toLowerCase()),
   
   telefono_principal: z
     .string()
