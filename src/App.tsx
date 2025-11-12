@@ -12,6 +12,7 @@ import ProductionDashboard from "./pages/ProductionDashboard";
 import Users from "./pages/Users";
 import AuditLog from "./pages/AuditLog";
 import STLCollection from "./pages/STLCollection";
+import STLViewerFullscreen from "./pages/STLViewerFullscreen";
 import NotFound from "./pages/NotFound";
 import { DashboardLayout } from "./components/DashboardLayout";
 
@@ -21,6 +22,7 @@ const App = () => (
     <Routes>
       <Route path="/" element={<Index />} />
       <Route path="/auth" element={<Auth />} />
+      <Route path="/stl-viewer-fullscreen" element={<STLViewerFullscreen />} />
       <Route element={<DashboardLayout />}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/crm" element={<CRM />} />

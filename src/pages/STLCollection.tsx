@@ -358,9 +358,8 @@ export default function STLCollection() {
               ) : (
                 <STLViewer 
                   fileUrl={viewerUrl} 
-                  height="500px" 
-                  downloadUrl={selectedFile.stl_file_url}
-                  fileName={`${selectedFile.nombre}.stl`}
+                  height="500px"
+                  showOpenInNewWindow={true}
                 />
               )}
               <div className="flex gap-2">

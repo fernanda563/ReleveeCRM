@@ -9,11 +9,10 @@ interface STLViewerProps {
   fileUrl: string;
   height?: string;
   width?: string;
-  downloadUrl?: string;
-  fileName?: string;
+  showOpenInNewWindow?: boolean;
 }
 
-export function STLViewer({ fileUrl, height = "400px", width = "100%", downloadUrl, fileName = "modelo.stl" }: STLViewerProps) {
+export function STLViewer({ fileUrl, height = "400px", width = "100%", showOpenInNewWindow = false }: STLViewerProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const rendererRef = useRef<any>(null);
   const frameRef = useRef<number | null>(null);
@@ -271,23 +270,27 @@ export function STLViewer({ fileUrl, height = "400px", width = "100%", downloadU
     };
   }, [fileUrl]);
 
+  const handleOpenInNewWindow = () => {
+    const viewerUrl = `/stl-viewer-fullscreen?url=${encodeURIComponent(fileUrl)}`;
+    window.open(viewerUrl, '_blank', 'width=1200,height=800');
+  };
+
   return (
     <div ref={containerRef} style={{ height, width }} className="relative rounded-lg overflow-hidden border border-border bg-muted">
       <div className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm px-3 py-1 rounded-md text-xs text-muted-foreground border border-border pointer-events-none">
         Arrastra para rotar • Scroll para zoom
       </div>
       
-      {downloadUrl && (
-        <a 
-          href={downloadUrl} 
-          download={fileName}
+      {showOpenInNewWindow && (
+        <button
+          onClick={handleOpenInNewWindow}
           className="absolute bottom-2 left-2 bg-primary text-primary-foreground hover:bg-primary/90 backdrop-blur-sm px-3 py-2 rounded-md text-xs border border-border flex items-center gap-2 transition-colors z-10"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
           </svg>
-          <span>Descargar STL</span>
-        </a>
+          <span>Abrir en nueva ventana</span>
+        </button>
       )}
       
       {isBasicMode && (
