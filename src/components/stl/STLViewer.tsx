@@ -75,7 +75,7 @@ export function STLViewer({ fileUrl, height = "400px", width = "100%" }: STLView
         geometry.center();
 
         const material = new THREE.MeshStandardMaterial({
-          color: new THREE.Color(getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#a78bfa"),
+          color: new THREE.Color("#b3b3b3"),
           metalness: 0.6,
           roughness: 0.4,
         });
