@@ -15,9 +15,11 @@ export function STLViewer({ fileUrl, height = "400px", width = "100%" }: STLView
   const frameRef = useRef<number | null>(null);
 
   useEffect(() => {
-    const container = containerRef.current!;
+    if (!containerRef.current) return;
+    
+    const container = containerRef.current;
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(getComputedStyle(document.documentElement).getPropertyValue("--muted").trim() || "#f4f4f5");
+    scene.background = new THREE.Color("#f4f4f5");
 
     const widthPx = container.clientWidth || 800;
     const heightPx = container.clientHeight || 400;
@@ -25,12 +27,22 @@ export function STLViewer({ fileUrl, height = "400px", width = "100%" }: STLView
     const camera = new THREE.PerspectiveCamera(50, widthPx / heightPx, 0.1, 5000);
     camera.position.set(0, 0, 150);
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
-    renderer.setSize(widthPx, heightPx);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.shadowMap.enabled = true;
-    container.appendChild(renderer.domElement);
-    rendererRef.current = renderer;
+    let renderer: THREE.WebGLRenderer;
+    try {
+      renderer = new THREE.WebGLRenderer({ 
+        antialias: true, 
+        alpha: false,
+        canvas: document.createElement('canvas')
+      });
+      renderer.setSize(widthPx, heightPx);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.shadowMap.enabled = true;
+      container.appendChild(renderer.domElement);
+      rendererRef.current = renderer;
+    } catch (error) {
+      console.error("Error creating WebGLRenderer:", error);
+      return;
+    }
 
     // Lights
     const ambient = new THREE.AmbientLight(0xffffff, 0.6);
@@ -94,15 +106,16 @@ export function STLViewer({ fileUrl, height = "400px", width = "100%" }: STLView
     );
 
     const onResize = () => {
-      if (!container || !rendererRef.current) return;
+      if (!container || !renderer) return;
       const w = container.clientWidth || widthPx;
       const h = container.clientHeight || heightPx;
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
-      rendererRef.current.setSize(w, h);
+      renderer.setSize(w, h);
     };
 
     const animate = () => {
+      if (!renderer) return;
       controls.update();
       renderer.render(scene, camera);
       frameRef.current = requestAnimationFrame(animate);
@@ -113,15 +126,23 @@ export function STLViewer({ fileUrl, height = "400px", width = "100%" }: STLView
 
     return () => {
       window.removeEventListener("resize", onResize);
-      if (frameRef.current) cancelAnimationFrame(frameRef.current);
+      if (frameRef.current) {
+        cancelAnimationFrame(frameRef.current);
+        frameRef.current = null;
+      }
       controls.dispose();
       if (mesh) {
         mesh.geometry.dispose();
         (mesh.material as THREE.Material).dispose();
         scene.remove(mesh);
       }
-      renderer.dispose();
-      container.removeChild(renderer.domElement);
+      if (renderer) {
+        renderer.dispose();
+        if (container.contains(renderer.domElement)) {
+          container.removeChild(renderer.domElement);
+        }
+      }
+      rendererRef.current = null;
     };
   }, [fileUrl]);
 
