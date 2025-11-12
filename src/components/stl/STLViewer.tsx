@@ -9,9 +9,11 @@ interface STLViewerProps {
   fileUrl: string;
   height?: string;
   width?: string;
+  downloadUrl?: string;
+  fileName?: string;
 }
 
-export function STLViewer({ fileUrl, height = "400px", width = "100%" }: STLViewerProps) {
+export function STLViewer({ fileUrl, height = "400px", width = "100%", downloadUrl, fileName = "modelo.stl" }: STLViewerProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const rendererRef = useRef<any>(null);
   const frameRef = useRef<number | null>(null);
@@ -274,8 +276,22 @@ export function STLViewer({ fileUrl, height = "400px", width = "100%" }: STLView
       <div className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm px-3 py-1 rounded-md text-xs text-muted-foreground border border-border pointer-events-none">
         Arrastra para rotar • Scroll para zoom
       </div>
+      
+      {downloadUrl && (
+        <a 
+          href={downloadUrl} 
+          download={fileName}
+          className="absolute bottom-2 left-2 bg-primary text-primary-foreground hover:bg-primary/90 backdrop-blur-sm px-3 py-2 rounded-md text-xs border border-border flex items-center gap-2 transition-colors z-10"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+          </svg>
+          <span>Descargar STL</span>
+        </a>
+      )}
+      
       {isBasicMode && (
-        <div className="absolute bottom-2 left-2 bg-blue-500/90 backdrop-blur-sm px-2 py-1 rounded text-[10px] text-white border border-blue-600 pointer-events-none flex items-center gap-1">
+        <div className="absolute bottom-2 right-2 bg-blue-500/90 backdrop-blur-sm px-2 py-1 rounded text-[10px] text-white border border-blue-600 pointer-events-none flex items-center gap-1">
           <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
