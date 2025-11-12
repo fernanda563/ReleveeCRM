@@ -1,8 +1,9 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { STLLoader } from "three/examples/jsm/loaders/STLLoader.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { SVGRenderer } from "three/examples/jsm/renderers/SVGRenderer.js";
+import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 
 interface STLViewerProps {
   fileUrl: string;
@@ -15,6 +16,7 @@ export function STLViewer({ fileUrl, height = "400px", width = "100%" }: STLView
   const rendererRef = useRef<any>(null);
   const frameRef = useRef<number | null>(null);
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
+  const [isBasicMode, setIsBasicMode] = useState(false);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -29,52 +31,28 @@ export function STLViewer({ fileUrl, height = "400px", width = "100%" }: STLView
     const camera = new THREE.PerspectiveCamera(40, widthPx / heightPx, 0.1, 5000);
     camera.position.set(0, 0, 150);
 
-    // Forzar WebGL1 para mayor compatibilidad en iframes/sandboxes
-    const canvas = document.createElement('canvas');
-    canvas.style.width = '100%';
-    canvas.style.height = '100%';
-
-    const contextAttributes: WebGLContextAttributes = {
-      alpha: true,
-      antialias: true,
-      depth: true,
-      stencil: false,
-      desynchronized: false,
-      failIfMajorPerformanceCaveat: false,
-      powerPreference: 'low-power',
-      preserveDrawingBuffer: false,
-      premultipliedAlpha: true,
-    };
-
-    let gl: WebGLRenderingContext | null = null;
-    try {
-      gl = (canvas.getContext('webgl', contextAttributes) ||
-            canvas.getContext('experimental-webgl', contextAttributes)) as WebGLRenderingContext | null;
-    } catch (e) {
-      console.error('Error solicitando contexto WebGL1:', e);
-    }
-
+    // Try WebGLRenderer (allows WebGL2) with high quality settings
     let renderer: any = null;
     let isSVG = false;
 
-    if (!gl) {
-      console.warn('WebGL1 no disponible, usando SVGRenderer como fallback');
+    try {
+      renderer = new THREE.WebGLRenderer({
+        antialias: true,
+        alpha: true,
+        powerPreference: 'high-performance',
+      });
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.0;
+      renderer.setPixelRatio(window.devicePixelRatio);
+      console.info('WebGLRenderer inicializado correctamente');
+    } catch (error) {
+      console.warn('WebGL no disponible, usando SVGRenderer como fallback:', error);
       const svgRenderer = new SVGRenderer();
       svgRenderer.setSize(widthPx, heightPx);
       renderer = svgRenderer;
       isSVG = true;
-      rendererRef.current = svgRenderer;
-    } else {
-      try {
-        renderer = new THREE.WebGLRenderer({ canvas, context: gl, antialias: true, alpha: true });
-      } catch (error) {
-        console.error('Error creando WebGLRenderer con contexto WebGL1, intentando SVGRenderer:', error);
-        const svgRenderer = new SVGRenderer();
-        svgRenderer.setSize(widthPx, heightPx);
-        renderer = svgRenderer;
-        isSVG = true;
-        rendererRef.current = svgRenderer;
-      }
+      setIsBasicMode(true);
     }
 
     if (!renderer) {
@@ -85,10 +63,9 @@ export function STLViewer({ fileUrl, height = "400px", width = "100%" }: STLView
       return;
     }
 
-    if (renderer.setPixelRatio) renderer.setPixelRatio(window.devicePixelRatio);
     if (renderer.setSize) renderer.setSize(widthPx, heightPx);
     
-    // Enable shadows for WebGL only
+    // Enable high-quality shadows for WebGL
     if (!isSVG && renderer.shadowMap) {
       renderer.shadowMap.enabled = true;
       renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -97,15 +74,32 @@ export function STLViewer({ fileUrl, height = "400px", width = "100%" }: STLView
     container.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
-    // Lights
+    // Environment map for realistic reflections (WebGL only)
+    let pmremGenerator: THREE.PMREMGenerator | null = null;
+    let envRT: THREE.WebGLRenderTarget | null = null;
+    
+    if (!isSVG) {
+      try {
+        pmremGenerator = new THREE.PMREMGenerator(renderer);
+        const roomEnv = new RoomEnvironment();
+        envRT = pmremGenerator.fromScene(roomEnv, 0.04);
+        scene.environment = envRT.texture;
+        console.info('Environment map configurado');
+      } catch (e) {
+        console.warn('No se pudo crear environment map:', e);
+      }
+    }
+
+    // Dramatic lighting setup
     const hemiLight = new THREE.HemisphereLight(0xffffff, 0x1a1a1a, 0.5);
     scene.add(hemiLight);
     
-    const ambient = new THREE.AmbientLight(0xffffff, 0.25);
+    const ambient = new THREE.AmbientLight(0xffffff, 0.2);
     scene.add(ambient);
 
-    const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
-    dirLight.position.set(50, 50, 50);
+    // Main directional light with shadows
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
+    dirLight.position.set(60, 80, 60);
     dirLight.castShadow = true;
     dirLight.shadow.mapSize.width = 2048;
     dirLight.shadow.mapSize.height = 2048;
@@ -115,16 +109,13 @@ export function STLViewer({ fileUrl, height = "400px", width = "100%" }: STLView
     dirLight.shadow.camera.right = 100;
     dirLight.shadow.camera.top = 100;
     dirLight.shadow.camera.bottom = -100;
-    dirLight.shadow.bias = -0.001;
+    dirLight.shadow.bias = -0.0005;
     scene.add(dirLight);
 
-    const dirLight2 = new THREE.DirectionalLight(0xffffff, 0.4);
-    dirLight2.position.set(-50, -50, -50);
+    // Secondary fill light
+    const dirLight2 = new THREE.DirectionalLight(0xffffff, 0.3);
+    dirLight2.position.set(-40, -30, -40);
     scene.add(dirLight2);
-    
-    const dirLight3 = new THREE.DirectionalLight(0xffffff, 0.3);
-    dirLight3.position.set(0, 50, -50);
-    scene.add(dirLight3);
 
     // Controls
     const controls = new OrbitControls(camera, renderer.domElement);
@@ -144,6 +135,17 @@ export function STLViewer({ fileUrl, height = "400px", width = "100%" }: STLView
     });
     resizeObserver.observe(container);
     resizeObserverRef.current = resizeObserver;
+
+    // Ground plane for shadows
+    let groundPlane: THREE.Mesh | null = null;
+    if (!isSVG) {
+      const planeGeometry = new THREE.PlaneGeometry(500, 500);
+      const planeMaterial = new THREE.ShadowMaterial({ opacity: 0.3 });
+      groundPlane = new THREE.Mesh(planeGeometry, planeMaterial);
+      groundPlane.rotation.x = -Math.PI / 2;
+      groundPlane.receiveShadow = true;
+      scene.add(groundPlane);
+    }
 
     // Load STL
     const loader = new STLLoader();
@@ -166,20 +168,29 @@ export function STLViewer({ fileUrl, height = "400px", width = "100%" }: STLView
           ? new THREE.MeshBasicMaterial({
               color: new THREE.Color("#e8e8e8"),
             })
-          : new THREE.MeshStandardMaterial({
-              color: new THREE.Color("#e8e8e8"),
-              metalness: 0.4,
-              roughness: 0.3,
+          : new THREE.MeshPhysicalMaterial({
+              color: new THREE.Color("#eaeaea"),
+              metalness: 0.5,
+              roughness: 0.25,
+              clearcoat: 0.2,
+              clearcoatRoughness: 0.6,
+              envMapIntensity: 0.9,
             });
         mesh = new THREE.Mesh(geometry, material);
         mesh.castShadow = true;
         mesh.receiveShadow = true;
         scene.add(mesh);
 
-        // Fit camera to object
+        // Fit camera to object and position ground plane
         const bbox = geometry.boundingBox!;
         const size = new THREE.Vector3();
         bbox.getSize(size);
+        
+        // Position ground plane just below the model
+        if (groundPlane) {
+          groundPlane.position.y = -(size.y / 2) - (0.02 * size.y);
+        }
+        
         const maxDim = Math.max(size.x, size.y, size.z);
         const fov = camera.fov * (Math.PI / 180);
         let cameraZ = Math.abs((maxDim / 2) / Math.tan(fov / 2));
@@ -231,6 +242,18 @@ export function STLViewer({ fileUrl, height = "400px", width = "100%" }: STLView
         (mesh.material as THREE.Material).dispose();
         scene.remove(mesh);
       }
+      if (groundPlane) {
+        groundPlane.geometry.dispose();
+        (groundPlane.material as THREE.Material).dispose();
+        scene.remove(groundPlane);
+      }
+      if (envRT) {
+        envRT.dispose();
+      }
+      if (pmremGenerator) {
+        pmremGenerator.dispose();
+      }
+      scene.environment = null;
       if (renderer) {
         if (typeof renderer.dispose === 'function') {
           renderer.dispose();
@@ -248,6 +271,11 @@ export function STLViewer({ fileUrl, height = "400px", width = "100%" }: STLView
       <div className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm px-3 py-1 rounded-md text-xs text-muted-foreground border border-border pointer-events-none">
         Arrastra para rotar • Scroll para zoom
       </div>
+      {isBasicMode && (
+        <div className="absolute top-2 left-2 bg-amber-500/90 backdrop-blur-sm px-3 py-1 rounded-md text-xs text-white border border-amber-600 pointer-events-none">
+          Modo básico (sin sombras ni reflejos)
+        </div>
+      )}
     </div>
   );
 }
