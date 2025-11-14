@@ -200,39 +200,35 @@ export const ClientTimeline = ({ clientId }: ClientTimelineProps) => {
 
   return (
     <>
-      <div className="space-y-4">
-        {events.map((event, index) => {
-          // Si es proyecto, usar ProspectCard
-          if (event.type === "prospect" && event.prospectData) {
-            return (
-              <div key={event.id} className="relative w-full">
-                {index !== events.length - 1 && (
-                  <div className="absolute left-0 top-full h-4 w-0.5 bg-border z-10" />
-                )}
-                <div className="w-full">
-                  <ProspectCard
-                    prospect={event.prospectData}
-                    className="w-full"
-                  />
+      <div className="relative space-y-6">
+        {events.map((event, index) => (
+          <div key={event.id} className="relative">
+            {/* Connector line - shown for all items except the last one */}
+            {index !== events.length - 1 && (
+              <div className="absolute left-6 top-[3.5rem] bottom-0 w-0.5 bg-border translate-y-2" />
+            )}
+            
+            {/* Si es proyecto, usar ProspectCard */}
+            {event.type === "prospect" && event.prospectData ? (
+              <div className="relative pl-14">
+                <div className="absolute left-0 top-4 p-3 rounded-full bg-primary/10 flex-shrink-0">
+                  <Gem className="h-5 w-5 text-primary" />
                 </div>
+                <ProspectCard
+                  prospect={event.prospectData}
+                  className="w-full"
+                />
               </div>
-            );
-          }
-
-          // Otros eventos con la tarjeta original
-          return (
-            <Card key={event.id} className="relative">
-              {index !== events.length - 1 && (
-                <div className="absolute left-8 top-16 bottom-0 w-0.5 bg-border -mb-4" />
-              )}
-              <CardContent className="pt-6">
-                <div className="flex gap-4">
-                  <div className={`p-3 rounded-full ${getTypeColor(event.type)} flex-shrink-0 h-fit`}>
-                    {getIcon(event.type)}
-                  </div>
-                  <div className="flex-1">
+            ) : (
+              /* Otros eventos con la tarjeta original */
+              <div className="relative pl-14">
+                <div className={`absolute left-0 top-4 p-3 rounded-full ${getTypeColor(event.type)} flex-shrink-0`}>
+                  {getIcon(event.type)}
+                </div>
+                <Card>
+                  <CardContent className="pt-6">
                     <div className="flex items-start justify-between mb-2">
-                      <div>
+                      <div className="flex-1">
                         <h4 className="font-semibold">{event.title}</h4>
                         <p className="text-sm text-muted-foreground">{event.description}</p>
                       </div>
@@ -243,14 +239,13 @@ export const ClientTimeline = ({ clientId }: ClientTimelineProps) => {
                     <p className="text-xs text-muted-foreground">
                       {formatDate(event.date)}
                     </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+          </div>
+        ))}
       </div>
-
     </>
   );
 };
