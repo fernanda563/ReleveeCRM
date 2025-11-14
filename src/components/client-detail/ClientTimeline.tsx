@@ -2,10 +2,22 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Calendar, Gem, Bell, ShoppingCart, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { ProspectDetailDialog } from "./ProspectDetailDialog";
 import { ProspectCard } from "./ProspectCard";
+import { ProspectStatusDialog } from "./ProspectStatusDialog";
+import { generateProspectTitle } from "./prospect-utils";
 import { cn } from "@/lib/utils";
 
 interface Prospect {
@@ -45,6 +57,8 @@ export const ClientTimeline = ({ clientId }: ClientTimelineProps) => {
   const [events, setEvents] = useState<TimelineEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedProspect, setSelectedProspect] = useState<Prospect | null>(null);
+  const [editingProspect, setEditingProspect] = useState<Prospect | null>(null);
+  const [deletingProspect, setDeletingProspect] = useState<Prospect | null>(null);
 
   useEffect(() => {
     fetchTimeline();
@@ -181,6 +195,30 @@ export const ClientTimeline = ({ clientId }: ClientTimelineProps) => {
     });
   };
 
+  const handleDeleteProspect = (prospect: Prospect) => {
+    setDeletingProspect(prospect);
+  };
+
+  const confirmDeleteProspect = async () => {
+    if (!deletingProspect) return;
+
+    try {
+      const { error } = await supabase
+        .from("prospects")
+        .delete()
+        .eq("id", deletingProspect.id);
+
+      if (error) throw error;
+
+      toast.success("Proyecto eliminado exitosamente");
+      setDeletingProspect(null);
+      fetchTimeline();
+    } catch (error) {
+      console.error("Error deleting prospect:", error);
+      toast.error("Error al eliminar el proyecto");
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -214,6 +252,8 @@ export const ClientTimeline = ({ clientId }: ClientTimelineProps) => {
                   <ProspectCard
                     prospect={event.prospectData}
                     onClick={() => setSelectedProspect(event.prospectData!)}
+                    onEditStatus={setEditingProspect}
+                    onDelete={handleDeleteProspect}
                     className="w-full"
                   />
                 </div>
@@ -253,12 +293,38 @@ export const ClientTimeline = ({ clientId }: ClientTimelineProps) => {
         })}
       </div>
 
-    <ProspectDetailDialog
-      prospect={selectedProspect}
-      open={!!selectedProspect}
-      onOpenChange={(open) => !open && setSelectedProspect(null)}
-      onSaved={() => fetchTimeline()}
-    />
+      <ProspectDetailDialog
+        prospect={selectedProspect}
+        open={!!selectedProspect}
+        onOpenChange={(open) => !open && setSelectedProspect(null)}
+        onSaved={() => fetchTimeline()}
+        initialEditMode={true}
+      />
+
+      <ProspectStatusDialog
+        prospect={editingProspect}
+        open={!!editingProspect}
+        onOpenChange={(open) => !open && setEditingProspect(null)}
+        onSaved={() => fetchTimeline()}
+      />
+
+      <AlertDialog open={!!deletingProspect} onOpenChange={(open) => !open && setDeletingProspect(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar proyecto?</AlertDialogTitle>
+            <AlertDialogDescription>
+              ¿Estás seguro de eliminar el proyecto "{deletingProspect ? generateProspectTitle(deletingProspect) : ""}"? 
+              Esta acción no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteProspect} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };
