@@ -54,6 +54,7 @@ interface ProspectDetailDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSaved?: (prospect: Prospect) => void;
+  initialEditMode?: boolean;
 }
 
 export const ProspectDetailDialog = ({
@@ -61,11 +62,12 @@ export const ProspectDetailDialog = ({
   open,
   onOpenChange,
   onSaved,
+  initialEditMode = false,
 }: ProspectDetailDialogProps) => {
   if (!prospect) return null;
 
   // Edición de proyecto
-  const [isEditing, setIsEditing] = React.useState(false);
+  const [isEditing, setIsEditing] = React.useState(initialEditMode);
   const [showDeleteDialog, setShowDeleteDialog] = React.useState(false);
   const [estado, setEstado] = React.useState<string>(prospect.estado);
   const [tipoAccesorio, setTipoAccesorio] = React.useState<string>(prospect.tipo_accesorio || "");
@@ -84,6 +86,13 @@ export const ProspectDetailDialog = ({
     prospect.fecha_entrega_deseada ? prospect.fecha_entrega_deseada : ""
   );
   const [observaciones, setObservaciones] = React.useState<string>(prospect.observaciones || "");
+
+  // Reset isEditing when dialog opens
+  React.useEffect(() => {
+    if (open) {
+      setIsEditing(initialEditMode);
+    }
+  }, [open, initialEditMode]);
 
   const handleCancel = () => {
     setIsEditing(false);

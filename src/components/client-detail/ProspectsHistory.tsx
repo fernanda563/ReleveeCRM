@@ -203,6 +203,7 @@ export const ProspectsHistory = ({ clientId }: ProspectsHistoryProps) => {
         open={!!selectedProspect}
         onOpenChange={(open) => !open && setSelectedProspect(null)}
         onSaved={() => fetchProspects()}
+        initialEditMode={true}
       />
 
       <ProspectStatusDialog
