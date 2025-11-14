@@ -7,8 +7,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
@@ -77,47 +82,44 @@ export const ProspectStatusDialog = ({
         </DialogHeader>
 
         <div className="space-y-6 py-4">
-          <RadioGroup
-            value={selectedStatus}
-            onValueChange={setSelectedStatus}
-            disabled={isConverted}
-          >
-            <div className="flex items-center space-x-3 space-y-0">
-              <RadioGroupItem value="activo" id="activo" />
-              <Label htmlFor="activo" className="font-normal cursor-pointer">
-                <div>
-                  <p className="font-medium">Activo</p>
-                  <p className="text-sm text-muted-foreground">
-                    El proyecto está en seguimiento activo
-                  </p>
-                </div>
-              </Label>
-            </div>
-
-            <div className="flex items-center space-x-3 space-y-0">
-              <RadioGroupItem value="en_pausa" id="en_pausa" />
-              <Label htmlFor="en_pausa" className="font-normal cursor-pointer">
-                <div>
-                  <p className="font-medium">En Pausa</p>
-                  <p className="text-sm text-muted-foreground">
-                    El proyecto está temporalmente pausado
-                  </p>
-                </div>
-              </Label>
-            </div>
-
-            <div className="flex items-center space-x-3 space-y-0">
-              <RadioGroupItem value="inactivo" id="inactivo" />
-              <Label htmlFor="inactivo" className="font-normal cursor-pointer">
-                <div>
-                  <p className="font-medium">Inactivo</p>
-                  <p className="text-sm text-muted-foreground">
-                    El proyecto no se continuará
-                  </p>
-                </div>
-              </Label>
-            </div>
-          </RadioGroup>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Estatus del proyecto</label>
+            <Select
+              value={selectedStatus}
+              onValueChange={setSelectedStatus}
+              disabled={isConverted}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Seleccionar estatus" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="activo">
+                  <div className="py-1">
+                    <p className="font-medium">Activo</p>
+                    <p className="text-sm text-muted-foreground">
+                      El proyecto está en seguimiento activo
+                    </p>
+                  </div>
+                </SelectItem>
+                <SelectItem value="en_pausa">
+                  <div className="py-1">
+                    <p className="font-medium">En Pausa</p>
+                    <p className="text-sm text-muted-foreground">
+                      El proyecto está temporalmente pausado
+                    </p>
+                  </div>
+                </SelectItem>
+                <SelectItem value="inactivo">
+                  <div className="py-1">
+                    <p className="font-medium">Inactivo</p>
+                    <p className="text-sm text-muted-foreground">
+                      El proyecto no se continuará
+                    </p>
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
           <div className="flex justify-end gap-3 pt-4">
             <Button

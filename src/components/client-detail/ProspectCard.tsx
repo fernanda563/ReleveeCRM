@@ -2,7 +2,13 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { DollarSign, Calendar, ChevronDown, ChevronUp, Pencil, ShoppingCart } from "lucide-react";
+import { DollarSign, Calendar, ChevronDown, ChevronUp, ShoppingCart, MoreVertical } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { generateProspectTitle, getStatusColor, type ProspectLike } from "./prospect-utils";
 
@@ -52,8 +58,8 @@ export const ProspectCard = ({ prospect, onClick, onEditStatus, onConvertToOrder
   const [isExpanded, setIsExpanded] = useState(false);
   const title = generateProspectTitle(prospect);
 
-  const handleExpandClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleExpandClick = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
     setIsExpanded(!isExpanded);
   };
 
@@ -63,8 +69,8 @@ export const ProspectCard = ({ prospect, onClick, onEditStatus, onConvertToOrder
         "cursor-pointer hover:shadow-lg transition-all duration-300",
         className
       )}
-      onClick={onClick}
-      role={onClick ? "button" : undefined}
+      onClick={handleExpandClick}
+      role="button"
     >
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-2">
@@ -72,26 +78,52 @@ export const ProspectCard = ({ prospect, onClick, onEditStatus, onConvertToOrder
           <div className="flex items-center gap-2">
             <Badge className={getStatusColor(prospect.estado)}>{prospect.estado.replace(/_/g, " ")}</Badge>
             
-            {/* Botón editar estado - solo si no está convertido */}
-            {prospect.estado !== "convertido" && onEditStatus && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-6 w-6 shrink-0"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onEditStatus(prospect);
-                }}
-              >
-                <Pencil className="h-3 w-3" />
-              </Button>
+            {/* Dropdown de opciones - solo si no está convertido */}
+            {prospect.estado !== "convertido" && (onEditStatus || onClick) && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 shrink-0"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  {onEditStatus && (
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onEditStatus(prospect);
+                      }}
+                    >
+                      Editar estatus
+                    </DropdownMenuItem>
+                  )}
+                  {onClick && (
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onClick();
+                      }}
+                    >
+                      Editar proyecto
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
             
             <Button
               variant="ghost"
               size="icon"
               className="h-8 w-8 shrink-0"
-              onClick={handleExpandClick}
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsExpanded(!isExpanded);
+              }}
             >
               {isExpanded ? (
                 <ChevronUp className="h-4 w-4" />
