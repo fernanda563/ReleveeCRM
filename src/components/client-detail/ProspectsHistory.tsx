@@ -6,6 +6,9 @@ import { Gem, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { ProspectDetailDialog } from "./ProspectDetailDialog";
 import { ProspectCard } from "./ProspectCard";
+import { ProspectStatusDialog } from "./ProspectStatusDialog";
+import OrderDialog from "@/components/orders/OrderDialog";
+import type { Order } from "@/pages/Orders";
 
 interface Prospect {
   id: string;
@@ -34,6 +37,9 @@ export const ProspectsHistory = ({ clientId }: ProspectsHistoryProps) => {
   const [prospects, setProspects] = useState<Prospect[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedProspect, setSelectedProspect] = useState<Prospect | null>(null);
+  const [editingProspect, setEditingProspect] = useState<Prospect | null>(null);
+  const [convertingProspect, setConvertingProspect] = useState<Prospect | null>(null);
+  const [showOrderDialog, setShowOrderDialog] = useState(false);
 
   useEffect(() => {
     fetchProspects();
@@ -48,7 +54,41 @@ export const ProspectsHistory = ({ clientId }: ProspectsHistoryProps) => {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      setProspects(data || []);
+      
+      // Verificar y actualizar proyectos vencidos automáticamente
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      const prospectsToUpdate = (data || []).filter(p => {
+        if (!p.fecha_entrega_deseada || p.estado === "convertido" || p.estado === "inactivo") {
+          return false;
+        }
+        const fechaEntrega = new Date(p.fecha_entrega_deseada);
+        return fechaEntrega < today;
+      });
+      
+      // Actualizar en batch los proyectos vencidos
+      if (prospectsToUpdate.length > 0) {
+        const updates = prospectsToUpdate.map(p => 
+          supabase
+            .from("prospects")
+            .update({ estado: "inactivo" })
+            .eq("id", p.id)
+        );
+        
+        await Promise.all(updates);
+        
+        // Recargar datos actualizados
+        const { data: updatedData } = await supabase
+          .from("prospects")
+          .select("*")
+          .eq("client_id", clientId)
+          .order("created_at", { ascending: false });
+        
+        setProspects(updatedData || []);
+      } else {
+        setProspects(data || []);
+      }
     } catch (error) {
       console.error("Error fetching prospects:", error);
       toast.error("Error al cargar los proyectos");
@@ -74,16 +114,30 @@ export const ProspectsHistory = ({ clientId }: ProspectsHistoryProps) => {
     });
   };
 
-  const getStatusColor = (estado: string) => {
-    switch (estado) {
-      case "activo":
-        return "bg-success/10 text-success";
-      case "convertido":
-        return "bg-primary/10 text-primary";
-      case "perdido":
-        return "bg-destructive/10 text-destructive";
-      default:
-        return "bg-muted";
+  const handleConvertToOrder = async (prospect: Prospect) => {
+    setConvertingProspect(prospect);
+    setShowOrderDialog(true);
+  };
+
+  const handleOrderCreated = async () => {
+    if (!convertingProspect) return;
+    
+    try {
+      // Actualizar estado a "convertido"
+      const { error } = await supabase
+        .from("prospects")
+        .update({ estado: "convertido" })
+        .eq("id", convertingProspect.id);
+      
+      if (error) throw error;
+      
+      toast.success("Proyecto convertido exitosamente a orden");
+      setShowOrderDialog(false);
+      setConvertingProspect(null);
+      fetchProspects();
+    } catch (error) {
+      console.error("Error:", error);
+      toast.error("Error al convertir proyecto");
     }
   };
 
@@ -114,17 +168,34 @@ export const ProspectsHistory = ({ clientId }: ProspectsHistoryProps) => {
             key={prospect.id}
             prospect={prospect}
             onClick={() => setSelectedProspect(prospect)}
+            onEditStatus={setEditingProspect}
+            onConvertToOrder={handleConvertToOrder}
             className="w-full"
           />
         ))}
       </div>
 
-    <ProspectDetailDialog
-      prospect={selectedProspect}
-      open={!!selectedProspect}
-      onOpenChange={(open) => !open && setSelectedProspect(null)}
-      onSaved={() => fetchProspects()}
-    />
+      <ProspectDetailDialog
+        prospect={selectedProspect}
+        open={!!selectedProspect}
+        onOpenChange={(open) => !open && setSelectedProspect(null)}
+        onSaved={() => fetchProspects()}
+      />
+
+      <ProspectStatusDialog
+        prospect={editingProspect}
+        open={!!editingProspect}
+        onOpenChange={(open) => !open && setEditingProspect(null)}
+        onSaved={() => fetchProspects()}
+      />
+
+      <OrderDialog
+        open={showOrderDialog}
+        onOpenChange={setShowOrderDialog}
+        prospect={convertingProspect}
+        clientId={clientId}
+        onSuccess={handleOrderCreated}
+      />
     </>
   );
 };

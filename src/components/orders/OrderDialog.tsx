@@ -39,6 +39,8 @@ interface OrderDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   order?: Order | null;
+  prospect?: Prospect | null;
+  clientId?: string;
   onSuccess: () => void;
   onOpenClientDialog?: () => void;
 }
@@ -58,7 +60,7 @@ interface Prospect {
   estilo_anillo: string | null;
 }
 
-const OrderDialog = ({ open, onOpenChange, order, onSuccess, onOpenClientDialog }: OrderDialogProps) => {
+const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess, onOpenClientDialog }: OrderDialogProps) => {
   const { isAdmin } = useUserRole();
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -120,7 +122,41 @@ const OrderDialog = ({ open, onOpenChange, order, onSuccess, onOpenClientDialog 
     if (open) {
       setCurrentStep(1);
       fetchClients();
-      if (order) {
+      
+      // Si viene de un proyecto, pre-cargar datos
+      if (prospect && clientId) {
+        setSelectedClientId(clientId);
+        setTipoAccesorio(prospect.tipo_accesorio || "");
+        setMetalTipo((prospect.metal_tipo as any) || "oro");
+        setMetalColor(prospect.color_oro || "");
+        setMetalPureza(prospect.pureza_oro || "");
+        setPiedraTipo(prospect.tipo_piedra === "diamante" ? "diamante" : "gema");
+        setNotas(prospect.observaciones || "");
+        
+        if (prospect.importe_previsto) {
+          setPrecioVenta(formatCurrency(prospect.importe_previsto.toString()));
+        }
+        
+        // Reset otros campos
+        setTalla("");
+        setImporteAnticipo("");
+        setFormaPago("");
+        setEstatusPago("anticipo_recibido");
+        setPaymentReceipts([]);
+        setReferenceImages([]);
+        setUploadedReceiptUrls([]);
+        setUploadedImageUrls([]);
+        setSelectedSTLFileId("");
+        setClientProspects([]);
+        setSelectedProspectId("");
+        setDiamanteColor("");
+        setDiamanteClaridad("");
+        setDiamanteCorte("");
+        setDiamanteForma("");
+        setDiamanteQuilataje("");
+        setGemaObservaciones("");
+        setFechaEntregaEsperada(undefined);
+      } else if (order) {
         setSelectedClientId(order.client_id);
         setTipoAccesorio(order.tipo_accesorio || "");
         setTalla(order.talla?.toString() || "");
@@ -165,7 +201,7 @@ const OrderDialog = ({ open, onOpenChange, order, onSuccess, onOpenClientDialog 
         resetForm();
       }
     }
-  }, [open, order]);
+  }, [open, order, prospect, clientId]);
 
   useEffect(() => {
     if (open) {
@@ -174,14 +210,14 @@ const OrderDialog = ({ open, onOpenChange, order, onSuccess, onOpenClientDialog 
   }, [open]);
 
   useEffect(() => {
-    if (selectedClientId && !order) {
+    if (selectedClientId && !order && !prospect) {
       fetchClientProspects(selectedClientId);
       setSelectedProspectId("");
     } else {
       setClientProspects([]);
       setSelectedProspectId("");
     }
-  }, [selectedClientId, order]);
+  }, [selectedClientId, order, prospect]);
 
   useEffect(() => {
     if (currentStep === 5) {

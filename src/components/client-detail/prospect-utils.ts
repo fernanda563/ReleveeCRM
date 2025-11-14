@@ -28,8 +28,10 @@ export const getStatusColor = (estado?: string | null) => {
       return "bg-success/10 text-success";
     case "convertido":
       return "bg-primary/10 text-primary";
-    case "perdido":
-      return "bg-destructive/10 text-destructive";
+    case "en_pausa":
+      return "bg-warning/10 text-warning";
+    case "inactivo":
+      return "bg-muted/50 text-muted-foreground";
     default:
       return "bg-muted";
   }

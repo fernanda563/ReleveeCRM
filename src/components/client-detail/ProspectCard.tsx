@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { DollarSign, Calendar, ChevronDown, ChevronUp } from "lucide-react";
+import { DollarSign, Calendar, ChevronDown, ChevronUp, Pencil, ShoppingCart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { generateProspectTitle, getStatusColor, type ProspectLike } from "./prospect-utils";
 
@@ -26,6 +26,8 @@ export interface Prospect extends ProspectLike {
 interface ProspectCardProps {
   prospect: Prospect;
   onClick?: () => void;
+  onEditStatus?: (prospect: Prospect) => void;
+  onConvertToOrder?: (prospect: Prospect) => void;
   className?: string;
 }
 
@@ -46,7 +48,7 @@ const formatDate = (dateString: string | null) => {
   });
 };
 
-export const ProspectCard = ({ prospect, onClick, className }: ProspectCardProps) => {
+export const ProspectCard = ({ prospect, onClick, onEditStatus, onConvertToOrder, className }: ProspectCardProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const title = generateProspectTitle(prospect);
 
@@ -68,7 +70,23 @@ export const ProspectCard = ({ prospect, onClick, className }: ProspectCardProps
         <div className="flex items-start justify-between gap-2">
           <CardTitle className="text-lg capitalize flex-1">{title}</CardTitle>
           <div className="flex items-center gap-2">
-            <Badge className={getStatusColor(prospect.estado)}>{prospect.estado}</Badge>
+            <Badge className={getStatusColor(prospect.estado)}>{prospect.estado.replace(/_/g, " ")}</Badge>
+            
+            {/* Botón editar estado - solo si no está convertido */}
+            {prospect.estado !== "convertido" && onEditStatus && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 shrink-0"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEditStatus(prospect);
+                }}
+              >
+                <Pencil className="h-3 w-3" />
+              </Button>
+            )}
+            
             <Button
               variant="ghost"
               size="icon"
@@ -185,6 +203,23 @@ export const ProspectCard = ({ prospect, onClick, className }: ProspectCardProps
             </div>
           )}
         </div>
+
+        {/* Botón convertir a orden - solo si está activo o en pausa */}
+        {(prospect.estado === "activo" || prospect.estado === "en_pausa") && onConvertToOrder && (
+          <div className="pt-3 border-t">
+            <Button
+              onClick={(e) => {
+                e.stopPropagation();
+                onConvertToOrder(prospect);
+              }}
+              className="w-full"
+              variant="default"
+            >
+              <ShoppingCart className="h-4 w-4 mr-2" />
+              Convertir a Orden de Compra
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
