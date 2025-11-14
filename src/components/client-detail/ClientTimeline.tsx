@@ -157,13 +157,13 @@ export const ClientTimeline = ({ clientId }: ClientTimelineProps) => {
   const getTypeColor = (type: string) => {
     switch (type) {
       case "appointment":
-        return "bg-success/10 text-success";
+        return "bg-success text-success-foreground";
       case "prospect":
-        return "bg-warning/10 text-warning";
+        return "bg-warning text-warning-foreground";
       case "reminder":
-        return "bg-primary/10 text-primary";
+        return "bg-primary text-primary-foreground";
       case "order":
-        return "bg-accent/10 text-accent";
+        return "bg-accent text-accent-foreground";
       default:
         return "bg-muted";
     }
@@ -208,8 +208,8 @@ export const ClientTimeline = ({ clientId }: ClientTimelineProps) => {
             {/* Si es proyecto, usar ProspectCard */}
             {event.type === "prospect" && event.prospectData ? (
               <div className="relative pl-16">
-                <div className="absolute left-0 top-4 z-10 p-3 rounded-full bg-primary/10 w-[2.875rem] h-[2.875rem] flex items-center justify-center">
-                  <Gem className="h-5 w-5 text-primary" />
+                <div className="absolute left-0 top-4 z-10 p-3 rounded-full bg-warning text-warning-foreground w-[2.875rem] h-[2.875rem] flex items-center justify-center">
+                  <Gem className="h-5 w-5" />
                 </div>
                 <ProspectCard
                   prospect={event.prospectData}
