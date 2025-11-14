@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { DollarSign, Calendar, ChevronDown, ChevronUp, ShoppingCart, MoreVertical } from "lucide-react";
+import { DollarSign, Calendar, ChevronDown, ChevronUp, ShoppingCart, MoreVertical, Pencil, Trash2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,6 +34,7 @@ interface ProspectCardProps {
   onClick?: () => void;
   onEditStatus?: (prospect: Prospect) => void;
   onConvertToOrder?: (prospect: Prospect) => void;
+  onDelete?: (prospect: Prospect) => void;
   className?: string;
 }
 
@@ -54,7 +55,7 @@ const formatDate = (dateString: string | null) => {
   });
 };
 
-export const ProspectCard = ({ prospect, onClick, onEditStatus, onConvertToOrder, className }: ProspectCardProps) => {
+export const ProspectCard = ({ prospect, onClick, onEditStatus, onConvertToOrder, onDelete, className }: ProspectCardProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const title = generateProspectTitle(prospect);
 
@@ -236,20 +237,56 @@ export const ProspectCard = ({ prospect, onClick, onEditStatus, onConvertToOrder
           )}
         </div>
 
-        {/* Botón convertir a orden - solo si está activo o en pausa */}
-        {(prospect.estado === "activo" || prospect.estado === "en_pausa") && onConvertToOrder && (
+        {/* Botones de acción */}
+        {prospect.estado !== "convertido" && (
           <div className="pt-3 border-t">
-            <Button
-              onClick={(e) => {
-                e.stopPropagation();
-                onConvertToOrder(prospect);
-              }}
-              className="w-full"
-              variant="default"
-            >
-              <ShoppingCart className="h-4 w-4 mr-2" />
-              Convertir a Orden de Compra
-            </Button>
+            <div className="flex items-center justify-between gap-2">
+              {/* Botón eliminar - alineado a la izquierda */}
+              {onDelete && (
+                <Button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete(prospect);
+                  }}
+                  variant="destructive"
+                  size="sm"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Eliminar
+                </Button>
+              )}
+              
+              {/* Botones convertir y editar - alineados a la derecha */}
+              <div className="flex items-center gap-2 ml-auto">
+                {onClick && (
+                  <Button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onClick();
+                    }}
+                    variant="outline"
+                    size="sm"
+                  >
+                    <Pencil className="h-4 w-4 mr-2" />
+                    Editar
+                  </Button>
+                )}
+                
+                {(prospect.estado === "activo" || prospect.estado === "en_pausa") && onConvertToOrder && (
+                  <Button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onConvertToOrder(prospect);
+                    }}
+                    size="sm"
+                    variant="default"
+                  >
+                    <ShoppingCart className="h-4 w-4 mr-2" />
+                    Convertir a Orden
+                  </Button>
+                )}
+              </div>
+            </div>
           </div>
         )}
       </CardContent>
