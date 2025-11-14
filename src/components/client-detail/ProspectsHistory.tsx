@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { ProspectDetailDialog } from "./ProspectDetailDialog";
 import { ProspectCard } from "./ProspectCard";
 import { ProspectStatusDialog } from "./ProspectStatusDialog";
+import { generateProspectTitle } from "./prospect-utils";
 import OrderDialog from "@/components/orders/OrderDialog";
 import type { Order } from "@/pages/Orders";
 
@@ -141,6 +142,27 @@ export const ProspectsHistory = ({ clientId }: ProspectsHistoryProps) => {
     }
   };
 
+  const handleDeleteProspect = async (prospect: Prospect) => {
+    if (!confirm(`¿Estás seguro de eliminar el proyecto "${generateProspectTitle(prospect)}"?`)) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("prospects")
+        .delete()
+        .eq("id", prospect.id);
+
+      if (error) throw error;
+
+      toast.success("Proyecto eliminado exitosamente");
+      fetchProspects();
+    } catch (error) {
+      console.error("Error deleting prospect:", error);
+      toast.error("Error al eliminar el proyecto");
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -170,6 +192,7 @@ export const ProspectsHistory = ({ clientId }: ProspectsHistoryProps) => {
             onClick={() => setSelectedProspect(prospect)}
             onEditStatus={setEditingProspect}
             onConvertToOrder={handleConvertToOrder}
+            onDelete={handleDeleteProspect}
             className="w-full"
           />
         ))}
