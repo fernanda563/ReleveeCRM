@@ -12,6 +12,8 @@ serve(async (req) => {
   }
 
   try {
+    console.log('Received request:', req.method, req.url);
+    
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
@@ -19,6 +21,7 @@ serve(async (req) => {
     );
 
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+    console.log('User auth check:', user ? 'authenticated' : 'not authenticated', userError);
     
     if (userError || !user) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
@@ -47,6 +50,16 @@ serve(async (req) => {
     // Generar URL de autorización OAuth
     if (action === 'start') {
       const clientId = Deno.env.get('GOOGLE_CLIENT_ID');
+      console.log('Starting OAuth flow, Client ID present:', !!clientId);
+      
+      if (!clientId) {
+        console.error('GOOGLE_CLIENT_ID is not configured');
+        return new Response(JSON.stringify({ error: 'Google Client ID not configured' }), {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      
       const redirectUri = `${Deno.env.get('SUPABASE_URL')}/functions/v1/google-calendar-auth?action=callback`;
       
       const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
@@ -58,6 +71,7 @@ serve(async (req) => {
         `prompt=consent&` +
         `state=${user.id}`;
 
+      console.log('Generated auth URL successfully');
       return new Response(JSON.stringify({ authUrl }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -142,7 +156,7 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Edge function error:', error);
     return new Response(JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
