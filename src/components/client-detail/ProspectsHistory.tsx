@@ -2,6 +2,16 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Gem, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { ProspectDetailDialog } from "./ProspectDetailDialog";
@@ -41,6 +51,7 @@ export const ProspectsHistory = ({ clientId }: ProspectsHistoryProps) => {
   const [editingProspect, setEditingProspect] = useState<Prospect | null>(null);
   const [convertingProspect, setConvertingProspect] = useState<Prospect | null>(null);
   const [showOrderDialog, setShowOrderDialog] = useState(false);
+  const [deletingProspect, setDeletingProspect] = useState<Prospect | null>(null);
 
   useEffect(() => {
     fetchProspects();
@@ -142,20 +153,23 @@ export const ProspectsHistory = ({ clientId }: ProspectsHistoryProps) => {
     }
   };
 
-  const handleDeleteProspect = async (prospect: Prospect) => {
-    if (!confirm(`¿Estás seguro de eliminar el proyecto "${generateProspectTitle(prospect)}"?`)) {
-      return;
-    }
+  const handleDeleteProspect = (prospect: Prospect) => {
+    setDeletingProspect(prospect);
+  };
+
+  const confirmDeleteProspect = async () => {
+    if (!deletingProspect) return;
 
     try {
       const { error } = await supabase
         .from("prospects")
         .delete()
-        .eq("id", prospect.id);
+        .eq("id", deletingProspect.id);
 
       if (error) throw error;
 
       toast.success("Proyecto eliminado exitosamente");
+      setDeletingProspect(null);
       fetchProspects();
     } catch (error) {
       console.error("Error deleting prospect:", error);
@@ -220,6 +234,24 @@ export const ProspectsHistory = ({ clientId }: ProspectsHistoryProps) => {
         clientId={clientId}
         onSuccess={handleOrderCreated}
       />
+
+      <AlertDialog open={!!deletingProspect} onOpenChange={(open) => !open && setDeletingProspect(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar proyecto?</AlertDialogTitle>
+            <AlertDialogDescription>
+              ¿Estás seguro de eliminar el proyecto "{deletingProspect ? generateProspectTitle(deletingProspect) : ""}"? 
+              Esta acción no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteProspect} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };
