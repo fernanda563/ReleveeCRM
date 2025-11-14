@@ -201,17 +201,14 @@ export const ClientTimeline = ({ clientId }: ClientTimelineProps) => {
   return (
     <>
       <div className="relative space-y-6">
-        {events.map((event, index) => (
+        {/* Continuous vertical line behind icons */}
+        <div className="pointer-events-none absolute left-[1.4375rem] top-0 bottom-0 w-0.5 bg-border" />
+        {events.map((event) => (
           <div key={event.id} className="relative">
-            {/* Connector line - shown for all items except the last one */}
-            {index !== events.length - 1 && (
-              <div className="absolute left-[1.4375rem] top-[3.5rem] bottom-[-1.5rem] w-0.5 bg-border" />
-            )}
-            
             {/* Si es proyecto, usar ProspectCard */}
             {event.type === "prospect" && event.prospectData ? (
               <div className="relative pl-16">
-                <div className="absolute left-0 top-4 p-3 rounded-full bg-primary/10 flex-shrink-0 w-[2.875rem] h-[2.875rem] flex items-center justify-center">
+                <div className="absolute left-0 top-4 z-10 p-3 rounded-full bg-primary/10 w-[2.875rem] h-[2.875rem] flex items-center justify-center">
                   <Gem className="h-5 w-5 text-primary" />
                 </div>
                 <ProspectCard
@@ -222,7 +219,7 @@ export const ClientTimeline = ({ clientId }: ClientTimelineProps) => {
             ) : (
               /* Otros eventos con la tarjeta original */
               <div className="relative pl-16">
-                <div className={`absolute left-0 top-4 p-3 rounded-full ${getTypeColor(event.type)} flex-shrink-0 w-[2.875rem] h-[2.875rem] flex items-center justify-center`}>
+                <div className={`absolute left-0 top-4 z-10 p-3 rounded-full ${getTypeColor(event.type)} w-[2.875rem] h-[2.875rem] flex items-center justify-center`}>
                   {getIcon(event.type)}
                 </div>
                 <Card>
