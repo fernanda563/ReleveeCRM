@@ -24,11 +24,6 @@ const OrderPrint = () => {
               apellido,
               telefono_principal,
               email
-            ),
-            stl_files (
-              id,
-              nombre,
-              stl_file_url
             )
           `)
           .eq("id", orderId)
@@ -36,7 +31,8 @@ const OrderPrint = () => {
 
         if (orderError) {
           console.error("Error fetching order:", orderError);
-          throw orderError;
+          console.error("Error details:", JSON.stringify(orderError, null, 2));
+          throw new Error(`Error al cargar orden: ${orderError.message || JSON.stringify(orderError)}`);
         }
         if (!orderData) {
           console.error("No order found with ID:", orderId);
@@ -95,7 +91,12 @@ const OrderPrint = () => {
         }, 500);
       } catch (err) {
         console.error("Error in fetchData:", err);
-        setError(err instanceof Error ? err.message : "Error al cargar la orden");
+        console.error("Error type:", typeof err);
+        console.error("Error details:", err);
+        const errorMessage = err instanceof Error ? err.message : 
+                            (err && typeof err === 'object' && 'message' in err) ? String(err.message) :
+                            "Error desconocido al cargar la orden";
+        setError(errorMessage);
         setLoading(false);
       }
     };
