@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { ImportedTheme } from '@/lib/theme-presets';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Check, Calendar, ExternalLink, Star, Trash2 } from 'lucide-react';
+import { Check, Calendar, ExternalLink, Star, Trash2, Pencil } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Input } from '@/components/ui/input';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,13 +23,16 @@ interface ThemeGalleryProps {
   onApply: (themeId: string) => Promise<void>;
   onSetDefault: (themeId: string) => Promise<void>;
   onDelete: (themeId: string) => Promise<void>;
+  onRename: (themeId: string, newName: string) => Promise<void>;
 }
 
-export function ThemeGallery({ importedThemes, activeThemeId, onApply, onSetDefault, onDelete }: ThemeGalleryProps) {
+export function ThemeGallery({ importedThemes, activeThemeId, onApply, onSetDefault, onDelete, onRename }: ThemeGalleryProps) {
   const [applying, setApplying] = useState<string | null>(null);
   const [settingDefault, setSettingDefault] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [themeToDelete, setThemeToDelete] = useState<ImportedTheme | null>(null);
+  const [editingThemeId, setEditingThemeId] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState('');
 
   const handleApply = async (themeId: string) => {
     setApplying(themeId);
@@ -62,6 +66,31 @@ export function ThemeGallery({ importedThemes, activeThemeId, onApply, onSetDefa
       setThemeToDelete(null);
     } catch (error) {
       console.error('Error deleting theme:', error);
+    }
+  };
+
+  const startEditing = (theme: ImportedTheme) => {
+    setEditingThemeId(theme.id);
+    setEditingName(theme.name);
+  };
+
+  const cancelEditing = () => {
+    setEditingThemeId(null);
+    setEditingName('');
+  };
+
+  const saveRename = async (themeId: string) => {
+    if (editingName.trim() === '') {
+      cancelEditing();
+      return;
+    }
+    
+    try {
+      await onRename(themeId, editingName);
+      setEditingThemeId(null);
+      setEditingName('');
+    } catch (error) {
+      console.error('Error renaming theme:', error);
     }
   };
 
@@ -107,7 +136,44 @@ export function ThemeGallery({ importedThemes, activeThemeId, onApply, onSetDefa
                 <div className="flex items-start justify-between">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <CardTitle className="text-base truncate">{theme.name}</CardTitle>
+                      {editingThemeId === theme.id ? (
+                        <div className="flex items-center gap-2 flex-1">
+                          <Input
+                            value={editingName}
+                            onChange={(e) => setEditingName(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                saveRename(theme.id);
+                              } else if (e.key === 'Escape') {
+                                cancelEditing();
+                              }
+                            }}
+                            className="h-7 text-base"
+                            autoFocus
+                          />
+                          <Button
+                            onClick={() => saveRename(theme.id)}
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 px-2"
+                          >
+                            <Check className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <>
+                          <CardTitle className="text-base truncate">{theme.name}</CardTitle>
+                          <Button
+                            onClick={() => startEditing(theme)}
+                            size="sm"
+                            variant="ghost"
+                            className="h-6 w-6 p-0"
+                            title="Editar nombre"
+                          >
+                            <Pencil className="h-3 w-3" />
+                          </Button>
+                        </>
+                      )}
                       {isDefault && (
                         <Badge variant="secondary" className="flex items-center gap-1">
                           <Star className="h-3 w-3 fill-current" />

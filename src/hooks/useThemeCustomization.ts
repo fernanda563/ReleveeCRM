@@ -300,6 +300,34 @@ export const useThemeCustomization = () => {
     }
   };
 
+  const renameTheme = async (themeId: string, newName: string) => {
+    try {
+      if (!newName.trim()) {
+        toast.error('El nombre no puede estar vacío');
+        return;
+      }
+
+      // Update the theme name
+      const updatedThemes = config.importedThemes.map(t => 
+        t.id === themeId ? { ...t, name: newName.trim() } : t
+      );
+
+      // Update config state
+      setConfig({
+        ...config,
+        importedThemes: updatedThemes,
+      });
+
+      // Save to database
+      await updateSetting('imported_themes', updatedThemes, 'appearance');
+
+      toast.success('Tema renombrado correctamente');
+    } catch (error) {
+      console.error('Error al renombrar tema:', error);
+      toast.error('Error al renombrar el tema');
+    }
+  };
+
   const resetToDefault = async () => {
     try {
       // If there are imported themes, apply the default one
@@ -342,6 +370,7 @@ export const useThemeCustomization = () => {
     applyCustomColors,
     setDefaultTheme,
     deleteTheme,
+    renameTheme,
     resetToDefault,
   };
 };

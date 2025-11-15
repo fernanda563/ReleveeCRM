@@ -12,7 +12,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useState } from "react";
 
 export function AppearanceSettingsCard() {
-  const { config, loading, importFromTweakCN, applyImportedTheme, applyCustomColors, setDefaultTheme, deleteTheme, resetToDefault } = useThemeCustomization();
+  const { config, loading, importFromTweakCN, applyImportedTheme, applyCustomColors, setDefaultTheme, deleteTheme, renameTheme, resetToDefault } = useThemeCustomization();
   const [selectedView, setSelectedView] = useState<'gallery' | 'import' | 'editor'>('gallery');
 
   if (loading) {
@@ -80,6 +80,7 @@ export function AppearanceSettingsCard() {
               onApply={applyImportedTheme}
               onSetDefault={setDefaultTheme}
               onDelete={deleteTheme}
+              onRename={renameTheme}
             />
           )}
           
