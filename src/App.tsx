@@ -19,6 +19,7 @@ import RolesManagement from "./pages/RolesManagement";
 import OrderPrint from "./pages/OrderPrint";
 import NotFound from "./pages/NotFound";
 import { DashboardLayout } from "./components/DashboardLayout";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 
 const App = () => (
   <BrowserRouter>
@@ -27,7 +28,9 @@ const App = () => (
       <Route path="/" element={<Index />} />
       <Route path="/auth" element={<Auth />} />
       <Route path="/stl-viewer-fullscreen" element={<STLViewerFullscreen />} />
-      <Route path="/order-print/:orderId" element={<OrderPrint />} />
+      <Route element={<ProtectedRoute />}>
+        <Route path="/order-print/:orderId" element={<OrderPrint />} />
+      </Route>
       <Route element={<DashboardLayout />}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/crm" element={<CRM />} />

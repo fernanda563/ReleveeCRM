@@ -6,18 +6,37 @@ import { Loader2 } from "lucide-react";
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-const waitForSession = async (timeout = 5000) => {
-  const startTime = Date.now();
-  while (Date.now() - startTime < timeout) {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session) {
-      console.log("Session ready:", session.user.id);
-      return true;
-    }
-    await sleep(100);
-  }
-  console.warn("Session not ready after timeout");
-  return false;
+const waitForSession = async (timeout = 5000): Promise<boolean> => {
+  return new Promise((resolve) => {
+    const timeoutId = setTimeout(() => {
+      subscription.unsubscribe();
+      console.warn("Session not ready after timeout");
+      resolve(false);
+    }, timeout);
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'INITIAL_SESSION' || (event === 'SIGNED_IN' && session)) {
+        clearTimeout(timeoutId);
+        subscription.unsubscribe();
+        if (session) {
+          console.log("Session ready:", session.user.id);
+          resolve(true);
+        } else {
+          resolve(false);
+        }
+      }
+    });
+
+    // Also check immediately in case session is already available
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        clearTimeout(timeoutId);
+        subscription.unsubscribe();
+        console.log("Session already available:", session.user.id);
+        resolve(true);
+      }
+    });
+  });
 };
 
 const OrderPrint = () => {
