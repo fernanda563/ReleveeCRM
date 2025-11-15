@@ -86,6 +86,13 @@ function parseAnyColorToHsl(color: string): { h: number; s: number; l: number } 
 }
 
 function normalizeToHslString(color: string): string {
+  color = color.trim();
+  
+  // Si ya es OKLCH, mantenerlo tal cual (soporte nativo en navegadores modernos)
+  if (/^oklch\([^)]+\)$/i.test(color)) {
+    return color;
+  }
+  
   const hsl = parseAnyColorToHsl(color);
   if (!hsl) {
     console.warn(`Could not parse color: ${color}, keeping original`);
