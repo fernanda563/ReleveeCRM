@@ -1,5 +1,7 @@
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useTheme } from "next-themes";
 import {
   LayoutDashboard,
   Users,
@@ -98,6 +100,16 @@ export function AppSidebar() {
   const { isAdmin } = useUserRole();
   const currentPath = location.pathname;
   const collapsed = state === "collapsed";
+  
+  const { theme, resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const currentTheme = mounted ? (theme === 'system' ? resolvedTheme : theme) : 'light';
+  const logoSrc = currentTheme === 'dark' ? '/logo-dark.svg' : '/logo-light.svg';
 
   const isActive = (path: string) => currentPath === path;
   
@@ -114,19 +126,19 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="border-b border-sidebar-border">
-        <div className="flex items-center gap-2 px-2 py-4">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-foreground">
-            <Gem className="h-5 w-5 text-background" />
-          </div>
-          {!collapsed && (
-            <div className="flex flex-col">
-              <span className="text-sm font-semibold text-sidebar-foreground">
-                Joyería Relevée
-              </span>
-              <span className="text-xs text-sidebar-foreground/70">
-                Sistema de Gestión
-              </span>
-            </div>
+        <div className="flex items-center justify-center px-2 py-4">
+          {mounted ? (
+            <img 
+              src={logoSrc}
+              alt="Joyería Relevée"
+              className={`object-contain transition-all duration-200 ${
+                collapsed 
+                  ? 'h-8 w-8' 
+                  : 'h-12 w-auto max-w-full'
+              }`}
+            />
+          ) : (
+            <div className={collapsed ? 'h-8 w-8' : 'h-12 w-32'} />
           )}
         </div>
       </SidebarHeader>
