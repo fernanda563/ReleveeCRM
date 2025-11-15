@@ -56,14 +56,15 @@ export const useThemeCustomization = () => {
         }
       }
       
-      // Combine DEFAULT_THEMES with imported themes
+      // Use only imported themes (no default themes)
       const importedThemes = settings.imported_themes || [];
-      const allThemes = [...DEFAULT_THEMES, ...importedThemes];
       
-      // Ensure exactly one theme is marked as default
-      const hasDefault = allThemes.some(t => t.isDefault);
-      if (!hasDefault && allThemes.length > 0) {
-        allThemes[0].isDefault = true;
+      // Ensure exactly one theme is marked as default if there are themes
+      if (importedThemes.length > 0) {
+        const hasDefault = importedThemes.some(t => t.isDefault);
+        if (!hasDefault) {
+          importedThemes[0].isDefault = true;
+        }
       }
       
       const newConfig: ThemeConfig = {
@@ -75,7 +76,7 @@ export const useThemeCustomization = () => {
         source: settings.theme_source || 'default',
         registryUrl: settings.tweakcn_registry_url,
         activePreset: settings.active_preset,
-        importedThemes: allThemes,
+        importedThemes: importedThemes,
       };
       
       setConfig(newConfig);
@@ -132,9 +133,10 @@ export const useThemeCustomization = () => {
         isDefault: false,
       };
 
-      // Filter out default themes and add to imported themes
-      const userImportedThemes = config.importedThemes.filter(t => !DEFAULT_THEMES.find(dt => dt.id === t.id));
-      const updatedThemes = [...userImportedThemes, newTheme];
+      // Get current imported themes and add new one at the beginning
+      // Keep only the last 4 themes (FIFO - First In, First Out)
+      const currentThemes = config.importedThemes || [];
+      const updatedThemes = [newTheme, ...currentThemes].slice(0, 4);
       
       // Update config state
       setConfig({
@@ -146,13 +148,13 @@ export const useThemeCustomization = () => {
         source: 'tweakcn',
         registryUrl,
         activePreset: newTheme.id,
-        importedThemes: [...DEFAULT_THEMES, ...updatedThemes],
+        importedThemes: updatedThemes,
       });
 
       // Apply the imported theme
       applyThemeColors(parsed.light, parsed.dark);
 
-      // Save to database (only user-imported themes, not defaults)
+      // Save to database
       await updateSetting('custom_theme_light', parsed.light, 'appearance');
       await updateSetting('custom_theme_dark', parsed.dark, 'appearance');
       await updateSetting('theme_source', 'tweakcn', 'appearance');
@@ -205,22 +207,19 @@ export const useThemeCustomization = () => {
   const setDefaultTheme = async (themeId: string) => {
     try {
       // Update all themes to mark only the selected one as default
-      const updatedAllThemes = config.importedThemes.map(t => ({
+      const updatedThemes = config.importedThemes.map(t => ({
         ...t,
         isDefault: t.id === themeId,
       }));
 
-      // Filter out default themes for saving
-      const userImportedThemes = updatedAllThemes.filter(t => !DEFAULT_THEMES.find(dt => dt.id === t.id));
-
       // Update config state
       setConfig({
         ...config,
-        importedThemes: updatedAllThemes,
+        importedThemes: updatedThemes,
       });
 
-      // Save to database (only user-imported themes)
-      await updateSetting('imported_themes', userImportedThemes, 'appearance');
+      // Save to database
+      await updateSetting('imported_themes', updatedThemes, 'appearance');
 
       toast.success('Tema predeterminado actualizado');
     } catch (error) {
@@ -260,39 +259,39 @@ export const useThemeCustomization = () => {
 
   const deleteTheme = async (themeId: string) => {
     try {
-      // Check if it's a default theme (cannot be deleted)
-      const isDefaultTheme = DEFAULT_THEMES.find(t => t.id === themeId);
-      if (isDefaultTheme) {
-        toast.error('No puedes eliminar un tema precargado');
-        return;
-      }
-
       // Filter out the theme to delete
-      const updatedAllThemes = config.importedThemes.filter(t => t.id !== themeId);
-      const userImportedThemes = updatedAllThemes.filter(t => !DEFAULT_THEMES.find(dt => dt.id === t.id));
+      const updatedThemes = config.importedThemes.filter(t => t.id !== themeId);
 
-      // If deleted theme was the active one, apply default theme
+      // If deleted theme was the active one, apply first available theme or default colors
       if (config.activePreset === themeId) {
-        const defaultTheme = updatedAllThemes.find(t => t.isDefault) || DEFAULT_THEMES[0];
-        await applyImportedTheme(defaultTheme.id);
+        if (updatedThemes.length > 0) {
+          const nextTheme = updatedThemes.find(t => t.isDefault) || updatedThemes[0];
+          await applyImportedTheme(nextTheme.id);
+        } else {
+          // No themes left, apply default Lovable Original theme
+          const defaultTheme = DEFAULT_THEMES[0];
+          applyThemeColors(defaultTheme.light, defaultTheme.dark);
+          await updateSetting('custom_theme_light', defaultTheme.light, 'appearance');
+          await updateSetting('custom_theme_dark', defaultTheme.dark, 'appearance');
+          await updateSetting('theme_source', 'default', 'appearance');
+          await updateSetting('active_preset', null, 'appearance');
+        }
       }
 
       // If deleted theme was the default, set first theme as default
       const deletedTheme = config.importedThemes.find(t => t.id === themeId);
-      if (deletedTheme?.isDefault && updatedAllThemes.length > 0) {
-        updatedAllThemes[0].isDefault = true;
-        const updatedUserThemes = updatedAllThemes.filter(t => !DEFAULT_THEMES.find(dt => dt.id === t.id));
-        await updateSetting('imported_themes', updatedUserThemes, 'appearance');
+      if (deletedTheme?.isDefault && updatedThemes.length > 0) {
+        updatedThemes[0].isDefault = true;
       }
 
       // Update config state
       setConfig({
         ...config,
-        importedThemes: updatedAllThemes,
+        importedThemes: updatedThemes,
       });
 
       // Save to database
-      await updateSetting('imported_themes', userImportedThemes, 'appearance');
+      await updateSetting('imported_themes', updatedThemes, 'appearance');
 
       toast.success('Tema eliminado correctamente');
     } catch (error) {
@@ -303,11 +302,30 @@ export const useThemeCustomization = () => {
 
   const resetToDefault = async () => {
     try {
-      // Find the default theme
-      const defaultTheme = config.importedThemes.find(t => t.isDefault) || DEFAULT_THEMES[0];
-
-      // Apply the default theme
-      await applyImportedTheme(defaultTheme.id);
+      // If there are imported themes, apply the default one
+      if (config.importedThemes.length > 0) {
+        const defaultTheme = config.importedThemes.find(t => t.isDefault) || config.importedThemes[0];
+        await applyImportedTheme(defaultTheme.id);
+      } else {
+        // No imported themes, apply Lovable Original default
+        const defaultTheme = DEFAULT_THEMES[0];
+        applyThemeColors(defaultTheme.light, defaultTheme.dark);
+        
+        await updateSetting('custom_theme_light', defaultTheme.light, 'appearance');
+        await updateSetting('custom_theme_dark', defaultTheme.dark, 'appearance');
+        await updateSetting('theme_source', 'default', 'appearance');
+        await updateSetting('active_preset', null, 'appearance');
+        
+        setConfig({
+          ...config,
+          customColors: {
+            light: defaultTheme.light,
+            dark: defaultTheme.dark,
+          },
+          source: 'default',
+          activePreset: undefined,
+        });
+      }
 
       toast.success('Tema restablecido al predeterminado');
     } catch (error) {

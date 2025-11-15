@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ImportedTheme, DEFAULT_THEMES } from '@/lib/theme-presets';
+import { ImportedTheme } from '@/lib/theme-presets';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Check, Calendar, ExternalLink, Star, Trash2 } from 'lucide-react';
@@ -69,7 +69,7 @@ export function ThemeGallery({ importedThemes, activeThemeId, onApply, onSetDefa
     return (
       <Alert>
         <AlertDescription>
-          No hay temas disponibles.
+          No hay temas importados. Ve a la pestaña "Importar desde TweakCN" para agregar temas. Puedes mantener hasta 4 temas guardados.
         </AlertDescription>
       </Alert>
     );
@@ -77,6 +77,12 @@ export function ThemeGallery({ importedThemes, activeThemeId, onApply, onSetDefa
 
   return (
     <div className="space-y-4">
+      <Alert>
+        <AlertDescription>
+          Puedes guardar hasta 4 temas importados. Al importar un nuevo tema, el más antiguo se eliminará automáticamente.
+        </AlertDescription>
+      </Alert>
+      
       <div className="grid grid-cols-1 gap-4">
         {importedThemes.map((theme) => {
           const isActive = activeThemeId === theme.id;
@@ -191,17 +197,15 @@ export function ThemeGallery({ importedThemes, activeThemeId, onApply, onSetDefa
                     </Button>
                   )}
                   
-                  {!DEFAULT_THEMES.find(dt => dt.id === theme.id) && (
-                     <Button
-                      onClick={() => openDeleteDialog(theme)}
-                      variant="outline"
-                      size="sm"
-                      className="text-destructive hover:text-destructive"
-                      title="Eliminar tema"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
+                  <Button
+                    onClick={() => openDeleteDialog(theme)}
+                    variant="outline"
+                    size="sm"
+                    className="text-destructive hover:text-destructive"
+                    title="Eliminar tema"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </div>
               </CardContent>
             </Card>
