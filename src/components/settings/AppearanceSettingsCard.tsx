@@ -14,7 +14,7 @@ export function AppearanceSettingsCard() {
 
   if (loading) {
     return (
-      <Card className="md:col-span-2">
+      <Card>
         <CardHeader>
           <Skeleton className="h-6 w-48" />
           <Skeleton className="h-4 w-64" />
@@ -27,7 +27,7 @@ export function AppearanceSettingsCard() {
   }
 
   return (
-    <Card className="md:col-span-2">
+    <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
