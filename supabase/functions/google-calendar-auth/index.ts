@@ -72,6 +72,9 @@ serve(async (req) => {
         `state=${user.id}`;
 
       console.log('Generated auth URL successfully');
+      console.log('Redirect URI:', redirectUri);
+      console.log('Client ID (first 10 chars):', clientId.substring(0, 10));
+      
       return new Response(JSON.stringify({ authUrl }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
