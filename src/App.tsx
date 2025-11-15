@@ -28,9 +28,7 @@ const App = () => (
       <Route path="/" element={<Index />} />
       <Route path="/auth" element={<Auth />} />
       <Route path="/stl-viewer-fullscreen" element={<STLViewerFullscreen />} />
-      <Route element={<ProtectedRoute />}>
-        <Route path="/order-print/:orderId" element={<OrderPrint />} />
-      </Route>
+      <Route path="/order-print/:orderId" element={<OrderPrint />} />
       <Route element={<DashboardLayout />}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/crm" element={<CRM />} />
