@@ -14,6 +14,8 @@ import AuditLog from "./pages/AuditLog";
 import STLCollection from "./pages/STLCollection";
 import STLViewerFullscreen from "./pages/STLViewerFullscreen";
 import CalendarAdmin from "./pages/CalendarAdmin";
+import SystemSettings from "./pages/SystemSettings";
+import RolesManagement from "./pages/RolesManagement";
 import NotFound from "./pages/NotFound";
 import { DashboardLayout } from "./components/DashboardLayout";
 
@@ -35,6 +37,9 @@ const App = () => (
         <Route path="/stl-collection" element={<STLCollection />} />
         <Route path="/audit-log" element={<AuditLog />} />
         <Route path="/calendar-admin" element={<CalendarAdmin />} />
+        <Route path="/settings/calendar" element={<CalendarAdmin />} />
+        <Route path="/settings/system" element={<SystemSettings />} />
+        <Route path="/settings/roles" element={<RolesManagement />} />
       </Route>
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />

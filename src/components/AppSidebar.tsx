@@ -10,6 +10,10 @@ import {
   BarChart3,
   FileText,
   Box,
+  Settings,
+  Calendar,
+  Cog,
+  Users2,
 } from "lucide-react";
 import { useUserRole } from "@/hooks/useUserRole";
 import {
@@ -25,6 +29,12 @@ import {
   SidebarFooter,
   useSidebar,
 } from "@/components/ui/sidebar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -150,6 +160,39 @@ export function AppSidebar() {
 
       <SidebarFooter className="border-t border-sidebar-border">
         <SidebarMenu>
+          {isAdmin() && (
+            <SidebarMenuItem>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <SidebarMenuButton
+                    tooltip={collapsed ? "Configuración" : undefined}
+                  >
+                    <Settings className="h-4 w-4" />
+                    <span>Configuración</span>
+                  </SidebarMenuButton>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  side="top"
+                  align="end"
+                  sideOffset={8}
+                  className="w-56"
+                >
+                  <DropdownMenuItem onClick={() => navigate('/settings/calendar')}>
+                    <Calendar className="mr-2 h-4 w-4" />
+                    Google Calendar
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/settings/system')}>
+                    <Cog className="mr-2 h-4 w-4" />
+                    Sistema
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/settings/roles')}>
+                    <Users2 className="mr-2 h-4 w-4" />
+                    Gestión de Roles
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </SidebarMenuItem>
+          )}
           <SidebarMenuItem>
             <SidebarMenuButton
               onClick={handleLogout}
