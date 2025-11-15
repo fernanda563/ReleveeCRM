@@ -1,0 +1,461 @@
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
+
+interface OrderPrintViewProps {
+  order: {
+    id: string;
+    custom_id: string | null;
+    created_at: string;
+    fecha_entrega_esperada: string | null;
+    precio_venta: number;
+    importe_anticipo: number;
+    forma_pago: string;
+    estatus_pago: string;
+    metal_tipo: string;
+    metal_pureza: string | null;
+    metal_color: string | null;
+    piedra_tipo: string;
+    diamante_forma: string | null;
+    diamante_quilataje: number | null;
+    diamante_color: string | null;
+    diamante_claridad: string | null;
+    diamante_corte: string | null;
+    tipo_accesorio: string | null;
+    talla: number | null;
+    estatus_piedra: string | null;
+    estatus_montura: string | null;
+    notas: string | null;
+    clients: {
+      nombre: string;
+      apellido: string;
+      telefono_principal: string;
+      email: string;
+    };
+  };
+  companyInfo: {
+    name: string;
+    logo_light_url: string | null;
+    address: string | null;
+    phone: string | null;
+    email: string | null;
+  };
+}
+
+const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat("es-MX", {
+      style: "currency",
+      currency: "MXN",
+    }).format(amount);
+  };
+
+  const formatDate = (dateString: string) => {
+    return format(new Date(dateString), "d 'de' MMMM 'de' yyyy", { locale: es });
+  };
+
+  const getPaymentStatusText = (status: string) => {
+    const statusMap: Record<string, string> = {
+      anticipo_recibido: "Anticipo Recibido",
+      liquidado: "Liquidado",
+    };
+    return statusMap[status] || status;
+  };
+
+  const getStoneStatusText = (status: string | null) => {
+    if (!status) return "—";
+    const statusMap: Record<string, string> = {
+      en_busqueda: "En Búsqueda",
+      adquirida: "Adquirida",
+      piedra_montada: "Piedra Montada",
+    };
+    return statusMap[status] || status;
+  };
+
+  const getMountingStatusText = (status: string | null) => {
+    if (!status) return "—";
+    const statusMap: Record<string, string> = {
+      en_espera: "En Espera",
+      en_fundicion: "En Fundición",
+      en_ensamble: "En Ensamble",
+      entregado_levant: "Entregado",
+    };
+    return statusMap[status] || status;
+  };
+
+  const saldoPendiente = order.precio_venta - order.importe_anticipo;
+
+  return (
+    <div className="print-container">
+      <style>{`
+        @page {
+          size: letter;
+          margin: 0.75in;
+        }
+
+        @media print {
+          body {
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+
+          .no-print {
+            display: none !important;
+          }
+
+          * {
+            color: #000 !important;
+            background-color: #fff !important;
+          }
+
+          img {
+            filter: grayscale(100%);
+          }
+        }
+
+        .print-container {
+          font-family: 'Inter', 'system-ui', sans-serif;
+          max-width: 8.5in;
+          margin: 0 auto;
+          padding: 0;
+          color: #000;
+          background: #fff;
+        }
+
+        .print-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          margin-bottom: 24px;
+          padding-bottom: 16px;
+          border-bottom: 2px solid #000;
+        }
+
+        .company-logo {
+          max-width: 120px;
+          max-height: 80px;
+          object-fit: contain;
+        }
+
+        .company-info {
+          text-align: right;
+          font-size: 9px;
+          line-height: 1.4;
+        }
+
+        .print-title {
+          text-align: center;
+          font-size: 28px;
+          font-weight: 700;
+          letter-spacing: 0.05em;
+          margin-bottom: 24px;
+          text-transform: uppercase;
+        }
+
+        .info-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 24px;
+          margin-bottom: 24px;
+        }
+
+        .info-section {
+          border: 1px solid #000;
+          padding: 12px;
+        }
+
+        .section-title {
+          font-size: 14px;
+          font-weight: 700;
+          margin-bottom: 8px;
+          text-transform: uppercase;
+          border-bottom: 1px solid #000;
+          padding-bottom: 4px;
+        }
+
+        .info-row {
+          display: flex;
+          margin-bottom: 6px;
+          font-size: 11px;
+        }
+
+        .info-label {
+          font-weight: 600;
+          min-width: 120px;
+        }
+
+        .info-value {
+          flex: 1;
+        }
+
+        .full-section {
+          border: 1px solid #000;
+          padding: 12px;
+          margin-bottom: 16px;
+        }
+
+        .table-section {
+          width: 100%;
+          border-collapse: collapse;
+          margin-top: 8px;
+        }
+
+        .table-section td {
+          border: 1px solid #000;
+          padding: 8px;
+          font-size: 11px;
+        }
+
+        .table-section td:first-child {
+          font-weight: 600;
+          width: 180px;
+          background-color: #f5f5f5;
+        }
+
+        .financial-table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-top: 8px;
+        }
+
+        .financial-table tr {
+          border-bottom: 1px solid #000;
+        }
+
+        .financial-table td {
+          padding: 8px;
+          font-size: 11px;
+        }
+
+        .financial-table td:first-child {
+          font-weight: 600;
+        }
+
+        .financial-table td:last-child {
+          text-align: right;
+          font-weight: 700;
+        }
+
+        .financial-total {
+          background-color: #f5f5f5;
+          font-size: 12px !important;
+        }
+
+        .print-footer {
+          margin-top: 48px;
+          padding-top: 16px;
+          border-top: 1px solid #000;
+        }
+
+        .signature-line {
+          margin-top: 48px;
+          border-top: 1px solid #000;
+          width: 300px;
+          text-align: center;
+          padding-top: 8px;
+          font-size: 10px;
+        }
+
+        .footer-text {
+          font-size: 9px;
+          color: #666;
+          margin-top: 16px;
+        }
+      `}</style>
+
+      {/* Header */}
+      <div className="print-header">
+        <div>
+          {companyInfo.logo_light_url && (
+            <img
+              src={companyInfo.logo_light_url}
+              alt={companyInfo.name}
+              className="company-logo"
+            />
+          )}
+        </div>
+        <div className="company-info">
+          <div style={{ fontSize: '12px', fontWeight: 700 }}>{companyInfo.name}</div>
+          {companyInfo.address && <div>{companyInfo.address}</div>}
+          {companyInfo.phone && <div>Tel: {companyInfo.phone}</div>}
+          {companyInfo.email && <div>Email: {companyInfo.email}</div>}
+        </div>
+      </div>
+
+      {/* Title */}
+      <div className="print-title">Orden de Compra</div>
+
+      {/* Client and Order Info Grid */}
+      <div className="info-grid">
+        <div className="info-section">
+          <div className="section-title">Información del Cliente</div>
+          <div className="info-row">
+            <span className="info-label">Nombre:</span>
+            <span className="info-value">
+              {order.clients.nombre} {order.clients.apellido}
+            </span>
+          </div>
+          <div className="info-row">
+            <span className="info-label">Teléfono:</span>
+            <span className="info-value">{order.clients.telefono_principal}</span>
+          </div>
+          <div className="info-row">
+            <span className="info-label">Email:</span>
+            <span className="info-value">{order.clients.email}</span>
+          </div>
+        </div>
+
+        <div className="info-section">
+          <div className="section-title">Información de la Orden</div>
+          <div className="info-row">
+            <span className="info-label">ID de Orden:</span>
+            <span className="info-value">{order.custom_id || order.id.slice(0, 8)}</span>
+          </div>
+          <div className="info-row">
+            <span className="info-label">Fecha de Creación:</span>
+            <span className="info-value">{formatDate(order.created_at)}</span>
+          </div>
+          {order.fecha_entrega_esperada && (
+            <div className="info-row">
+              <span className="info-label">Entrega Esperada:</span>
+              <span className="info-value">{formatDate(order.fecha_entrega_esperada)}</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Product Details */}
+      <div className="full-section">
+        <div className="section-title">Detalles del Producto</div>
+        <table className="table-section">
+          <tbody>
+            {order.tipo_accesorio && (
+              <tr>
+                <td>Tipo de Accesorio</td>
+                <td>{order.tipo_accesorio.charAt(0).toUpperCase() + order.tipo_accesorio.slice(1)}</td>
+              </tr>
+            )}
+            {order.talla && (
+              <tr>
+                <td>Talla</td>
+                <td>{order.talla}</td>
+              </tr>
+            )}
+            <tr>
+              <td>Metal</td>
+              <td>
+                {order.metal_tipo.charAt(0).toUpperCase() + order.metal_tipo.slice(1)}
+                {order.metal_pureza && ` - ${order.metal_pureza}`}
+                {order.metal_color && ` - ${order.metal_color.charAt(0).toUpperCase() + order.metal_color.slice(1)}`}
+              </td>
+            </tr>
+            <tr>
+              <td>Piedra</td>
+              <td>{order.piedra_tipo.charAt(0).toUpperCase() + order.piedra_tipo.slice(1)}</td>
+            </tr>
+            {order.diamante_forma && (
+              <tr>
+                <td>Forma de la Piedra</td>
+                <td>{order.diamante_forma.charAt(0).toUpperCase() + order.diamante_forma.slice(1)}</td>
+              </tr>
+            )}
+            {order.diamante_quilataje && (
+              <tr>
+                <td>Quilataje</td>
+                <td>{order.diamante_quilataje} ct</td>
+              </tr>
+            )}
+            {order.diamante_color && (
+              <tr>
+                <td>Color</td>
+                <td>{order.diamante_color}</td>
+              </tr>
+            )}
+            {order.diamante_claridad && (
+              <tr>
+                <td>Claridad</td>
+                <td>{order.diamante_claridad}</td>
+              </tr>
+            )}
+            {order.diamante_corte && (
+              <tr>
+                <td>Corte</td>
+                <td>{order.diamante_corte.charAt(0).toUpperCase() + order.diamante_corte.slice(1)}</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Financial Information */}
+      <div className="full-section">
+        <div className="section-title">Información Financiera</div>
+        <table className="financial-table">
+          <tbody>
+            <tr>
+              <td>Precio Total</td>
+              <td>{formatCurrency(order.precio_venta)}</td>
+            </tr>
+            <tr>
+              <td>Anticipo Recibido</td>
+              <td>{formatCurrency(order.importe_anticipo)}</td>
+            </tr>
+            <tr className="financial-total">
+              <td>Saldo Pendiente</td>
+              <td>{formatCurrency(saldoPendiente)}</td>
+            </tr>
+            <tr>
+              <td>Forma de Pago</td>
+              <td style={{ fontWeight: 400 }}>{order.forma_pago}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      {/* Production Status */}
+      <div className="full-section">
+        <div className="section-title">Estado de Producción</div>
+        <table className="table-section">
+          <tbody>
+            <tr>
+              <td>Estado de la Piedra</td>
+              <td>{getStoneStatusText(order.estatus_piedra)}</td>
+            </tr>
+            <tr>
+              <td>Estado de la Montura</td>
+              <td>{getMountingStatusText(order.estatus_montura)}</td>
+            </tr>
+            <tr>
+              <td>Estado de Pago</td>
+              <td>{getPaymentStatusText(order.estatus_pago)}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      {/* Notes */}
+      {order.notas && (
+        <div className="full-section">
+          <div className="section-title">Notas Adicionales</div>
+          <div style={{ fontSize: '11px', marginTop: '8px', lineHeight: '1.5' }}>
+            {order.notas}
+          </div>
+        </div>
+      )}
+
+      {/* Footer */}
+      <div className="print-footer">
+        <div className="signature-line">
+          Firma del Cliente
+        </div>
+        <div className="footer-text">
+          <div>Documento generado el {formatDate(new Date().toISOString())}</div>
+          <div style={{ marginTop: '4px' }}>
+            Este documento es una representación oficial de la orden de compra.
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default OrderPrintView;

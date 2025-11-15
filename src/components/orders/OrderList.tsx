@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Edit, Loader2, Eye, ChevronDown } from "lucide-react";
+import { Edit, Loader2, Eye, ChevronDown, FileText } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,6 +20,10 @@ interface OrderListProps {
 }
 
 const OrderList = ({ orders, loading, onEdit }: OrderListProps) => {
+  const handleGeneratePDF = (order: Order) => {
+    window.open(`/order-print/${order.id}`, '_blank', 'width=850,height=1100');
+  };
+
   const getPaymentStatusBadge = (status: string) => {
     if (status === "liquidado") {
       return <Badge className="bg-foreground text-background">Liquidado</Badge>;
@@ -111,7 +115,14 @@ const OrderList = ({ orders, loading, onEdit }: OrderListProps) => {
                         <Edit className="h-4 w-4 mr-2" />
                         Editar
                       </DropdownMenuItem>
-                      <DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleGeneratePDF(order)}>
+                        <FileText className="h-4 w-4 mr-2" />
+                        Generar PDF
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => {
+                        const detailUrl = `/crm/${order.client_id}`;
+                        window.open(detailUrl, '_blank');
+                      }}>
                         <Eye className="h-4 w-4 mr-2" />
                         Ver Detalles
                       </DropdownMenuItem>
