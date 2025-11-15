@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Building2, Loader2, Upload, X } from "lucide-react";
+import { Building2, Loader2, Upload, X, Sun, Moon } from "lucide-react";
 import { useSystemSettings } from "@/hooks/useSystemSettings";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,15 +14,19 @@ export function CompanySettingsCard() {
   const { settings, loading, updateSetting } = useSystemSettings('company');
   const { toast } = useToast();
   const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [logoPreview, setLogoPreview] = useState<string | null>(null);
-  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [uploadingLight, setUploadingLight] = useState(false);
+  const [uploadingDark, setUploadingDark] = useState(false);
+  const [logoLightPreview, setLogoLightPreview] = useState<string | null>(null);
+  const [logoDarkPreview, setLogoDarkPreview] = useState<string | null>(null);
+  const [logoLightFile, setLogoLightFile] = useState<File | null>(null);
+  const [logoDarkFile, setLogoDarkFile] = useState<File | null>(null);
   const [formData, setFormData] = useState({
     company_name: '',
     company_address: '',
     company_phone: '',
     company_email: '',
-    company_logo_url: '',
+    company_logo_light_url: '',
+    company_logo_dark_url: '',
   });
 
   useEffect(() => {
@@ -32,16 +36,20 @@ export function CompanySettingsCard() {
         company_address: settings.company_address || '',
         company_phone: settings.company_phone || '',
         company_email: settings.company_email || '',
-        company_logo_url: settings.company_logo_url || '',
+        company_logo_light_url: settings.company_logo_light_url || settings.company_logo_url || '',
+        company_logo_dark_url: settings.company_logo_dark_url || settings.company_logo_url || '',
       });
       
-      if (settings.company_logo_url) {
-        setLogoPreview(settings.company_logo_url);
+      if (settings.company_logo_light_url || settings.company_logo_url) {
+        setLogoLightPreview(settings.company_logo_light_url || settings.company_logo_url);
+      }
+      if (settings.company_logo_dark_url || settings.company_logo_url) {
+        setLogoDarkPreview(settings.company_logo_dark_url || settings.company_logo_url);
       }
     }
   }, [loading, settings]);
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>, type: 'light' | 'dark') => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -65,45 +73,65 @@ export function CompanySettingsCard() {
       return;
     }
 
-    setLogoFile(file);
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setLogoPreview(reader.result as string);
-    };
-    reader.readAsDataURL(file);
+    if (type === 'light') {
+      setLogoLightFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setLogoLightPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setLogoDarkFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setLogoDarkPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
-  const handleRemoveLogo = async () => {
-    if (formData.company_logo_url) {
+  const handleRemoveLogo = async (type: 'light' | 'dark') => {
+    const urlKey = type === 'light' ? 'company_logo_light_url' : 'company_logo_dark_url';
+    const url = formData[urlKey];
+    
+    if (url) {
       // Eliminar del storage
-      const fileName = formData.company_logo_url.split('/').pop();
+      const fileName = url.split('/').pop();
       if (fileName) {
         await supabase.storage.from('company-assets').remove([`logos/${fileName}`]);
       }
     }
     
-    setLogoFile(null);
-    setLogoPreview(null);
-    setFormData({ ...formData, company_logo_url: '' });
-    await updateSetting('company_logo_url', '', 'company');
+    if (type === 'light') {
+      setLogoLightFile(null);
+      setLogoLightPreview(null);
+      setFormData({ ...formData, company_logo_light_url: '' });
+    } else {
+      setLogoDarkFile(null);
+      setLogoDarkPreview(null);
+      setFormData({ ...formData, company_logo_dark_url: '' });
+    }
+    
+    await updateSetting(urlKey, '', 'company');
   };
 
   const handleSave = async () => {
     setSaving(true);
     
     try {
-      let logoUrl = formData.company_logo_url;
+      let logoLightUrl = formData.company_logo_light_url;
+      let logoDarkUrl = formData.company_logo_dark_url;
 
-      // Si hay un nuevo archivo de logo, subirlo primero
-      if (logoFile) {
-        setUploading(true);
-        const fileExt = logoFile.name.split('.').pop();
-        const fileName = `logo-${Date.now()}.${fileExt}`;
+      // Subir logo claro si hay uno nuevo
+      if (logoLightFile) {
+        setUploadingLight(true);
+        const fileExt = logoLightFile.name.split('.').pop();
+        const fileName = `logo-light-${Date.now()}.${fileExt}`;
         const filePath = `logos/${fileName}`;
 
         // Eliminar logo anterior si existe
-        if (formData.company_logo_url) {
-          const oldFileName = formData.company_logo_url.split('/').pop();
+        if (formData.company_logo_light_url) {
+          const oldFileName = formData.company_logo_light_url.split('/').pop();
           if (oldFileName) {
             await supabase.storage.from('company-assets').remove([`logos/${oldFileName}`]);
           }
@@ -111,7 +139,7 @@ export function CompanySettingsCard() {
 
         const { error: uploadError } = await supabase.storage
           .from('company-assets')
-          .upload(filePath, logoFile, {
+          .upload(filePath, logoLightFile, {
             cacheControl: '3600',
             upsert: false
           });
@@ -123,8 +151,41 @@ export function CompanySettingsCard() {
           .from('company-assets')
           .getPublicUrl(filePath);
 
-        logoUrl = publicUrl;
-        setUploading(false);
+        logoLightUrl = publicUrl;
+        setUploadingLight(false);
+      }
+
+      // Subir logo oscuro si hay uno nuevo
+      if (logoDarkFile) {
+        setUploadingDark(true);
+        const fileExt = logoDarkFile.name.split('.').pop();
+        const fileName = `logo-dark-${Date.now()}.${fileExt}`;
+        const filePath = `logos/${fileName}`;
+
+        // Eliminar logo anterior si existe
+        if (formData.company_logo_dark_url) {
+          const oldFileName = formData.company_logo_dark_url.split('/').pop();
+          if (oldFileName) {
+            await supabase.storage.from('company-assets').remove([`logos/${oldFileName}`]);
+          }
+        }
+
+        const { error: uploadError } = await supabase.storage
+          .from('company-assets')
+          .upload(filePath, logoDarkFile, {
+            cacheControl: '3600',
+            upsert: false
+          });
+
+        if (uploadError) throw uploadError;
+
+        // Obtener URL pública
+        const { data: { publicUrl } } = supabase.storage
+          .from('company-assets')
+          .getPublicUrl(filePath);
+
+        logoDarkUrl = publicUrl;
+        setUploadingDark(false);
       }
 
       await Promise.all([
@@ -132,10 +193,12 @@ export function CompanySettingsCard() {
         updateSetting('company_address', formData.company_address, 'company'),
         updateSetting('company_phone', formData.company_phone, 'company'),
         updateSetting('company_email', formData.company_email, 'company'),
-        updateSetting('company_logo_url', logoUrl, 'company'),
+        updateSetting('company_logo_light_url', logoLightUrl, 'company'),
+        updateSetting('company_logo_dark_url', logoDarkUrl, 'company'),
       ]);
 
-      setLogoFile(null);
+      setLogoLightFile(null);
+      setLogoDarkFile(null);
     } catch (error) {
       console.error('Error saving company settings:', error);
       toast({
@@ -145,7 +208,8 @@ export function CompanySettingsCard() {
       });
     } finally {
       setSaving(false);
-      setUploading(false);
+      setUploadingLight(false);
+      setUploadingDark(false);
     }
   };
 
@@ -175,41 +239,87 @@ export function CompanySettingsCard() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="company_logo">Logo de la Empresa</Label>
-          <div className="flex items-center gap-4">
-            {logoPreview ? (
-              <div className="relative">
-                <img 
-                  src={logoPreview} 
-                  alt="Logo preview" 
-                  className="h-24 w-24 object-contain rounded-lg border border-border bg-background"
-                />
-                <Button
-                  type="button"
-                  variant="destructive"
-                  size="icon"
-                  className="absolute -top-2 -right-2 h-6 w-6 rounded-full"
-                  onClick={handleRemoveLogo}
-                >
-                  <X className="h-3 w-3" />
-                </Button>
-              </div>
-            ) : (
-              <div className="h-24 w-24 rounded-lg border-2 border-dashed border-border flex items-center justify-center bg-muted/50">
-                <Upload className="h-8 w-8 text-muted-foreground" />
-              </div>
-            )}
-            <div className="flex-1 space-y-2">
+        <div className="grid grid-cols-2 gap-4">
+          {/* Logo Claro */}
+          <div className="space-y-2">
+            <Label htmlFor="company_logo_light" className="flex items-center gap-2">
+              <Sun className="h-4 w-4" />
+              Logo Claro
+            </Label>
+            <div className="space-y-2">
+              {logoLightPreview ? (
+                <div className="relative">
+                  <img 
+                    src={logoLightPreview} 
+                    alt="Logo claro preview" 
+                    className="h-24 w-full object-contain rounded-lg border border-border bg-background"
+                  />
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="icon"
+                    className="absolute -top-2 -right-2 h-6 w-6 rounded-full"
+                    onClick={() => handleRemoveLogo('light')}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="h-24 w-full rounded-lg border-2 border-dashed border-border flex items-center justify-center bg-muted/50">
+                  <Upload className="h-8 w-8 text-muted-foreground" />
+                </div>
+              )}
               <Input
-                id="company_logo"
+                id="company_logo_light"
                 type="file"
                 accept="image/*"
-                onChange={handleFileSelect}
+                onChange={(e) => handleFileSelect(e, 'light')}
                 className="cursor-pointer"
               />
               <p className="text-xs text-muted-foreground">
-                PNG, JPG o SVG. Máximo 2MB.
+                PNG, JPG o SVG. Máx 2MB.
+              </p>
+            </div>
+          </div>
+
+          {/* Logo Oscuro */}
+          <div className="space-y-2">
+            <Label htmlFor="company_logo_dark" className="flex items-center gap-2">
+              <Moon className="h-4 w-4" />
+              Logo Oscuro
+            </Label>
+            <div className="space-y-2">
+              {logoDarkPreview ? (
+                <div className="relative">
+                  <img 
+                    src={logoDarkPreview} 
+                    alt="Logo oscuro preview" 
+                    className="h-24 w-full object-contain rounded-lg border border-border bg-slate-900"
+                  />
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="icon"
+                    className="absolute -top-2 -right-2 h-6 w-6 rounded-full"
+                    onClick={() => handleRemoveLogo('dark')}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="h-24 w-full rounded-lg border-2 border-dashed border-border flex items-center justify-center bg-slate-900">
+                  <Upload className="h-8 w-8 text-slate-400" />
+                </div>
+              )}
+              <Input
+                id="company_logo_dark"
+                type="file"
+                accept="image/*"
+                onChange={(e) => handleFileSelect(e, 'dark')}
+                className="cursor-pointer"
+              />
+              <p className="text-xs text-muted-foreground">
+                PNG, JPG o SVG. Máx 2MB.
               </p>
             </div>
           </div>
@@ -231,38 +341,47 @@ export function CompanySettingsCard() {
             id="company_address"
             value={formData.company_address}
             onChange={(e) => setFormData({ ...formData, company_address: e.target.value })}
-            placeholder="Calle, número, colonia, ciudad"
-            rows={3}
+            placeholder="Calle Principal #123, Colonia Centro"
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="company_phone">Teléfono</Label>
-            <Input
-              id="company_phone"
-              type="tel"
-              value={formData.company_phone}
-              onChange={(e) => setFormData({ ...formData, company_phone: e.target.value })}
-              placeholder="+52 123 456 7890"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="company_email">Email</Label>
-            <Input
-              id="company_email"
-              type="email"
-              value={formData.company_email}
-              onChange={(e) => setFormData({ ...formData, company_email: e.target.value })}
-              placeholder="contacto@joyeriarelevee.com"
-            />
-          </div>
+        <div className="space-y-2">
+          <Label htmlFor="company_phone">Teléfono</Label>
+          <Input
+            id="company_phone"
+            type="tel"
+            value={formData.company_phone}
+            onChange={(e) => setFormData({ ...formData, company_phone: e.target.value })}
+            placeholder="+52 123 456 7890"
+          />
         </div>
 
-        <Button onClick={handleSave} disabled={saving || uploading} className="w-full md:w-auto">
-          {(saving || uploading) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {uploading ? 'Subiendo logo...' : 'Guardar Cambios'}
+        <div className="space-y-2">
+          <Label htmlFor="company_email">Correo Electrónico</Label>
+          <Input
+            id="company_email"
+            type="email"
+            value={formData.company_email}
+            onChange={(e) => setFormData({ ...formData, company_email: e.target.value })}
+            placeholder="contacto@joyeria.com"
+          />
+        </div>
+
+        <Button 
+          onClick={handleSave} 
+          disabled={saving || uploadingLight || uploadingDark}
+          className="w-full"
+        >
+          {(saving || uploadingLight || uploadingDark) ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              {uploadingLight && 'Subiendo logo claro...'}
+              {uploadingDark && 'Subiendo logo oscuro...'}
+              {saving && !uploadingLight && !uploadingDark && 'Guardando...'}
+            </>
+          ) : (
+            'Guardar Cambios'
+          )}
         </Button>
       </CardContent>
     </Card>
