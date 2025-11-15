@@ -1,21 +1,34 @@
 import { useState } from 'react';
-import { ImportedTheme } from '@/lib/theme-presets';
+import { ImportedTheme, DEFAULT_THEMES } from '@/lib/theme-presets';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Check, Calendar, ExternalLink, Star } from 'lucide-react';
+import { Check, Calendar, ExternalLink, Star, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface ThemeGalleryProps {
   importedThemes: ImportedTheme[];
   activeThemeId?: string;
   onApply: (themeId: string) => Promise<void>;
   onSetDefault: (themeId: string) => Promise<void>;
+  onDelete: (themeId: string) => Promise<void>;
 }
 
-export function ThemeGallery({ importedThemes, activeThemeId, onApply, onSetDefault }: ThemeGalleryProps) {
+export function ThemeGallery({ importedThemes, activeThemeId, onApply, onSetDefault, onDelete }: ThemeGalleryProps) {
   const [applying, setApplying] = useState<string | null>(null);
   const [settingDefault, setSettingDefault] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [themeToDelete, setThemeToDelete] = useState<ImportedTheme | null>(null);
 
   const handleApply = async (themeId: string) => {
     setApplying(themeId);
@@ -32,6 +45,23 @@ export function ThemeGallery({ importedThemes, activeThemeId, onApply, onSetDefa
       await onSetDefault(themeId);
     } finally {
       setSettingDefault(null);
+    }
+  };
+
+  const openDeleteDialog = (theme: ImportedTheme) => {
+    setThemeToDelete(theme);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!themeToDelete) return;
+    
+    try {
+      await onDelete(themeToDelete.id);
+      setDeleteDialogOpen(false);
+      setThemeToDelete(null);
+    } catch (error) {
+      console.error('Error deleting theme:', error);
     }
   };
 
@@ -155,8 +185,21 @@ export function ThemeGallery({ importedThemes, activeThemeId, onApply, onSetDefa
                       disabled={isSettingDefault}
                       variant="outline"
                       size="sm"
+                      title="Marcar como predeterminado"
                     >
                       {isSettingDefault ? 'Guardando...' : <Star className="h-4 w-4" />}
+                    </Button>
+                  )}
+                  
+                  {!DEFAULT_THEMES.find(dt => dt.id === theme.id) && (
+                     <Button
+                      onClick={() => openDeleteDialog(theme)}
+                      variant="outline"
+                      size="sm"
+                      className="text-destructive hover:text-destructive"
+                      title="Eliminar tema"
+                    >
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   )}
                 </div>
@@ -165,6 +208,23 @@ export function ThemeGallery({ importedThemes, activeThemeId, onApply, onSetDefa
           );
         })}
       </div>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar tema?</AlertDialogTitle>
+            <AlertDialogDescription>
+              ¿Estás seguro de que deseas eliminar el tema "{themeToDelete?.name}"? Esta acción no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

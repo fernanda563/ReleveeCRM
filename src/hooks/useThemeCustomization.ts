@@ -258,6 +258,49 @@ export const useThemeCustomization = () => {
     }
   };
 
+  const deleteTheme = async (themeId: string) => {
+    try {
+      // Check if it's a default theme (cannot be deleted)
+      const isDefaultTheme = DEFAULT_THEMES.find(t => t.id === themeId);
+      if (isDefaultTheme) {
+        toast.error('No puedes eliminar un tema precargado');
+        return;
+      }
+
+      // Filter out the theme to delete
+      const updatedAllThemes = config.importedThemes.filter(t => t.id !== themeId);
+      const userImportedThemes = updatedAllThemes.filter(t => !DEFAULT_THEMES.find(dt => dt.id === t.id));
+
+      // If deleted theme was the active one, apply default theme
+      if (config.activePreset === themeId) {
+        const defaultTheme = updatedAllThemes.find(t => t.isDefault) || DEFAULT_THEMES[0];
+        await applyImportedTheme(defaultTheme.id);
+      }
+
+      // If deleted theme was the default, set first theme as default
+      const deletedTheme = config.importedThemes.find(t => t.id === themeId);
+      if (deletedTheme?.isDefault && updatedAllThemes.length > 0) {
+        updatedAllThemes[0].isDefault = true;
+        const updatedUserThemes = updatedAllThemes.filter(t => !DEFAULT_THEMES.find(dt => dt.id === t.id));
+        await updateSetting('imported_themes', updatedUserThemes, 'appearance');
+      }
+
+      // Update config state
+      setConfig({
+        ...config,
+        importedThemes: updatedAllThemes,
+      });
+
+      // Save to database
+      await updateSetting('imported_themes', userImportedThemes, 'appearance');
+
+      toast.success('Tema eliminado correctamente');
+    } catch (error) {
+      console.error('Error al eliminar tema:', error);
+      toast.error('Error al eliminar el tema');
+    }
+  };
+
   const resetToDefault = async () => {
     try {
       // Find the default theme
@@ -280,6 +323,7 @@ export const useThemeCustomization = () => {
     applyImportedTheme,
     applyCustomColors,
     setDefaultTheme,
+    deleteTheme,
     resetToDefault,
   };
 };
