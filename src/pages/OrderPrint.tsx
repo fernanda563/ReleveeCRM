@@ -32,19 +32,21 @@ const OrderPrint = () => {
             )
           `)
           .eq("id", orderId)
-          .single();
+          .maybeSingle();
 
-        if (orderError) throw orderError;
-        if (!orderData) throw new Error("Orden no encontrada");
+        if (orderError) {
+          console.error("Error fetching order:", orderError);
+          throw orderError;
+        }
+        if (!orderData) {
+          console.error("No order found with ID:", orderId);
+          throw new Error("Orden no encontrada");
+        }
 
+        console.log("Order loaded successfully:", orderData);
         setOrder(orderData);
 
-        // Fetch company settings
-        const { data: settings } = await supabase
-          .from("system_settings")
-          .select("key, value")
-          .eq("category", "company");
-
+        // Fetch company settings (ignore errors if user doesn't have permissions)
         const companyData = {
           name: "Levant Jewelry",
           logo_light_url: null,
@@ -53,24 +55,35 @@ const OrderPrint = () => {
           email: null,
         };
 
-        if (settings) {
-          settings.forEach((setting) => {
-            if (setting.key === "company_name" && setting.value) {
-              companyData.name = setting.value as string;
-            }
-            if (setting.key === "company_logo_light_url" && setting.value) {
-              companyData.logo_light_url = setting.value as string;
-            }
-            if (setting.key === "company_address" && setting.value) {
-              companyData.address = setting.value as string;
-            }
-            if (setting.key === "company_phone" && setting.value) {
-              companyData.phone = setting.value as string;
-            }
-            if (setting.key === "company_email" && setting.value) {
-              companyData.email = setting.value as string;
-            }
-          });
+        try {
+          const { data: settings, error: settingsError } = await supabase
+            .from("system_settings")
+            .select("key, value")
+            .eq("category", "company");
+
+          if (settingsError) {
+            console.warn("Could not fetch company settings:", settingsError);
+          } else if (settings) {
+            settings.forEach((setting) => {
+              if (setting.key === "company_name" && setting.value) {
+                companyData.name = setting.value as string;
+              }
+              if (setting.key === "company_logo_light_url" && setting.value) {
+                companyData.logo_light_url = setting.value as string;
+              }
+              if (setting.key === "company_address" && setting.value) {
+                companyData.address = setting.value as string;
+              }
+              if (setting.key === "company_phone" && setting.value) {
+                companyData.phone = setting.value as string;
+              }
+              if (setting.key === "company_email" && setting.value) {
+                companyData.email = setting.value as string;
+              }
+            });
+          }
+        } catch (settingsErr) {
+          console.warn("Error fetching company settings, using defaults:", settingsErr);
         }
 
         setCompanyInfo(companyData);
@@ -81,7 +94,7 @@ const OrderPrint = () => {
           window.print();
         }, 500);
       } catch (err) {
-        console.error("Error fetching order data:", err);
+        console.error("Error in fetchData:", err);
         setError(err instanceof Error ? err.message : "Error al cargar la orden");
         setLoading(false);
       }
@@ -89,6 +102,10 @@ const OrderPrint = () => {
 
     if (orderId) {
       fetchData();
+    } else {
+      console.error("No orderId provided");
+      setError("ID de orden no proporcionado");
+      setLoading(false);
     }
   }, [orderId]);
 
