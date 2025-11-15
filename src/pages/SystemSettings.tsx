@@ -40,7 +40,7 @@ export default function SystemSettings() {
 
       <Separator />
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 grid-cols-2">
         <CompanySettingsCard />
         <NotificationSettingsCard />
         <RegionalSettingsCard />

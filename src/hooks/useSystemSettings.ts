@@ -22,8 +22,13 @@ export const useSystemSettings = (category?: SettingCategory) => {
       if (error) throw error;
       
       const settingsMap = data?.reduce((acc, setting) => {
-        const value = setting.value as { value: any };
-        acc[setting.key] = value.value;
+        const raw = setting.value as any;
+        // value can be { value: any } or a primitive directly
+        acc[setting.key] = raw && typeof raw === 'object' && 'value' in raw ? raw.value : raw;
+        // expose imported_themes if present on any row
+        if (setting.imported_themes) {
+          acc['imported_themes'] = setting.imported_themes;
+        }
         return acc;
       }, {} as Record<string, any>) || {};
       
@@ -40,19 +45,34 @@ export const useSystemSettings = (category?: SettingCategory) => {
     }
   };
 
-  const updateSetting = async (key: string, value: any, settingCategory: SettingCategory) => {
+  const updateSetting = async (
+    key: string,
+    value: any,
+    settingCategory: SettingCategory,
+    extras?: { imported_themes?: any }
+  ) => {
     try {
+      const payload: any = {
+        value: { value },
+        category: settingCategory,
+      };
+
+      if (extras && 'imported_themes' in extras) {
+        payload.imported_themes = extras.imported_themes;
+      }
+
       const { error } = await supabase
         .from('system_settings')
-        .update({ 
-          value: { value },
-          category: settingCategory 
-        })
+        .update(payload)
         .eq('key', key);
       
       if (error) throw error;
       
-      setSettings(prev => ({ ...prev, [key]: value }));
+      setSettings(prev => ({
+        ...prev,
+        [key]: value,
+        ...(extras && 'imported_themes' in extras ? { imported_themes: extras.imported_themes } : {}),
+      }));
       
       toast({
         title: "Éxito",

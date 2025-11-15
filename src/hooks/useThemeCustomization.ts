@@ -32,8 +32,8 @@ export const useThemeCustomization = () => {
   useEffect(() => {
     if (!loading && settings) {
       // Normalize colors from database (might contain OKLCH)
-      let lightColors = settings.custom_colors?.light || ({} as ThemeColors);
-      let darkColors = settings.custom_colors?.dark || ({} as ThemeColors);
+      let lightColors = settings.custom_theme_light || ({} as ThemeColors);
+      let darkColors = settings.custom_theme_dark || ({} as ThemeColors);
       
       // Check if we need to normalize (if any value still contains 'oklch')
       const needsNormalization = 
@@ -51,7 +51,8 @@ export const useThemeCustomization = () => {
           darkColors = normalized.dark;
           
           // Update database with normalized colors
-          updateSetting('custom_colors', { light: lightColors, dark: darkColors }, 'appearance');
+          updateSetting('custom_theme_light', lightColors, 'appearance');
+          updateSetting('custom_theme_dark', darkColors, 'appearance');
         }
       }
       
@@ -62,7 +63,7 @@ export const useThemeCustomization = () => {
           dark: darkColors,
         },
         source: settings.theme_source || 'default',
-        registryUrl: settings.registry_url,
+        registryUrl: settings.tweakcn_registry_url,
         activePreset: settings.active_preset,
         importedThemes: settings.imported_themes || [],
       };
@@ -127,12 +128,12 @@ export const useThemeCustomization = () => {
       // Apply the imported theme
       applyThemeColors(parsed.light, parsed.dark);
 
-      // Save to database
-      await updateSetting('custom_colors', { light: parsed.light, dark: parsed.dark }, 'appearance');
-      await updateSetting('theme_source', 'tweakcn', 'appearance');
-      await updateSetting('registry_url', registryUrl, 'appearance');
+      // Save to database (use existing keys)
+      await updateSetting('custom_theme_light', parsed.light, 'appearance');
+      await updateSetting('custom_theme_dark', parsed.dark, 'appearance');
+      await updateSetting('theme_source', 'tweakcn', 'appearance', { imported_themes: updatedThemes });
+      await updateSetting('tweakcn_registry_url', registryUrl, 'appearance');
       await updateSetting('active_preset', newTheme.id, 'appearance');
-      await updateSetting('imported_themes', updatedThemes, 'appearance');
 
       // Update local state
       setConfig(prev => ({
@@ -163,10 +164,11 @@ export const useThemeCustomization = () => {
       applyThemeColors(theme.light, theme.dark);
 
       // Save to database
-      await updateSetting('custom_colors', { light: theme.light, dark: theme.dark }, 'appearance');
+      await updateSetting('custom_theme_light', theme.light, 'appearance');
+      await updateSetting('custom_theme_dark', theme.dark, 'appearance');
       await updateSetting('theme_source', 'tweakcn', 'appearance');
       await updateSetting('active_preset', themeId, 'appearance');
-      await updateSetting('registry_url', theme.url, 'appearance');
+      await updateSetting('tweakcn_registry_url', theme.url, 'appearance');
 
       // Update local state
       setConfig(prev => ({
@@ -194,7 +196,8 @@ export const useThemeCustomization = () => {
       applyThemeColors(mergedLight, mergedDark);
 
       // Save to database
-      await updateSetting('custom_colors', { light: mergedLight, dark: mergedDark }, 'appearance');
+      await updateSetting('custom_theme_light', mergedLight, 'appearance');
+      await updateSetting('custom_theme_dark', mergedDark, 'appearance');
       await updateSetting('theme_source', 'custom', 'appearance');
 
       // Update local state

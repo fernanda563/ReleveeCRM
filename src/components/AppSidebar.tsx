@@ -41,6 +41,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { useSystemSettings } from "@/hooks/useSystemSettings";
 
 const menuItems = [
   {
@@ -104,12 +105,17 @@ export function AppSidebar() {
   const { theme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
+  const { settings: companySettings } = useSystemSettings('company');
+
   useEffect(() => {
     setMounted(true);
   }, []);
 
   const currentTheme = mounted ? (theme === 'system' ? resolvedTheme : theme) : 'light';
-  const logoSrc = currentTheme === 'dark' ? '/logo-dark.svg' : '/logo-light.svg';
+  const companyLogo = companySettings?.company_logo_url as string | undefined;
+  const lightLogo = (companySettings?.company_logo_light_url as string | undefined) || companyLogo;
+  const darkLogo = (companySettings?.company_logo_dark_url as string | undefined) || companyLogo;
+  const logoSrc = currentTheme === 'dark' ? darkLogo : lightLogo;
 
   const isActive = (path: string) => currentPath === path;
   
@@ -134,11 +140,11 @@ export function AppSidebar() {
               className={`object-contain transition-all duration-200 ${
                 collapsed 
                   ? 'h-8 w-8' 
-                  : 'h-12 w-auto max-w-full'
+                  : 'h-12 w-auto max-w-[140px]'
               }`}
             />
           ) : (
-            <div className={collapsed ? 'h-8 w-8' : 'h-12 w-32'} />
+            <div className={collapsed ? 'h-8 w-8' : 'h-12 w-[140px]'} />
           )}
         </div>
       </SidebarHeader>
