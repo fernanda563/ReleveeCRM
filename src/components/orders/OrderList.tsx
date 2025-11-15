@@ -17,11 +17,12 @@ interface OrderListProps {
   loading: boolean;
   onEdit: (order: Order) => void;
   onRefresh: () => void;
+  onOpenPrint: (orderId: string) => void;
 }
 
-const OrderList = ({ orders, loading, onEdit }: OrderListProps) => {
+const OrderList = ({ orders, loading, onEdit, onOpenPrint }: OrderListProps) => {
   const handleGeneratePDF = (order: Order) => {
-    window.open(`/order-print/${order.id}`, '_blank', 'width=850,height=1100');
+    onOpenPrint(order.id);
   };
 
   const getPaymentStatusBadge = (status: string) => {

@@ -9,6 +9,7 @@ import OrderDialog from "@/components/orders/OrderDialog";
 import OrderList from "@/components/orders/OrderList";
 import { Badge } from "@/components/ui/badge";
 import ClientDialog from "@/components/crm/ClientDialog";
+import { OrderPrintDialog } from "@/components/orders/OrderPrintDialog";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
@@ -64,6 +65,8 @@ const Orders = () => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isOrderDialogOpen, setIsOrderDialogOpen] = useState(false);
   const [isClientDialogOpen, setIsClientDialogOpen] = useState(false);
+  const [printOrderId, setPrintOrderId] = useState<string | null>(null);
+  const [isPrintDialogOpen, setIsPrintDialogOpen] = useState(false);
   const [fechaDesde, setFechaDesde] = useState<Date | undefined>();
   const [fechaHasta, setFechaHasta] = useState<Date | undefined>();
   const [isDateFromOpen, setIsDateFromOpen] = useState(false);
@@ -189,6 +192,11 @@ const Orders = () => {
     setTimeout(() => {
       setIsOrderDialogOpen(true);
     }, 300);
+  };
+
+  const handleOpenPrint = (orderId: string) => {
+    setPrintOrderId(orderId);
+    setIsPrintDialogOpen(true);
   };
 
   return (
@@ -375,6 +383,7 @@ const Orders = () => {
           loading={loading}
           onEdit={handleOrderAction}
           onRefresh={fetchOrders}
+          onOpenPrint={handleOpenPrint}
         />
       </main>
 
@@ -392,6 +401,13 @@ const Orders = () => {
         open={isClientDialogOpen}
         onOpenChange={setIsClientDialogOpen}
         onSuccess={handleClientSuccess}
+      />
+
+      {/* Order Print Dialog */}
+      <OrderPrintDialog
+        orderId={printOrderId}
+        open={isPrintDialogOpen}
+        onOpenChange={setIsPrintDialogOpen}
       />
     </div>
   );
