@@ -5,6 +5,7 @@ import { Separator } from "@/components/ui/separator";
 import { CompanySettingsCard } from "@/components/settings/CompanySettingsCard";
 import { NotificationSettingsCard } from "@/components/settings/NotificationSettingsCard";
 import { RegionalSettingsCard } from "@/components/settings/RegionalSettingsCard";
+import { AppearanceSettingsCard } from "@/components/settings/AppearanceSettingsCard";
 
 export default function SystemSettings() {
   const navigate = useNavigate();
@@ -43,6 +44,7 @@ export default function SystemSettings() {
         <CompanySettingsCard />
         <NotificationSettingsCard />
         <RegionalSettingsCard />
+        <AppearanceSettingsCard />
       </div>
     </div>
   );
