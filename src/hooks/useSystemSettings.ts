@@ -52,14 +52,34 @@ export const useSystemSettings = (category?: SettingCategory) => {
     extras?: { imported_themes?: any }
   ) => {
     try {
+      // Special handling: imported_themes is a dedicated column, not a key in `value`
+      if (key === 'imported_themes') {
+        const { error } = await supabase
+          .from('system_settings')
+          // Update the imported_themes column for all rows in this category
+          .update({ imported_themes: value, category: settingCategory })
+          .eq('category', settingCategory);
+        
+        if (error) throw error;
+        
+        setSettings(prev => ({
+          ...prev,
+          imported_themes: value,
+        }));
+        
+        toast({
+          title: "Éxito",
+          description: "Configuración actualizada correctamente",
+        });
+        
+        return true;
+      }
+
+      // Default: update the JSON `value` field for the provided key
       const payload: any = {
         value: { value },
         category: settingCategory,
       };
-
-      if (extras && 'imported_themes' in extras) {
-        payload.imported_themes = extras.imported_themes;
-      }
 
       const { error } = await supabase
         .from('system_settings')
@@ -67,6 +87,15 @@ export const useSystemSettings = (category?: SettingCategory) => {
         .eq('key', key);
       
       if (error) throw error;
+
+      // If caller passes imported_themes in extras, persist it across the entire category
+      if (extras && 'imported_themes' in extras) {
+        const { error: themesError } = await supabase
+          .from('system_settings')
+          .update({ imported_themes: extras.imported_themes })
+          .eq('category', settingCategory);
+        if (themesError) throw themesError;
+      }
       
       setSettings(prev => ({
         ...prev,
