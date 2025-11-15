@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useSystemSettings } from './useSystemSettings';
 import { applyThemeColors, parseThemeFromCSS } from '@/lib/apply-css-variables';
-import { ThemeColors, ImportedTheme } from '@/lib/theme-presets';
+import { ThemeColors, ImportedTheme, DEFAULT_THEMES } from '@/lib/theme-presets';
 import { toast } from 'sonner';
 
 interface ThemeConfig {
@@ -56,6 +56,16 @@ export const useThemeCustomization = () => {
         }
       }
       
+      // Combine DEFAULT_THEMES with imported themes
+      const importedThemes = settings.imported_themes || [];
+      const allThemes = [...DEFAULT_THEMES, ...importedThemes];
+      
+      // Ensure exactly one theme is marked as default
+      const hasDefault = allThemes.some(t => t.isDefault);
+      if (!hasDefault && allThemes.length > 0) {
+        allThemes[0].isDefault = true;
+      }
+      
       const newConfig: ThemeConfig = {
         mode: settings.theme_mode || 'system',
         customColors: {
@@ -65,7 +75,7 @@ export const useThemeCustomization = () => {
         source: settings.theme_source || 'default',
         registryUrl: settings.tweakcn_registry_url,
         activePreset: settings.active_preset,
-        importedThemes: settings.imported_themes || [],
+        importedThemes: allThemes,
       };
       
       setConfig(newConfig);

@@ -1,16 +1,19 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Palette, Loader2, RotateCcw } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Palette, MoreVertical } from "lucide-react";
 import { useThemeCustomization } from "@/hooks/useThemeCustomization";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ThemeImporter } from "./ThemeImporter";
 import { ColorEditor } from "./ColorEditor";
 import { ThemeGallery } from "./ThemeGallery";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useState } from "react";
 
 export function AppearanceSettingsCard() {
-  const { config, loading, importFromTweakCN, applyImportedTheme, applyCustomColors, resetToDefault } = useThemeCustomization();
+  const { config, loading, importFromTweakCN, applyImportedTheme, applyCustomColors, setDefaultTheme, resetToDefault } = useThemeCustomization();
+  const [selectedView, setSelectedView] = useState<'gallery' | 'import' | 'editor'>('gallery');
 
   if (loading) {
     return (
@@ -34,14 +37,18 @@ export function AppearanceSettingsCard() {
             <Palette className="h-5 w-5 text-foreground" />
             <CardTitle>Personalización de Apariencia</CardTitle>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={resetToDefault}
-          >
-            <RotateCcw className="h-4 w-4" />
-            Restablecer
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm">
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={resetToDefault}>
+                Restablecer al predeterminado
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
         <CardDescription>
           Personaliza los colores y apariencia del sistema usando TweakCN o editando manualmente
@@ -54,33 +61,39 @@ export function AppearanceSettingsCard() {
           </AlertDescription>
         </Alert>
 
-        <Tabs defaultValue="gallery" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="gallery">Temas Importados</TabsTrigger>
-            <TabsTrigger value="tweakcn">Importar TweakCN</TabsTrigger>
-            <TabsTrigger value="editor">Editor de Colores</TabsTrigger>
-          </TabsList>
+        <Select value={selectedView} onValueChange={(value: 'gallery' | 'import' | 'editor') => setSelectedView(value)}>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="gallery">Temas Disponibles</SelectItem>
+            <SelectItem value="import">Importar desde TweakCN</SelectItem>
+            <SelectItem value="editor">Editor de Colores</SelectItem>
+          </SelectContent>
+        </Select>
 
-          <TabsContent value="gallery" className="space-y-4 mt-4">
+        <div className="mt-4">
+          {selectedView === 'gallery' && (
             <ThemeGallery
               importedThemes={config.importedThemes || []}
               activeThemeId={config.activePreset}
               onApply={applyImportedTheme}
+              onSetDefault={setDefaultTheme}
             />
-          </TabsContent>
-
-          <TabsContent value="tweakcn" className="space-y-4 mt-4">
+          )}
+          
+          {selectedView === 'import' && (
             <ThemeImporter onImport={importFromTweakCN} />
-          </TabsContent>
-
-          <TabsContent value="editor" className="space-y-4 mt-4">
+          )}
+          
+          {selectedView === 'editor' && (
             <ColorEditor
               initialLight={config.customColors.light}
               initialDark={config.customColors.dark}
               onApply={applyCustomColors}
             />
-          </TabsContent>
-        </Tabs>
+          )}
+        </div>
 
         {config.source !== 'default' && (
           <div className="pt-4 border-t">
