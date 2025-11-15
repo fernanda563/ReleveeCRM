@@ -31,11 +31,35 @@ export const useThemeCustomization = () => {
 
   useEffect(() => {
     if (!loading && settings) {
+      // Normalize colors from database (might contain OKLCH)
+      let lightColors = settings.custom_colors?.light || ({} as ThemeColors);
+      let darkColors = settings.custom_colors?.dark || ({} as ThemeColors);
+      
+      // Check if we need to normalize (if any value still contains 'oklch')
+      const needsNormalization = 
+        JSON.stringify(lightColors).includes('oklch') || 
+        JSON.stringify(darkColors).includes('oklch');
+      
+      if (needsNormalization) {
+        // Parse and re-normalize to ensure all colors are HSL
+        const normalized = parseThemeFromCSS(JSON.stringify({
+          cssVars: { light: lightColors, dark: darkColors }
+        }));
+        
+        if (normalized) {
+          lightColors = normalized.light;
+          darkColors = normalized.dark;
+          
+          // Update database with normalized colors
+          updateSetting('custom_colors', { light: lightColors, dark: darkColors }, 'appearance');
+        }
+      }
+      
       const newConfig: ThemeConfig = {
         mode: settings.theme_mode || 'system',
         customColors: {
-          light: settings.custom_colors?.light || ({} as ThemeColors),
-          dark: settings.custom_colors?.dark || ({} as ThemeColors),
+          light: lightColors,
+          dark: darkColors,
         },
         source: settings.theme_source || 'default',
         registryUrl: settings.registry_url,
@@ -46,11 +70,11 @@ export const useThemeCustomization = () => {
       setConfig(newConfig);
 
       // Apply theme colors if custom colors exist
-      if (settings.custom_colors?.light && settings.custom_colors?.dark) {
-        applyThemeColors(settings.custom_colors.light, settings.custom_colors.dark);
+      if (Object.keys(lightColors).length > 0 && Object.keys(darkColors).length > 0) {
+        applyThemeColors(lightColors, darkColors);
       }
     }
-  }, [loading, settings]);
+  }, [loading, settings, updateSetting]);
 
   const generateThemeId = () => `tweakcn_${Date.now()}`;
   
