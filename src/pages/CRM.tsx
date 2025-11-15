@@ -179,13 +179,13 @@ const CRM = () => {
         {/* Action Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <Card 
-            className="border-border hover:border-accent transition-colors cursor-pointer"
+            className="border-border hover:border-primary transition-colors cursor-pointer"
             onClick={() => handleClientAction()}
           >
             <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center gap-2">
-                <div className="p-2 bg-accent/10 rounded-lg">
-                  <Users className="h-4 w-4 text-accent" />
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <Users className="h-4 w-4 text-primary" />
                 </div>
                 Nuevo Cliente
               </CardTitle>
@@ -193,13 +193,13 @@ const CRM = () => {
           </Card>
 
           <Card 
-            className="border-border hover:border-foreground transition-colors cursor-pointer"
+            className="border-border hover:border-secondary transition-colors cursor-pointer"
             onClick={() => handleAppointmentAction()}
           >
             <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center gap-2">
-                <div className="p-2 bg-foreground/10 rounded-lg">
-                  <Calendar className="h-4 w-4 text-foreground" />
+                <div className="p-2 bg-secondary/10 rounded-lg">
+                  <Calendar className="h-4 w-4 text-secondary" />
                 </div>
                 Agendar Cita
               </CardTitle>
@@ -207,13 +207,13 @@ const CRM = () => {
           </Card>
 
           <Card 
-            className="border-border hover:border-foreground transition-colors cursor-pointer"
+            className="border-border hover:border-accent transition-colors cursor-pointer"
             onClick={() => handleProspectAction()}
           >
             <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center gap-2">
-                <div className="p-2 bg-foreground/10 rounded-lg">
-              <Gem className="h-4 w-4 text-foreground" />
+                <div className="p-2 bg-accent/10 rounded-lg">
+              <Gem className="h-4 w-4 text-accent" />
             </div>
             Añadir Proyecto
               </CardTitle>
