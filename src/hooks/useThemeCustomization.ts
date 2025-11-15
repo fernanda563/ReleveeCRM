@@ -91,6 +91,37 @@ export const useThemeCustomization = () => {
   const generateThemeId = () => `tweakcn_${Date.now()}`;
   
   const extractThemeName = (url: string): string => {
+    try {
+      // Try to extract theme name from TweakCN URL
+      // Common patterns:
+      // https://tweakcn.com/theme/theme-name
+      // https://tweakcn.com/api/theme/theme-name
+      // https://ui.shadcn.com/themes/theme-name.json
+      
+      const urlObj = new URL(url);
+      const pathParts = urlObj.pathname.split('/').filter(Boolean);
+      
+      // Get the last part of the path (usually the theme name)
+      let themeName = pathParts[pathParts.length - 1];
+      
+      // Remove file extensions
+      themeName = themeName.replace(/\.(json|css|txt)$/i, '');
+      
+      // Convert kebab-case or snake_case to Title Case
+      if (themeName) {
+        themeName = themeName
+          .replace(/[-_]/g, ' ')
+          .split(' ')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+          .join(' ');
+        
+        return themeName;
+      }
+    } catch (error) {
+      console.log('Could not parse theme name from URL:', error);
+    }
+    
+    // Fallback: use generic name with timestamp
     const date = new Date();
     const formattedDate = date.toLocaleString('es-MX', { 
       day: '2-digit', 
