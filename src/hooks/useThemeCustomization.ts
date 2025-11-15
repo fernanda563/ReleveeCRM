@@ -86,8 +86,8 @@ export function useThemeCustomization() {
         throw new Error('No se pudo obtener el tema desde TweakCN');
       }
 
-      const cssText = await response.text();
-      const parsed = parseThemeFromCSS(cssText);
+      const data = await response.text();
+      const parsed = parseThemeFromCSS(data);
 
       if (!parsed) {
         throw new Error('Formato de tema inválido');

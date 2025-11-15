@@ -64,6 +64,20 @@ ${darkCssVars}
 
 export function parseThemeFromCSS(css: string): { light: ThemeColors; dark: ThemeColors } | null {
   try {
+    // Primero intentar parsear como JSON (formato TweakCN)
+    try {
+      const json = JSON.parse(css);
+      if (json.cssVars && json.cssVars.light && json.cssVars.dark) {
+        return {
+          light: json.cssVars.light as ThemeColors,
+          dark: json.cssVars.dark as ThemeColors,
+        };
+      }
+    } catch {
+      // Si no es JSON, intentar parsear como CSS
+    }
+
+    // Parsear como CSS text
     const lightMatch = css.match(/:root\s*{([^}]+)}/);
     const darkMatch = css.match(/\.dark\s*{([^}]+)}/);
 
