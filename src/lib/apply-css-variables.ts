@@ -85,12 +85,58 @@ function parseAnyColorToHsl(color: string): { h: number; s: number; l: number } 
   return null;
 }
 
+// Convert OKLCH to RGB
+function oklchToRgb(l: number, c: number, h: number): { r: number; g: number; b: number } {
+  // Convert to radians
+  const hRad = (h * Math.PI) / 180;
+  
+  // Convert to OKLab
+  const a = c * Math.cos(hRad);
+  const b = c * Math.sin(hRad);
+  
+  // OKLab to linear sRGB
+  const l_ = l + 0.3963377774 * a + 0.2158037573 * b;
+  const m_ = l - 0.1055613458 * a - 0.0638541728 * b;
+  const s_ = l - 0.0894841775 * a - 1.2914855480 * b;
+  
+  const l3 = l_ * l_ * l_;
+  const m3 = m_ * m_ * m_;
+  const s3 = s_ * s_ * s_;
+  
+  const r_lin = +4.0767416621 * l3 - 3.3077115913 * m3 + 0.2309699292 * s3;
+  const g_lin = -1.2684380046 * l3 + 2.6097574011 * m3 - 0.3413193965 * s3;
+  const b_lin = -0.0041960863 * l3 - 0.7034186147 * m3 + 1.7076147010 * s3;
+  
+  // Apply gamma correction
+  const gammaCorrect = (val: number) => {
+    const abs = Math.abs(val);
+    if (abs <= 0.0031308) return val * 12.92;
+    return (Math.sign(val) || 1) * (1.055 * Math.pow(abs, 1 / 2.4) - 0.055);
+  };
+  
+  // Clamp and convert to 0-255
+  const clamp = (val: number) => Math.max(0, Math.min(255, Math.round(val * 255)));
+  
+  return {
+    r: clamp(gammaCorrect(r_lin)),
+    g: clamp(gammaCorrect(g_lin)),
+    b: clamp(gammaCorrect(b_lin))
+  };
+}
+
 function normalizeToHslString(color: string): string {
   color = color.trim();
   
-  // Si ya es OKLCH, mantenerlo tal cual (soporte nativo en navegadores modernos)
-  if (/^oklch\([^)]+\)$/i.test(color)) {
-    return color;
+  // Handle OKLCH format: oklch(L C H) or oklch(L% C H)
+  const oklchMatch = color.match(/^oklch\(\s*([\d.]+)%?\s+([\d.]+)\s+([\d.]+)\s*\)$/i);
+  if (oklchMatch) {
+    const l = parseFloat(oklchMatch[1]) / (oklchMatch[1].includes('%') ? 100 : 1);
+    const c = parseFloat(oklchMatch[2]);
+    const h = parseFloat(oklchMatch[3]);
+    
+    const rgb = oklchToRgb(l, c, h);
+    const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+    return `${hsl.h} ${hsl.s}% ${hsl.l}%`;
   }
   
   const hsl = parseAnyColorToHsl(color);
