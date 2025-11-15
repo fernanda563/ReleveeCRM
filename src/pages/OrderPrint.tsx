@@ -4,6 +4,22 @@ import { supabase } from "@/integrations/supabase/client";
 import OrderPrintView from "@/components/orders/OrderPrintView";
 import { Loader2 } from "lucide-react";
 
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+const waitForSession = async (timeout = 3000) => {
+  const startTime = Date.now();
+  while (Date.now() - startTime < timeout) {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      console.log("Session ready:", session.user.id);
+      return true;
+    }
+    await sleep(100);
+  }
+  console.warn("Session not ready after timeout");
+  return false;
+};
+
 const OrderPrint = () => {
   const { orderId } = useParams<{ orderId: string }>();
   const [order, setOrder] = useState<any>(null);
@@ -12,24 +28,41 @@ const OrderPrint = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    const fetchOrder = async () => {
+      const { data, error } = await supabase
+        .from("orders")
+        .select("*")
+        .eq("id", orderId)
+        .maybeSingle();
+      
+      if (error) {
+        console.error("Error fetching order:", error);
+        throw new Error(`Error al cargar orden: ${error.message}`);
+      }
+      
+      return data;
+    };
+
     const fetchData = async () => {
       try {
-        // Fetch base order
-        const { data: orderBase, error: orderBaseError } = await supabase
-          .from("orders")
-          .select("*")
-          .eq("id", orderId)
-          .maybeSingle();
+        // Wait for session to be ready
+        await waitForSession();
 
-        if (orderBaseError) {
-          console.error("Error fetching base order:", orderBaseError);
-          console.error("Error details:", JSON.stringify(orderBaseError, null, 2));
-          throw new Error(`Error al cargar orden: ${orderBaseError.message || JSON.stringify(orderBaseError)}`);
+        // First attempt to fetch order
+        let orderBase = await fetchOrder();
+        
+        // If no data and no error, retry once after delay
+        if (!orderBase) {
+          console.log("First attempt returned null, retrying after 250ms...");
+          await sleep(250);
+          orderBase = await fetchOrder();
         }
+
         if (!orderBase) {
           console.error("No order found with ID:", orderId);
-          throw new Error("Orden no encontrada");
+          throw new Error("No tienes permisos para ver esta orden o no existe");
         }
+
 
         // Fetch client info separately
         let clientInfo = null;
@@ -101,11 +134,7 @@ const OrderPrint = () => {
         }, 500);
       } catch (err) {
         console.error("Error in fetchData:", err);
-        console.error("Error type:", typeof err);
-        console.error("Error details:", err);
-        const errorMessage = err instanceof Error ? err.message : 
-                            (err && typeof err === 'object' && 'message' in err) ? String(err.message) :
-                            "Error desconocido al cargar la orden";
+        const errorMessage = err instanceof Error ? err.message : "Error desconocido al cargar la orden";
         setError(errorMessage);
         setLoading(false);
       }
