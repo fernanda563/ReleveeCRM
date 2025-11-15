@@ -43,10 +43,8 @@ export default function SystemSettings() {
       <div className="grid gap-6 grid-cols-2">
         <CompanySettingsCard />
         <NotificationSettingsCard />
-        <div className="col-span-2 grid gap-6 grid-cols-2">
-          <RegionalSettingsCard />
-          <AppearanceSettingsCard />
-        </div>
+        <RegionalSettingsCard />
+        <AppearanceSettingsCard />
       </div>
     </div>
   );
