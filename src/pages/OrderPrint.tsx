@@ -6,7 +6,7 @@ import { Loader2 } from "lucide-react";
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-const waitForSession = async (timeout = 3000) => {
+const waitForSession = async (timeout = 5000) => {
   const startTime = Date.now();
   while (Date.now() - startTime < timeout) {
     const { data: { session } } = await supabase.auth.getSession();
@@ -21,11 +21,13 @@ const waitForSession = async (timeout = 3000) => {
 };
 
 const OrderPrint = () => {
-  const { orderId } = useParams<{ orderId: string }>();
+const { orderId } = useParams<{ orderId: string }>();
   const [order, setOrder] = useState<any>(null);
   const [companyInfo, setCompanyInfo] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -48,15 +50,15 @@ const OrderPrint = () => {
         // Wait for session to be ready
         await waitForSession();
 
-        // First attempt to fetch order
-        let orderBase = await fetchOrder();
-        
-        // If no data and no error, retry once after delay
-        if (!orderBase) {
-          console.log("First attempt returned null, retrying after 250ms...");
-          await sleep(250);
+        // Fetch order with retries
+        let orderBase = null as any;
+        for (let attempt = 1; attempt <= 3; attempt++) {
           orderBase = await fetchOrder();
+          if (orderBase) break;
+          console.log(`Attempt ${attempt} returned null, retrying...`);
+          await sleep(250 * attempt);
         }
+
 
         if (!orderBase) {
           console.error("No order found with ID:", orderId);
@@ -147,7 +149,7 @@ const OrderPrint = () => {
       setError("ID de orden no proporcionado");
       setLoading(false);
     }
-  }, [orderId]);
+  }, [orderId, retryCount]);
 
   if (loading) {
     return (
@@ -162,15 +164,24 @@ const OrderPrint = () => {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <p className="text-red-600 text-lg mb-4">{error}</p>
-          <button
-            onClick={() => window.close()}
-            className="px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-700"
-          >
-            Cerrar Ventana
-          </button>
+          <div className="flex items-center justify-center gap-3">
+            <button
+              onClick={() => { setError(null); setLoading(true); setRetryCount((c) => c + 1); }}
+              className="px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-700"
+            >
+              Reintentar
+            </button>
+            <button
+              onClick={() => window.close()}
+              className="px-4 py-2 bg-gray-200 text-gray-900 rounded hover:bg-gray-300"
+            >
+              Cerrar Ventana
+            </button>
+          </div>
         </div>
       </div>
     );
+  }
   }
 
   if (!order || !companyInfo) {
