@@ -129,7 +129,7 @@ const ClientList = ({
                   <div className="flex flex-wrap gap-2">
                     {/* Órdenes Activas */}
                     {Number(client.active_orders ?? 0) > 0 && (
-                      <Badge variant="default" className="flex items-center gap-1.5 bg-blue-500 hover:bg-blue-600">
+                      <Badge variant="default" className="flex items-center gap-1.5">
                         <AlertCircle className="h-3 w-3" />
                         <span className="text-xs">
                           {Number(client.active_orders ?? 0)} {Number(client.active_orders ?? 0) === 1 ? 'orden activa' : 'órdenes activas'}
@@ -149,7 +149,7 @@ const ClientList = ({
 
                     {/* Cliente al corriente */}
                     {Number(client.total_debt ?? 0) === 0 && Number(client.total_orders ?? 0) > 0 && (
-                      <Badge variant="outline" className="flex items-center gap-1.5 text-green-600 border-green-600">
+                      <Badge variant="secondary" className="flex items-center gap-1.5">
                         <DollarSign className="h-3 w-3" />
                         <span className="text-xs">Al corriente</span>
                       </Badge>
