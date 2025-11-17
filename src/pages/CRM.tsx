@@ -184,8 +184,8 @@ const CRM = () => {
           >
             <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center gap-2">
-                <div className="p-2 bg-primary rounded-lg">
-                  <Users className="h-4 w-4 text-primary-foreground" />
+                <div className="p-2 bg-secondary rounded-lg">
+                  <Users className="h-4 w-4 text-secondary-foreground" />
                 </div>
                 Nuevo Cliente
               </CardTitle>
@@ -212,8 +212,8 @@ const CRM = () => {
           >
             <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center gap-2">
-                <div className="p-2 bg-accent rounded-lg">
-              <Gem className="h-4 w-4 text-accent-foreground" />
+                <div className="p-2 bg-secondary rounded-lg">
+              <Gem className="h-4 w-4 text-secondary-foreground" />
             </div>
             Añadir Proyecto
               </CardTitle>
@@ -226,8 +226,8 @@ const CRM = () => {
           >
             <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center gap-2">
-                <div className="p-2 bg-primary rounded-lg">
-                  <Bell className="h-4 w-4 text-primary-foreground" />
+                <div className="p-2 bg-secondary rounded-lg">
+                  <Bell className="h-4 w-4 text-secondary-foreground" />
                 </div>
                 Crear Recordatorio
               </CardTitle>
