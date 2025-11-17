@@ -254,6 +254,7 @@ export type Database = {
           metal_pureza: string | null
           metal_tipo: string
           notas: string | null
+          pending_signature_pdf_url: string | null
           piedra_tipo: string
           precio_venta: number
           referencia_pago: string | null
@@ -292,6 +293,7 @@ export type Database = {
           metal_pureza?: string | null
           metal_tipo: string
           notas?: string | null
+          pending_signature_pdf_url?: string | null
           piedra_tipo: string
           precio_venta: number
           referencia_pago?: string | null
@@ -330,6 +332,7 @@ export type Database = {
           metal_pureza?: string | null
           metal_tipo?: string
           notas?: string | null
+          pending_signature_pdf_url?: string | null
           piedra_tipo?: string
           precio_venta?: number
           referencia_pago?: string | null

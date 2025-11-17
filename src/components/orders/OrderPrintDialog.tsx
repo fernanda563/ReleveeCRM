@@ -87,6 +87,68 @@ export const OrderPrintDialog = ({ orderId, open, onOpenChange }: OrderPrintDial
     ]);
   };
 
+  const generateAndUploadPDF = async (): Promise<string | null> => {
+    if (!printRef.current || !order) return null;
+    
+    try {
+      // Esperar a que todas las imágenes carguen
+      await ensureImagesLoaded(printRef.current);
+      
+      // Generar canvas del documento
+      const canvas = await html2canvas(printRef.current, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        logging: false,
+        backgroundColor: "#ffffff",
+      });
+
+      // Convertir a PDF
+      const imgWidth = 210; // A4 width in mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4",
+      });
+
+      const imgData = canvas.toDataURL("image/png");
+      pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
+      
+      // Convertir PDF a Blob
+      const pdfBlob = pdf.output('blob');
+      
+      // Generar nombre de archivo único
+      const timestamp = Date.now();
+      const fileName = order.custom_id 
+        ? `${order.custom_id}_${timestamp}.pdf`
+        : `${order.id.slice(0, 8)}_${timestamp}.pdf`;
+      
+      const filePath = `pending-signatures/${fileName}`;
+      
+      // Subir a Supabase Storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('payment-receipts')
+        .upload(filePath, pdfBlob, {
+          contentType: 'application/pdf',
+          upsert: false
+        });
+
+      if (uploadError) throw uploadError;
+
+      // Obtener URL pública
+      const { data: { publicUrl } } = supabase.storage
+        .from('payment-receipts')
+        .getPublicUrl(filePath);
+
+      return publicUrl;
+    } catch (error) {
+      console.error("Error generating and uploading PDF:", error);
+      throw error;
+    }
+  };
+
   const handleDownloadPDF = async () => {
     if (!printRef.current || !order) return;
 
@@ -134,17 +196,38 @@ export const OrderPrintDialog = ({ orderId, open, onOpenChange }: OrderPrintDial
 
     try {
       setSendingToSign(true);
-      toast.info("Enviando documento a firma...");
+      toast.info("Generando documento PDF...");
 
+      // Generar y subir PDF a Storage
+      const pdfUrl = await generateAndUploadPDF();
+      
+      if (!pdfUrl) {
+        throw new Error("No se pudo generar el PDF");
+      }
+
+      console.log("PDF generado y subido:", pdfUrl);
+      
+      // Guardar URL del PDF en la orden
+      await supabase
+        .from('orders')
+        .update({ pending_signature_pdf_url: pdfUrl })
+        .eq('id', orderId);
+
+      toast.info("Enviando documento a Dropbox Sign...");
+
+      // Enviar URL del PDF a Dropbox Sign
       const { data, error } = await supabase.functions.invoke('send-to-sign', {
-        body: { orderId }
+        body: { 
+          orderId,
+          pdfUrl
+        }
       });
 
       if (error) throw error;
 
       toast.success("Documento enviado exitosamente a Dropbox Sign");
       
-      // Refresh order data to show updated signature status
+      // Refresh order data para obtener nuevo signature_status
       const { data: updatedOrder } = await supabase
         .from("orders")
         .select("*")

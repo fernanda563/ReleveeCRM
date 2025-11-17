@@ -626,12 +626,72 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
         </div>
       )}
 
-       {/* Footer */}
-      <div className="print-footer">
-        <div className="signature-line">
-          Firma del Cliente
+      {/* Sección de firma */}
+      <div style={{
+        marginTop: '40px',
+        paddingTop: '30px',
+        borderTop: '2px solid #e5e7eb',
+        pageBreakInside: 'avoid'
+      }}>
+        <div style={{
+          display: 'flex',
+          gap: '40px',
+          justifyContent: 'space-between'
+        }}>
+          {/* Área de firma del cliente */}
+          <div style={{ flex: 1 }}>
+            <div style={{
+              fontWeight: 'bold',
+              marginBottom: '10px',
+              fontSize: '12px',
+              color: '#374151'
+            }}>
+              Firma del Cliente
+            </div>
+            <div style={{
+              border: '2px solid #1f2937',
+              height: '100px',
+              backgroundColor: 'white',
+              marginBottom: '10px',
+              borderRadius: '4px'
+            }}></div>
+            <div style={{
+              fontSize: '11px',
+              textAlign: 'center',
+              color: '#6b7280',
+              borderTop: '1px solid #9ca3af',
+              paddingTop: '5px'
+            }}>
+              {order.clients.nombre} {order.clients.apellido}
+            </div>
+          </div>
+
+          {/* Área de fecha */}
+          <div style={{ flex: 1 }}>
+            <div style={{
+              fontWeight: 'bold',
+              marginBottom: '10px',
+              fontSize: '12px',
+              color: '#374151'
+            }}>
+              Fecha
+            </div>
+            <div style={{
+              border: '2px solid #1f2937',
+              height: '60px',
+              backgroundColor: 'white',
+              borderRadius: '4px'
+            }}></div>
+          </div>
         </div>
-        <div className="footer-text">
+        
+        {/* Footer info */}
+        <div style={{ 
+          marginTop: '20px', 
+          fontSize: '10px', 
+          color: '#6b7280',
+          textAlign: 'center'
+        }}>
           <div>Documento generado el {formatDate(new Date().toISOString())}</div>
           <div style={{ marginTop: '4px' }}>
             Este documento es una representación oficial de la orden de compra.
