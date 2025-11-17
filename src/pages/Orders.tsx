@@ -77,6 +77,7 @@ const Orders = () => {
   const [fechaHasta, setFechaHasta] = useState<Date | undefined>();
   const [isDateFromOpen, setIsDateFromOpen] = useState(false);
   const [isDateToOpen, setIsDateToOpen] = useState(false);
+  const [autoSendToSign, setAutoSendToSign] = useState(false);
 
   // Stats
   const [stats, setStats] = useState({
@@ -205,30 +206,10 @@ const Orders = () => {
     setIsPrintDialogOpen(true);
   };
 
-  const handleSendToSign = async (orderId: string) => {
-    try {
-      toast.loading("Enviando documento a firmar...");
-      
-      const { data, error } = await supabase.functions.invoke('send-to-sign', {
-        body: { orderId }
-      });
-
-      if (error) {
-        throw error;
-      }
-
-      if (data?.error) {
-        throw new Error(data.error);
-      }
-
-      toast.dismiss();
-      toast.success("Documento enviado a firmar exitosamente");
-      fetchOrders(); // Refresh to show updated status
-    } catch (error: any) {
-      toast.dismiss();
-      console.error('Error enviando a firmar:', error);
-      toast.error(error.message || "Error al enviar documento a firmar");
-    }
+  const handleSendToSign = (orderId: string) => {
+    setPrintOrderId(orderId);
+    setAutoSendToSign(true);
+    setIsPrintDialogOpen(true);
   };
 
   return (
@@ -440,7 +421,11 @@ const Orders = () => {
       <OrderPrintDialog
         orderId={printOrderId}
         open={isPrintDialogOpen}
-        onOpenChange={setIsPrintDialogOpen}
+        onOpenChange={(open) => {
+          setIsPrintDialogOpen(open);
+          if (!open) setAutoSendToSign(false);
+        }}
+        autoSendToSign={autoSendToSign}
       />
     </div>
   );

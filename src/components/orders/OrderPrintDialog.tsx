@@ -18,6 +18,7 @@ interface OrderPrintDialogProps {
   orderId: string | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  autoSendToSign?: boolean;
 }
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -51,13 +52,14 @@ const waitForSession = async (timeout = 5000): Promise<boolean> => {
   });
 };
 
-export const OrderPrintDialog = ({ orderId, open, onOpenChange }: OrderPrintDialogProps) => {
+export const OrderPrintDialog = ({ orderId, open, onOpenChange, autoSendToSign = false }: OrderPrintDialogProps) => {
   const [order, setOrder] = useState<any>(null);
   const [companyInfo, setCompanyInfo] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sendingToSign, setSendingToSign] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
+  const autoSentRef = useRef(false);
 
   const handlePrint = useReactToPrint({
     contentRef: printRef,
@@ -369,6 +371,15 @@ export const OrderPrintDialog = ({ orderId, open, onOpenChange }: OrderPrintDial
 
     fetchData();
   }, [orderId, open]);
+
+  // Auto-send to sign when requested
+  useEffect(() => {
+    if (!open) return;
+    if (autoSendToSign && order && !sendingToSign && !autoSentRef.current) {
+      autoSentRef.current = true;
+      handleSendToSign();
+    }
+  }, [open, autoSendToSign, order, sendingToSign]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
