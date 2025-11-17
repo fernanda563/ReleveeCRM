@@ -49,6 +49,12 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
     }).format(amount);
   };
 
+  const getStringValue = (field: any): string => {
+    if (typeof field === 'string') return field;
+    if (field && typeof field === 'object' && 'value' in field) return field.value;
+    return String(field || '');
+  };
+
   const formatDate = (dateString: string) => {
     return format(new Date(dateString), "d 'de' MMMM 'de' yyyy", { locale: es });
   };
@@ -405,7 +411,7 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
             </tr>
             <tr>
               <td>Forma de Pago</td>
-              <td style={{ fontWeight: 400 }}>{order.forma_pago}</td>
+              <td style={{ fontWeight: 400 }}>{getStringValue(order.forma_pago)}</td>
             </tr>
           </tbody>
         </table>
