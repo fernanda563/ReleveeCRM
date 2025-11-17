@@ -397,7 +397,7 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
 
       {/* Financial Information */}
       <div className="full-section">
-        <div className="section-title">Información Financiera</div>
+        <div className="section-title">Importe del Producto</div>
         <table className="financial-table">
           <tbody>
             <tr>
@@ -415,27 +415,6 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
             <tr>
               <td>Forma de Pago</td>
               <td style={{ fontWeight: 400 }}>{getStringValue(order.forma_pago)}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      {/* Production Status */}
-      <div className="full-section">
-        <div className="section-title">Estado de Producción</div>
-        <table className="table-section">
-          <tbody>
-            <tr>
-              <td>Estado de la Piedra</td>
-              <td>{getStoneStatusText(order.estatus_piedra)}</td>
-            </tr>
-            <tr>
-              <td>Estado de la Montura</td>
-              <td>{getMountingStatusText(order.estatus_montura)}</td>
-            </tr>
-            <tr>
-              <td>Estado de Pago</td>
-              <td>{getPaymentStatusText(order.estatus_pago)}</td>
             </tr>
           </tbody>
         </table>
