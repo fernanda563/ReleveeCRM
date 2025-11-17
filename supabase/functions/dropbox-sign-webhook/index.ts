@@ -11,6 +11,15 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Handle Dropbox Sign verification request (usually GET)
+  if (req.method === 'GET') {
+    console.log('Solicitud GET recibida - verificación de Dropbox Sign');
+    return new Response('Hello API Event Received', {
+      status: 200,
+      headers: { 'Content-Type': 'text/plain' }
+    });
+  }
+
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -20,13 +29,16 @@ Deno.serve(async (req) => {
     const body = await req.json();
     console.log('Webhook recibido de Dropbox Sign:', JSON.stringify(body, null, 2));
 
-    const event = body.event;
-    
-    if (!event) {
-      console.error('No se encontró evento en el webhook');
-      return new Response('OK', { status: 200 }); // Always return 200 to Dropbox Sign
+    // If no event data, it's a test ping
+    if (!body || !body.event) {
+      console.log('No se encontró estructura de evento - probablemente una prueba');
+      return new Response('Hello API Event Received', {
+        status: 200,
+        headers: { 'Content-Type': 'text/plain' }
+      });
     }
 
+    const event = body.event;
     const eventType = event.event_type;
     const signatureRequest = event.signature_request;
 
@@ -101,15 +113,18 @@ Deno.serve(async (req) => {
         console.log('Evento no manejado:', eventType);
     }
 
-    // Always return 200 OK to Dropbox Sign
+    // Always return 200 OK to Dropbox Sign for real events
     return new Response('OK', { 
       status: 200, 
       headers: { ...corsHeaders, 'Content-Type': 'text/plain' } 
     });
 
   } catch (error) {
-    console.error('Error en webhook:', error);
-    // Still return 200 to avoid retries from Dropbox Sign
-    return new Response('OK', { status: 200 });
+    console.log('Error al parsear JSON, probablemente verificación de Dropbox Sign:', error);
+    // If JSON parsing fails, it's likely a test request
+    return new Response('Hello API Event Received', {
+      status: 200,
+      headers: { 'Content-Type': 'text/plain' }
+    });
   }
 });
