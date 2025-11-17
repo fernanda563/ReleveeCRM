@@ -305,17 +305,16 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
           margin-top: 8px;
         }
 
-        .financial-table tr {
-          border-bottom: 1px solid #000;
-        }
-
         .financial-table td {
+          border: 1px solid #000;
           padding: 8px;
           font-size: 11px;
         }
 
         .financial-table td:first-child {
           font-weight: 600;
+          width: 180px;
+          background-color: #ffffff;
         }
 
         .financial-table td:last-child {
@@ -326,6 +325,25 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
         .financial-total {
           background-color: #ffffff;
           font-size: 12px !important;
+        }
+
+        /* Layout de dos columnas para Producto y Pago */
+        .two-column-section {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 16px;
+          margin-bottom: 16px;
+        }
+
+        .column-section {
+          border: 1px solid #000;
+          padding: 12px;
+        }
+
+        @media print {
+          .two-column-section {
+            page-break-inside: avoid;
+          }
         }
 
         .print-footer {
@@ -470,103 +488,110 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
         </div>
       </div>
 
-      {/* Product Details */}
-      <div className="full-section">
-        <div className="section-title">Detalles del Producto</div>
-        <table className="table-section">
-          <tbody>
-            {order.tipo_accesorio && (
+      {/* Product and Financial Details - Two Column Layout */}
+      <div className="two-column-section">
+        {/* Product Details */}
+        <div className="column-section">
+          <div className="section-title">Detalles del Producto</div>
+          <table className="table-section">
+            <tbody>
+              {order.tipo_accesorio && (
+                <tr>
+                  <td>Tipo de Accesorio</td>
+                  <td>{(() => { const v = getStringValue(order.tipo_accesorio); return v ? v.charAt(0).toUpperCase() + v.slice(1) : ""; })()}</td>
+                </tr>
+              )}
+              {order.talla && (
+                <tr>
+                  <td>Talla</td>
+                  <td>{order.talla}</td>
+                </tr>
+              )}
               <tr>
-                <td>Tipo de Accesorio</td>
-                <td>{(() => { const v = getStringValue(order.tipo_accesorio); return v ? v.charAt(0).toUpperCase() + v.slice(1) : ""; })()}</td>
+                <td>Metal</td>
+                <td>
+                  {(() => { const t = getStringValue(order.metal_tipo); return t ? t.charAt(0).toUpperCase() + t.slice(1) : ""; })()}
+                  {order.metal_pureza && ` - ${getStringValue(order.metal_pureza)}`}
+                  {order.metal_color && ` - ${(() => { const c = getStringValue(order.metal_color); return c ? c.charAt(0).toUpperCase() + c.slice(1) : ""; })()}` }
+                </td>
               </tr>
-            )}
-            {order.talla && (
               <tr>
-                <td>Talla</td>
-                <td>{order.talla}</td>
+                <td>Piedra</td>
+                <td>{(() => { const v = getStringValue(order.piedra_tipo); return v ? v.charAt(0).toUpperCase() + v.slice(1) : ""; })()}</td>
               </tr>
-            )}
-            <tr>
-              <td>Metal</td>
-              <td>
-                {(() => { const t = getStringValue(order.metal_tipo); return t ? t.charAt(0).toUpperCase() + t.slice(1) : ""; })()}
-                {order.metal_pureza && ` - ${getStringValue(order.metal_pureza)}`}
-                {order.metal_color && ` - ${(() => { const c = getStringValue(order.metal_color); return c ? c.charAt(0).toUpperCase() + c.slice(1) : ""; })()}` }
-              </td>
-            </tr>
-            <tr>
-              <td>Piedra</td>
-              <td>{(() => { const v = getStringValue(order.piedra_tipo); return v ? v.charAt(0).toUpperCase() + v.slice(1) : ""; })()}</td>
-            </tr>
-            {order.diamante_forma && (
-              <tr>
-                <td>Forma de la Piedra</td>
-                <td>{(() => { const v = getStringValue(order.diamante_forma); return v ? v.charAt(0).toUpperCase() + v.slice(1) : ""; })()}</td>
-              </tr>
-            )}
-            {order.diamante_quilataje && (
-              <tr>
-                <td>Quilataje</td>
-                <td>{order.diamante_quilataje} ct</td>
-              </tr>
-            )}
-            {order.diamante_color && (
-              <tr>
-                <td>Color</td>
-                <td>{getStringValue(order.diamante_color)}</td>
-              </tr>
-            )}
-            {order.diamante_claridad && (
-              <tr>
-                <td>Claridad</td>
-                <td>{getStringValue(order.diamante_claridad)}</td>
-              </tr>
-            )}
-            {order.diamante_corte && (
-              <tr>
-                <td>Corte</td>
-                <td>{(() => { const v = getStringValue(order.diamante_corte); return v ? v.charAt(0).toUpperCase() + v.slice(1) : ""; })()}</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+              {order.diamante_forma && (
+                <tr>
+                  <td>Forma de la Piedra</td>
+                  <td>{(() => { const v = getStringValue(order.diamante_forma); return v ? v.charAt(0).toUpperCase() + v.slice(1) : ""; })()}</td>
+                </tr>
+              )}
+              {order.diamante_quilataje && (
+                <tr>
+                  <td>Quilataje</td>
+                  <td>{order.diamante_quilataje} ct</td>
+                </tr>
+              )}
+              {order.diamante_color && (
+                <tr>
+                  <td>Color</td>
+                  <td>{getStringValue(order.diamante_color)}</td>
+                </tr>
+              )}
+              {order.diamante_claridad && (
+                <tr>
+                  <td>Claridad</td>
+                  <td>{getStringValue(order.diamante_claridad)}</td>
+                </tr>
+              )}
+              {order.diamante_corte && (
+                <tr>
+                  <td>Corte</td>
+                  <td>{(() => { const v = getStringValue(order.diamante_corte); return v ? v.charAt(0).toUpperCase() + v.slice(1) : ""; })()}</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
 
-      {/* Financial Information */}
-      <div className="full-section">
-        <div className="section-title">Detalles del Pago</div>
-        <table className="financial-table">
-          <tbody>
-            <tr>
-              <td>Precio Total</td>
-              <td>{formatCurrency(order.precio_venta)}</td>
-            </tr>
-            <tr>
-              <td>Anticipo Recibido</td>
-              <td>{formatCurrency(order.importe_anticipo)}</td>
-            </tr>
-            <tr className="financial-total">
-              <td>Saldo Pendiente</td>
-              <td>{formatCurrency(saldoPendiente)}</td>
-            </tr>
-            <tr>
-              <td>Forma de Pago</td>
-              <td style={{ fontWeight: 400 }}>
-                {(() => { 
-                  const v = getStringValue(order.forma_pago); 
-                  return v ? v.charAt(0).toUpperCase() + v.slice(1) : ""; 
-                })()}
-              </td>
-            </tr>
-            {order.referencia_pago && (
+        {/* Financial Information */}
+        <div className="column-section">
+          <div className="section-title">Detalles del Pago</div>
+          <table className="financial-table">
+            <tbody>
               <tr>
-                <td>Referencia</td>
-                <td style={{ fontWeight: 400, fontFamily: 'monospace' }}>{getStringValue(order.referencia_pago)}</td>
+                <td>Precio Total</td>
+                <td>{formatCurrency(order.precio_venta)}</td>
               </tr>
-            )}
-          </tbody>
-        </table>
+              <tr>
+                <td>Anticipo Recibido</td>
+                <td>{formatCurrency(order.importe_anticipo)}</td>
+              </tr>
+              <tr className="financial-total">
+                <td>Saldo Pendiente</td>
+                <td>{formatCurrency(saldoPendiente)}</td>
+              </tr>
+              <tr>
+                <td>Forma de Pago</td>
+                <td style={{ fontWeight: 400 }}>
+                  {(() => { 
+                    const v = getStringValue(order.forma_pago); 
+                    return v ? v.charAt(0).toUpperCase() + v.slice(1) : ""; 
+                  })()}
+                </td>
+              </tr>
+              {order.referencia_pago && (
+                <tr>
+                  <td>Referencia</td>
+                  <td style={{ fontWeight: 400, fontFamily: 'monospace' }}>{getStringValue(order.referencia_pago)}</td>
+                </tr>
+              )}
+              <tr>
+                <td>Estado de Pago</td>
+                <td style={{ fontWeight: 400 }}>{getPaymentStatusText(order.estatus_pago)}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Reference Images - Observaciones Adicionales */}
