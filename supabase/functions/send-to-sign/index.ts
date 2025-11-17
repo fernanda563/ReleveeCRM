@@ -115,7 +115,7 @@ Deno.serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        test_mode: 0, // Set to 1 for testing, 0 for production
+        test_mode: 1, // Set to 1 for testing, 0 for production
         title: documentTitle,
         subject: `Firma de Orden de Compra - ${orderData.clients.nombre} ${orderData.clients.apellido}`,
         message: 'Por favor firma este documento para confirmar tu orden de compra de joyería personalizada.',
