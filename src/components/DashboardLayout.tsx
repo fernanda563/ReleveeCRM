@@ -4,9 +4,11 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { supabase } from "@/integrations/supabase/client";
+import { useThemeInitializer } from "@/hooks/useThemeInitializer";
 
 export function DashboardLayout() {
   const navigate = useNavigate();
+  useThemeInitializer();
 
   useEffect(() => {
     checkAuth();
