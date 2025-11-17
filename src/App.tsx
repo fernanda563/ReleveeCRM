@@ -6,6 +6,7 @@ import Dashboard from "./pages/Dashboard";
 import Auth from "./pages/Auth";
 import CRM from "./pages/CRM";
 import ClientDetail from "./pages/ClientDetail";
+import Projects from "./pages/Projects";
 import Orders from "./pages/Orders";
 import Production from "./pages/Production";
 import ProductionDashboard from "./pages/ProductionDashboard";
@@ -30,6 +31,7 @@ const App = () => (
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/crm" element={<CRM />} />
         <Route path="/crm/:clientId" element={<ClientDetail />} />
+        <Route path="/projects" element={<Projects />} />
         <Route path="/orders" element={<Orders />} />
         <Route path="/production" element={<Production />} />
         <Route path="/production/dashboard" element={<ProductionDashboard />} />

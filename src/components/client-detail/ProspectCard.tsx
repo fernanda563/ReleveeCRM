@@ -36,6 +36,9 @@ interface ProspectCardProps {
   onConvertToOrder?: (prospect: Prospect) => void;
   onDelete?: (prospect: Prospect) => void;
   className?: string;
+  showClientName?: boolean;
+  clientName?: string;
+  clientId?: string;
 }
 
 const formatCurrency = (amount: number | null) => {
@@ -55,7 +58,17 @@ const formatDate = (dateString: string | null) => {
   });
 };
 
-export const ProspectCard = ({ prospect, onClick, onEditStatus, onConvertToOrder, onDelete, className }: ProspectCardProps) => {
+export const ProspectCard = ({ 
+  prospect, 
+  onClick, 
+  onEditStatus, 
+  onConvertToOrder, 
+  onDelete, 
+  className,
+  showClientName = false,
+  clientName,
+  clientId
+}: ProspectCardProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const title = generateProspectTitle(prospect);
 
@@ -74,6 +87,26 @@ export const ProspectCard = ({ prospect, onClick, onEditStatus, onConvertToOrder
       role="button"
     >
       <CardHeader className="pb-3">
+        {showClientName && clientName && (
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-sm text-muted-foreground">
+              Cliente: <span className="font-medium text-foreground">{clientName}</span>
+            </p>
+            {clientId && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 text-xs"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  window.location.href = `/crm/${clientId}`;
+                }}
+              >
+                Ver cliente
+              </Button>
+            )}
+          </div>
+        )}
         <div className="flex items-start justify-between gap-2">
           <CardTitle className="text-lg capitalize flex-1">{title}</CardTitle>
           <div className="flex items-center gap-2">

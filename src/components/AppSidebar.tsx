@@ -57,6 +57,12 @@ const menuItems = [
     adminOnly: false,
   },
   {
+    title: "Proyectos",
+    url: "/projects",
+    icon: Gem,
+    adminOnly: false,
+  },
+  {
     title: "Órdenes de Compra",
     url: "/orders",
     icon: ShoppingCart,
@@ -65,7 +71,7 @@ const menuItems = [
   {
     title: "Producción",
     url: "/production",
-    icon: Gem,
+    icon: Box,
     adminOnly: false,
   },
   {
