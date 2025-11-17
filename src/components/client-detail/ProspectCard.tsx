@@ -77,6 +77,153 @@ export const ProspectCard = ({
     setIsExpanded(!isExpanded);
   };
 
+  // Diseño horizontal para vista de proyectos
+  if (showClientName) {
+    return (
+      <Card
+        className={cn(
+          "hover:shadow-md transition-all cursor-pointer",
+          className
+        )}
+        onClick={() => onClick?.()}
+      >
+        <CardContent className="p-4">
+          {/* Fila 1: Cliente, estado, acciones */}
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-3">
+              <p className="text-sm">
+                Cliente: <span className="font-semibold">{clientName}</span>
+              </p>
+              <Badge className={getStatusColor(prospect.estado)}>
+                {prospect.estado.replace(/_/g, " ")}
+              </Badge>
+            </div>
+            <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+              {clientId && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    window.location.href = `/crm/${clientId}`;
+                  }}
+                >
+                  Ver cliente
+                </Button>
+              )}
+              {prospect.estado !== "convertido" && (onEditStatus || onConvertToOrder || onDelete) && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {onEditStatus && (
+                      <DropdownMenuItem onClick={(e) => {
+                        e.stopPropagation();
+                        onEditStatus(prospect);
+                      }}>
+                        <Pencil className="mr-2 h-4 w-4" />
+                        Editar proyecto
+                      </DropdownMenuItem>
+                    )}
+                    {prospect.estado === "activo" && onConvertToOrder && (
+                      <DropdownMenuItem onClick={(e) => {
+                        e.stopPropagation();
+                        onConvertToOrder(prospect);
+                      }}>
+                        <ShoppingCart className="mr-2 h-4 w-4" />
+                        Convertir a orden
+                      </DropdownMenuItem>
+                    )}
+                    {onDelete && (
+                      <DropdownMenuItem
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onDelete(prospect);
+                        }}
+                        className="text-destructive"
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Eliminar
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+            </div>
+          </div>
+
+          {/* Fila 2: Título del proyecto */}
+          <h3 className="text-lg font-semibold mb-3 capitalize">{title}</h3>
+
+          {/* Fila 3: Detalles en línea horizontal */}
+          <div className="flex flex-wrap gap-4 text-sm text-muted-foreground mb-2">
+            {prospect.metal_tipo && (
+              <div className="flex items-center gap-1">
+                <span>💍 Metal:</span>
+                <span>{prospect.metal_tipo}</span>
+                {prospect.metal_tipo === "Oro" && prospect.color_oro && (
+                  <span>• {prospect.color_oro}</span>
+                )}
+                {prospect.metal_tipo === "Oro" && prospect.pureza_oro && (
+                  <span>• {prospect.pureza_oro}</span>
+                )}
+              </div>
+            )}
+            
+            <div className="flex items-center gap-1">
+              <span>💎 Piedra:</span>
+              <span>{prospect.incluye_piedra || "No especificado"}</span>
+              {prospect.incluye_piedra === "Sí" && prospect.tipo_piedra && (
+                <span>• {prospect.tipo_piedra}</span>
+              )}
+            </div>
+
+            {prospect.estilo_anillo && (
+              <div className="flex items-center gap-1">
+                <span>✨ Estilo:</span>
+                <span className="capitalize">{prospect.estilo_anillo.replace(/_/g, " ")}</span>
+              </div>
+            )}
+
+            {prospect.largo_aprox && (
+              <div className="flex items-center gap-1">
+                <span>📏 Largo:</span>
+                <span>{prospect.largo_aprox}</span>
+              </div>
+            )}
+          </div>
+
+          {/* Fila 4: Financiero y fecha */}
+          <div className="flex flex-wrap gap-4 text-sm mb-2">
+            {prospect.importe_previsto && (
+              <div className="flex items-center gap-1">
+                <span className="text-muted-foreground">💰 Importe:</span>
+                <span className="font-semibold">{formatCurrency(prospect.importe_previsto)}</span>
+              </div>
+            )}
+            {prospect.fecha_entrega_deseada && (
+              <div className="flex items-center gap-1">
+                <span className="text-muted-foreground">📅 Entrega:</span>
+                <span className="font-semibold">{formatDate(prospect.fecha_entrega_deseada)}</span>
+              </div>
+            )}
+          </div>
+
+          {/* Fila 5: Observaciones */}
+          {prospect.observaciones && (
+            <p className="text-sm text-muted-foreground mt-3 pt-3 border-t">
+              📝 {prospect.observaciones}
+            </p>
+          )}
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Diseño vertical para vista de detalle del cliente
   return (
     <Card
       className={cn(
@@ -125,201 +272,141 @@ export const ProspectCard = ({
                     <MoreVertical className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuContent align="end">
                   {onEditStatus && (
-                    <DropdownMenuItem
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onEditStatus(prospect);
-                      }}
-                    >
-                      Editar estatus
+                    <DropdownMenuItem onClick={(e) => {
+                      e.stopPropagation();
+                      onEditStatus(prospect);
+                    }}>
+                      <Pencil className="mr-2 h-4 w-4" />
+                      Editar proyecto
                     </DropdownMenuItem>
                   )}
-                  {onClick && (
+                  {prospect.estado === "activo" && onConvertToOrder && (
+                    <DropdownMenuItem onClick={(e) => {
+                      e.stopPropagation();
+                      onConvertToOrder(prospect);
+                    }}>
+                      <ShoppingCart className="mr-2 h-4 w-4" />
+                      Convertir a orden
+                    </DropdownMenuItem>
+                  )}
+                  {onDelete && (
                     <DropdownMenuItem
                       onClick={(e) => {
                         e.stopPropagation();
-                        onClick();
+                        onDelete(prospect);
                       }}
+                      className="text-destructive"
                     >
-                      Editar proyecto
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Eliminar
                     </DropdownMenuItem>
                   )}
                 </DropdownMenuContent>
               </DropdownMenu>
             )}
-            
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 shrink-0"
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsExpanded(!isExpanded);
-              }}
-            >
-              {isExpanded ? (
-                <ChevronUp className="h-4 w-4" />
-              ) : (
-                <ChevronDown className="h-4 w-4" />
-              )}
-            </Button>
           </div>
         </div>
       </CardHeader>
 
-      <CardContent className="pt-0 space-y-3">
-        {/* Información siempre visible (compacta) */}
-        <div className="flex flex-col gap-3 text-sm">
-          {prospect.importe_previsto && (
-            <div className="flex items-center gap-1.5">
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-              <span className="font-medium">{formatCurrency(prospect.importe_previsto)}</span>
-            </div>
-          )}
-
-          {/* Fechas siempre visibles */}
-          <div className="grid grid-cols-1 gap-2 pt-2 border-t text-xs">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Creado:</span>
-              <span className="font-medium">{formatDate(prospect.created_at)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Última edición:</span>
-              <span className="font-medium">{formatDate(prospect.updated_at)}</span>
-            </div>
+      <CardContent className="space-y-4">
+        {/* Summary para proyectos (siempre visible) */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between text-sm">
+            {prospect.importe_previsto && (
+              <div className="flex items-center gap-1 text-muted-foreground">
+                <DollarSign className="h-4 w-4" />
+                <span>{formatCurrency(prospect.importe_previsto)}</span>
+              </div>
+            )}
             {prospect.fecha_entrega_deseada && (
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Entrega deseada:</span>
-                <span className="font-medium text-primary">{formatDate(prospect.fecha_entrega_deseada)}</span>
+              <div className="flex items-center gap-1 text-muted-foreground">
+                <Calendar className="h-4 w-4" />
+                <span>{formatDate(prospect.fecha_entrega_deseada)}</span>
               </div>
             )}
           </div>
         </div>
 
-        {/* Detalles expandibles */}
-        <div
-          className={cn(
-            "space-y-3 overflow-hidden transition-all duration-300",
-            isExpanded ? "max-h-[1000px] opacity-100" : "max-h-0 opacity-0"
-          )}
+        {/* Botón de expansión */}
+        <Button
+          variant="ghost"
+          size="sm"
+          className="w-full justify-center"
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsExpanded(!isExpanded);
+          }}
         >
-          {prospect.metal_tipo && (
-            <div className="pt-3 border-t">
-              <p className="text-xs font-medium text-muted-foreground mb-2">METAL</p>
-              <div className="grid grid-cols-3 gap-2 text-sm">
-                <div>
-                  <p className="text-muted-foreground">Tipo:</p>
-                  <p className="font-medium capitalize">{prospect.metal_tipo}</p>
+          {isExpanded ? (
+            <>
+              <ChevronUp className="h-4 w-4 mr-2" />
+              Ver menos
+            </>
+          ) : (
+            <>
+              <ChevronDown className="h-4 w-4 mr-2" />
+              Ver más detalles
+            </>
+          )}
+        </Button>
+
+        {/* Detalles expandidos */}
+        {isExpanded && (
+          <div className="space-y-4 pt-2 border-t">
+            {/* Detalles del Metal */}
+            {prospect.metal_tipo && (
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-foreground">Metal</p>
+                <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
+                  <span>Tipo: {prospect.metal_tipo}</span>
+                  {prospect.metal_tipo === "Oro" && prospect.color_oro && (
+                    <span>• Color: {prospect.color_oro}</span>
+                  )}
+                  {prospect.metal_tipo === "Oro" && prospect.pureza_oro && (
+                    <span>• Pureza: {prospect.pureza_oro}</span>
+                  )}
                 </div>
-                {prospect.metal_tipo === "oro" && (
-                  <>
-                    <div>
-                      <p className="text-muted-foreground">Color:</p>
-                      <p className="font-medium capitalize">{prospect.color_oro || "N/A"}</p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground">Pureza:</p>
-                      <p className="font-medium">{prospect.pureza_oro || "N/A"}</p>
-                    </div>
-                  </>
+              </div>
+            )}
+
+            {/* Detalles de Piedra */}
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-foreground">Piedra</p>
+              <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
+                <span>Incluye piedra: {prospect.incluye_piedra || "No especificado"}</span>
+                {prospect.incluye_piedra === "Sí" && prospect.tipo_piedra && (
+                  <span>• Tipo: {prospect.tipo_piedra}</span>
                 )}
               </div>
             </div>
-          )}
 
-          <div className="pt-3 border-t">
-            <p className="text-xs font-medium text-muted-foreground mb-2">DETALLES DEL DISEÑO</p>
-            <div className="grid grid-cols-3 gap-2 text-sm">
-              <div>
-                <p className="text-muted-foreground">Incluye piedra:</p>
-                <p className="font-medium capitalize">{prospect.incluye_piedra || "No especificado"}</p>
-              </div>
-              <div>
-                <p className="text-muted-foreground">Tipo de piedra:</p>
-                <p className="font-medium capitalize">
-                  {prospect.incluye_piedra === "si" && prospect.tipo_piedra 
-                    ? prospect.tipo_piedra 
-                    : "N/A"}
+            {/* Estilo de Anillo si aplica */}
+            {prospect.estilo_anillo && (
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-foreground">Estilo de Anillo</p>
+                <p className="text-sm text-muted-foreground capitalize">
+                  {prospect.estilo_anillo.replace(/_/g, " ")}
                 </p>
               </div>
-              <div>
-                <p className="text-muted-foreground">Estilo:</p>
-                <p className="font-medium capitalize">
-                  {prospect.estilo_anillo 
-                    ? prospect.estilo_anillo.replace(/_/g, " ") 
-                    : "N/A"}
-                </p>
+            )}
+
+            {/* Largo aproximado */}
+            {prospect.largo_aprox && (
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-foreground">Largo aproximado</p>
+                <p className="text-sm text-muted-foreground">{prospect.largo_aprox}</p>
               </div>
-            </div>
-          </div>
+            )}
 
-          {prospect.largo_aprox && (
-            <div className="text-sm">
-              <p className="text-muted-foreground">Largo aproximado:</p>
-              <p className="font-medium">{prospect.largo_aprox}</p>
-            </div>
-          )}
-
-          {prospect.observaciones && (
-            <div className="text-sm pt-2 border-t">
-              <p className="font-medium mb-1">Observaciones:</p>
-              <p className="text-muted-foreground">{prospect.observaciones}</p>
-            </div>
-          )}
-        </div>
-
-        {/* Botones de acción */}
-        {prospect.estado !== "convertido" && (
-          <div className="pt-3 border-t">
-            <div className="flex items-center justify-between gap-2">
-              {/* Botón eliminar - alineado a la izquierda */}
-              {onDelete && (
-                <Button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDelete(prospect);
-                  }}
-                  variant="destructive"
-                  size="sm"
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Eliminar
-                </Button>
-              )}
-              
-              {/* Botones convertir y editar - alineados a la derecha */}
-              <div className="flex items-center gap-2 ml-auto">
-                {onClick && (
-                  <Button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onClick();
-                    }}
-                    variant="outline"
-                    size="sm"
-                  >
-                    <Pencil className="h-4 w-4 mr-2" />
-                    Editar
-                  </Button>
-                )}
-                
-                {(prospect.estado === "activo" || prospect.estado === "en_pausa") && onConvertToOrder && (
-                  <Button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onConvertToOrder(prospect);
-                    }}
-                    size="sm"
-                    variant="default"
-                  >
-                    <ShoppingCart className="h-4 w-4 mr-2" />
-                    Convertir a Orden
-                  </Button>
-                )}
+            {/* Observaciones */}
+            {prospect.observaciones && (
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-foreground">Observaciones</p>
+                <p className="text-sm text-muted-foreground">{prospect.observaciones}</p>
               </div>
-            </div>
+            )}
           </div>
         )}
       </CardContent>
