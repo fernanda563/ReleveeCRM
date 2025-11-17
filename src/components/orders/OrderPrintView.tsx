@@ -458,7 +458,7 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
 
       {/* Financial Information */}
       <div className="full-section">
-        <div className="section-title">Importe del Producto</div>
+        <div className="section-title">Detalles del Pago</div>
         <table className="financial-table">
           <tbody>
             <tr>
@@ -475,7 +475,12 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
             </tr>
             <tr>
               <td>Forma de Pago</td>
-              <td style={{ fontWeight: 400 }}>{getStringValue(order.forma_pago)}</td>
+              <td style={{ fontWeight: 400 }}>
+                {(() => { 
+                  const v = getStringValue(order.forma_pago); 
+                  return v ? v.charAt(0).toUpperCase() + v.slice(1) : ""; 
+                })()}
+              </td>
             </tr>
             {order.referencia_pago && (
               <tr>
