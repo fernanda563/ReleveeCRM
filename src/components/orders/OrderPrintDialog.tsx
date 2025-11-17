@@ -181,9 +181,26 @@ export const OrderPrintDialog = ({ orderId, open, onOpenChange }: OrderPrintDial
         const combinedOrder = { ...orderBase, clients: clientInfo };
         setOrder(combinedOrder);
 
+        // Obtener logo de la configuración del sistema
+        let logoUrl = null;
+        try {
+          const { data: logoData } = await supabase
+            .from("system_settings")
+            .select("value")
+            .eq("category", "company")
+            .eq("key", "company_logo_url")
+            .maybeSingle();
+          
+          if (logoData && logoData.value && typeof logoData.value === 'object' && 'value' in logoData.value) {
+            logoUrl = logoData.value.value;
+          }
+        } catch (logoErr) {
+          console.warn("Error fetching company logo:", logoErr);
+        }
+
         const companyData = {
           name: "Levant Jewelry",
-          logo_light_url: "/images/relevee-logo.png",
+          logo_light_url: logoUrl,
           address: null,
           phone: null,
           email: null,
