@@ -249,7 +249,7 @@ export const OrderPrintDialog = ({ orderId, open, onOpenChange }: OrderPrintDial
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white" style={{ backgroundColor: '#ffffff' }}>
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
             <span>Vista de Impresión</span>
@@ -284,7 +284,7 @@ export const OrderPrintDialog = ({ orderId, open, onOpenChange }: OrderPrintDial
         )}
 
         {!loading && !error && order && companyInfo && (
-          <div ref={printRef}>
+          <div ref={printRef} style={{ backgroundColor: '#ffffff' }}>
             <OrderPrintView order={order} companyInfo={companyInfo} />
           </div>
         )}
