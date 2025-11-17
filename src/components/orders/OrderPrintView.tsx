@@ -388,7 +388,7 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
         .reference-image {
           width: 100%;
           height: auto;
-          max-height: 250px;
+          max-height: 100px;
           object-fit: contain;
           border-radius: 4px;
           background: #fff;
@@ -416,7 +416,7 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
           }
           
           .reference-image {
-            max-height: 200px;
+            max-height: 80px;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
           }
@@ -594,10 +594,10 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
         </div>
       </div>
 
-      {/* Reference Images - Observaciones Adicionales */}
+      {/* Reference Images */}
       {order.imagenes_referencia && Array.isArray(order.imagenes_referencia) && order.imagenes_referencia.length > 0 && (
         <div className="full-section">
-          <div className="section-title">Observaciones Adicionales</div>
+          <div className="section-title">Imágenes de Referencia</div>
           <div className="reference-images-grid">
             {order.imagenes_referencia.map((imageUrl, index) => (
               <div key={index} className="reference-image-container">
