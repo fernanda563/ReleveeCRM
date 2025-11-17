@@ -179,6 +179,7 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
             body {
               -webkit-print-color-adjust: exact;
               print-color-adjust: exact;
+              background-color: #ffffff !important;
             }
 
             .no-print {
@@ -187,7 +188,10 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
 
             * {
               color: #000 !important;
-              background-color: #fff !important;
+            }
+
+            body, html, .print-container {
+              background-color: #ffffff !important;
             }
 
             img {
@@ -199,9 +203,9 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
             font-family: 'Inter', 'system-ui', sans-serif;
             max-width: 8.5in;
             margin: 0 auto;
-            padding: 0;
+            padding: 20px;
             color: #000;
-            background: #fff !important;
+            background-color: #ffffff !important;
           }
 
         .print-header {
@@ -217,7 +221,7 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
             max-width: 200px;
             max-height: 120px;
             object-fit: contain;
-            background-color: white;
+            background-color: #ffffff;
           }
 
         .company-info {
@@ -292,7 +296,7 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
         .table-section td:first-child {
           font-weight: 600;
           width: 180px;
-          background-color: #f5f5f5;
+          background-color: #ffffff;
         }
 
         .financial-table {
@@ -320,7 +324,7 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
         }
 
         .financial-total {
-          background-color: #f5f5f5;
+          background-color: #ffffff;
           font-size: 12px !important;
         }
 
