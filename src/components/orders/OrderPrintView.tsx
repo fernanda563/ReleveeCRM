@@ -354,6 +354,8 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
 
         .signature-line {
           margin-top: 48px;
+          margin-left: auto;
+          margin-right: auto;
           border-top: 1px solid #000;
           width: 300px;
           text-align: center;
@@ -442,7 +444,7 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
           <div style={{ fontSize: '12px', fontWeight: 700 }}>{getStringValue(companyInfo.name)}</div>
           {companyInfo.address && <div>{getStringValue(companyInfo.address)}</div>}
           {companyInfo.phone && <div>Tel: {getStringValue(companyInfo.phone)}</div>}
-          {companyInfo.email && <div>Email: {getStringValue(companyInfo.email)}</div>}
+          <div>Email: contacto@relevee.mx</div>
         </div>
       </div>
 
