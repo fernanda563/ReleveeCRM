@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import OrderPrintView from "@/components/orders/OrderPrintView";
-import { Loader2, Printer, X } from "lucide-react";
+import { Loader2, Printer, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -10,6 +10,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useReactToPrint } from "react-to-print";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
+import { toast } from "sonner";
 
 interface OrderPrintDialogProps {
   orderId: string | null;
@@ -58,6 +61,43 @@ export const OrderPrintDialog = ({ orderId, open, onOpenChange }: OrderPrintDial
   const handlePrint = useReactToPrint({
     contentRef: printRef,
   });
+
+  const handleDownloadPDF = async () => {
+    if (!printRef.current || !order) return;
+
+    try {
+      toast.info("Generando PDF...");
+
+      const canvas = await html2canvas(printRef.current, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: "#ffffff",
+      });
+
+      const imgWidth = 210; // A4 width in mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      
+      const pdf = new jsPDF({
+        orientation: imgHeight > imgWidth ? "portrait" : "portrait",
+        unit: "mm",
+        format: "a4",
+      });
+
+      const imgData = canvas.toDataURL("image/png");
+      pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
+      
+      const fileName = order.custom_id 
+        ? `Orden_${order.custom_id}.pdf`
+        : `Orden_${order.id.slice(0, 8)}.pdf`;
+      
+      pdf.save(fileName);
+      toast.success("PDF descargado exitosamente");
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      toast.error("Error al generar el PDF");
+    }
+  };
 
   useEffect(() => {
     if (!open || !orderId) {
@@ -169,10 +209,16 @@ export const OrderPrintDialog = ({ orderId, open, onOpenChange }: OrderPrintDial
             <span>Vista de Impresión</span>
             <div className="flex gap-2">
               {!loading && !error && (
-                <Button onClick={handlePrint} size="sm">
-                  <Printer className="h-4 w-4 mr-2" />
-                  Imprimir
-                </Button>
+                <>
+                  <Button onClick={handlePrint} size="sm" variant="outline">
+                    <Printer className="h-4 w-4 mr-2" />
+                    Imprimir
+                  </Button>
+                  <Button onClick={handleDownloadPDF} size="sm">
+                    <Download className="h-4 w-4 mr-2" />
+                    Descargar PDF
+                  </Button>
+                </>
               )}
             </div>
           </DialogTitle>
