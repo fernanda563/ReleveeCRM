@@ -340,7 +340,7 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
             {order.tipo_accesorio && (
               <tr>
                 <td>Tipo de Accesorio</td>
-                <td>{order.tipo_accesorio.charAt(0).toUpperCase() + order.tipo_accesorio.slice(1)}</td>
+                <td>{(() => { const v = getStringValue(order.tipo_accesorio); return v ? v.charAt(0).toUpperCase() + v.slice(1) : ""; })()}</td>
               </tr>
             )}
             {order.talla && (
@@ -352,9 +352,9 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
             <tr>
               <td>Metal</td>
               <td>
-                {order.metal_tipo.charAt(0).toUpperCase() + order.metal_tipo.slice(1)}
-                {order.metal_pureza && ` - ${order.metal_pureza}`}
-                {order.metal_color && ` - ${order.metal_color.charAt(0).toUpperCase() + order.metal_color.slice(1)}`}
+                {(() => { const t = getStringValue(order.metal_tipo); return t ? t.charAt(0).toUpperCase() + t.slice(1) : ""; })()}
+                {order.metal_pureza && ` - ${getStringValue(order.metal_pureza)}`}
+                {order.metal_color && ` - ${(() => { const c = getStringValue(order.metal_color); return c ? c.charAt(0).toUpperCase() + c.slice(1) : ""; })()}` }
               </td>
             </tr>
             <tr>
@@ -364,7 +364,7 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
             {order.diamante_forma && (
               <tr>
                 <td>Forma de la Piedra</td>
-                <td>{order.diamante_forma.charAt(0).toUpperCase() + order.diamante_forma.slice(1)}</td>
+                <td>{(() => { const v = getStringValue(order.diamante_forma); return v ? v.charAt(0).toUpperCase() + v.slice(1) : ""; })()}</td>
               </tr>
             )}
             {order.diamante_quilataje && (
@@ -376,19 +376,19 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
             {order.diamante_color && (
               <tr>
                 <td>Color</td>
-                <td>{order.diamante_color}</td>
+                <td>{getStringValue(order.diamante_color)}</td>
               </tr>
             )}
             {order.diamante_claridad && (
               <tr>
                 <td>Claridad</td>
-                <td>{order.diamante_claridad}</td>
+                <td>{getStringValue(order.diamante_claridad)}</td>
               </tr>
             )}
             {order.diamante_corte && (
               <tr>
                 <td>Corte</td>
-                <td>{order.diamante_corte.charAt(0).toUpperCase() + order.diamante_corte.slice(1)}</td>
+                <td>{(() => { const v = getStringValue(order.diamante_corte); return v ? v.charAt(0).toUpperCase() + v.slice(1) : ""; })()}</td>
               </tr>
             )}
           </tbody>
