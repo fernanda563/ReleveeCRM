@@ -2,7 +2,21 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { DollarSign, Calendar, ChevronDown, ChevronUp, ShoppingCart, MoreVertical, Pencil, Trash2 } from "lucide-react";
+import { 
+  DollarSign, 
+  Calendar, 
+  ChevronDown, 
+  ChevronUp, 
+  ShoppingCart, 
+  MoreVertical, 
+  Pencil, 
+  Trash2,
+  Circle,
+  Gem,
+  Sparkles,
+  Ruler,
+  FileText
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -158,65 +172,91 @@ export const ProspectCard = ({
           {/* Fila 2: Título del proyecto */}
           <h3 className="text-lg font-semibold mb-3 capitalize">{title}</h3>
 
-          {/* Fila 3: Detalles en línea horizontal */}
-          <div className="flex flex-wrap gap-4 text-sm text-muted-foreground mb-2">
-            {prospect.metal_tipo && (
-              <div className="flex items-center gap-1">
-                <span>💍 Metal:</span>
-                <span>{prospect.metal_tipo}</span>
-                {prospect.metal_tipo === "Oro" && prospect.color_oro && (
-                  <span>• {prospect.color_oro}</span>
-                )}
-                {prospect.metal_tipo === "Oro" && prospect.pureza_oro && (
-                  <span>• {prospect.pureza_oro}</span>
-                )}
+          {/* Fila 3: Grid de 2 columnas - Detalles del producto + Info financiera */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-2">
+            {/* Columna Izquierda: Detalles del Producto */}
+            <div className="space-y-2">
+              {prospect.metal_tipo && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Circle className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                  <div className="flex items-center gap-1 flex-wrap">
+                    <span className="text-muted-foreground">Metal:</span>
+                    <span className="font-medium">{prospect.metal_tipo}</span>
+                    {prospect.metal_tipo === "Oro" && prospect.color_oro && (
+                      <span className="text-muted-foreground">• {prospect.color_oro}</span>
+                    )}
+                    {prospect.metal_tipo === "Oro" && prospect.pureza_oro && (
+                      <span className="text-muted-foreground">• {prospect.pureza_oro}</span>
+                    )}
+                  </div>
+                </div>
+              )}
+              
+              <div className="flex items-center gap-2 text-sm">
+                <Gem className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                <div className="flex items-center gap-1 flex-wrap">
+                  <span className="text-muted-foreground">Piedra:</span>
+                  <span className="font-medium">{prospect.incluye_piedra || "No especificado"}</span>
+                  {prospect.incluye_piedra === "Sí" && prospect.tipo_piedra && (
+                    <span className="text-muted-foreground">• {prospect.tipo_piedra}</span>
+                  )}
+                </div>
               </div>
-            )}
-            
-            <div className="flex items-center gap-1">
-              <span>💎 Piedra:</span>
-              <span>{prospect.incluye_piedra || "No especificado"}</span>
-              {prospect.incluye_piedra === "Sí" && prospect.tipo_piedra && (
-                <span>• {prospect.tipo_piedra}</span>
+
+              {prospect.estilo_anillo && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Sparkles className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                  <div className="flex items-center gap-1">
+                    <span className="text-muted-foreground">Estilo:</span>
+                    <span className="font-medium capitalize">{prospect.estilo_anillo.replace(/_/g, " ")}</span>
+                  </div>
+                </div>
+              )}
+
+              {prospect.largo_aprox && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Ruler className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                  <div className="flex items-center gap-1">
+                    <span className="text-muted-foreground">Largo:</span>
+                    <span className="font-medium">{prospect.largo_aprox}</span>
+                  </div>
+                </div>
               )}
             </div>
 
-            {prospect.estilo_anillo && (
-              <div className="flex items-center gap-1">
-                <span>✨ Estilo:</span>
-                <span className="capitalize">{prospect.estilo_anillo.replace(/_/g, " ")}</span>
-              </div>
-            )}
-
-            {prospect.largo_aprox && (
-              <div className="flex items-center gap-1">
-                <span>📏 Largo:</span>
-                <span>{prospect.largo_aprox}</span>
-              </div>
-            )}
+            {/* Columna Derecha: Info Financiera y Temporal */}
+            <div className="space-y-2">
+              {prospect.importe_previsto && (
+                <div className="flex items-center gap-2 text-sm">
+                  <DollarSign className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                  <div className="flex items-center gap-1">
+                    <span className="text-muted-foreground">Importe previsto:</span>
+                    <span className="font-semibold">{formatCurrency(prospect.importe_previsto)}</span>
+                  </div>
+                </div>
+              )}
+              
+              {prospect.fecha_entrega_deseada && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Calendar className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                  <div className="flex items-center gap-1">
+                    <span className="text-muted-foreground">Entrega deseada:</span>
+                    <span className="font-semibold">{formatDate(prospect.fecha_entrega_deseada)}</span>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Fila 4: Financiero y fecha */}
-          <div className="flex flex-wrap gap-4 text-sm mb-2">
-            {prospect.importe_previsto && (
-              <div className="flex items-center gap-1">
-                <span className="text-muted-foreground">💰 Importe:</span>
-                <span className="font-semibold">{formatCurrency(prospect.importe_previsto)}</span>
-              </div>
-            )}
-            {prospect.fecha_entrega_deseada && (
-              <div className="flex items-center gap-1">
-                <span className="text-muted-foreground">📅 Entrega:</span>
-                <span className="font-semibold">{formatDate(prospect.fecha_entrega_deseada)}</span>
-              </div>
-            )}
-          </div>
-
-          {/* Fila 5: Observaciones */}
+          {/* Fila 4: Observaciones */}
           {prospect.observaciones && (
-            <p className="text-sm text-muted-foreground mt-3 pt-3 border-t">
-              📝 {prospect.observaciones}
-            </p>
+            <div className="flex items-start gap-2 mt-3 pt-3 border-t">
+              <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <span className="text-sm text-muted-foreground font-medium">Observaciones: </span>
+                <span className="text-sm text-muted-foreground">{prospect.observaciones}</span>
+              </div>
+            </div>
           )}
         </CardContent>
       </Card>
