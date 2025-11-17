@@ -10,6 +10,7 @@ interface OrderPrintViewProps {
     precio_venta: number;
     importe_anticipo: number;
     forma_pago: string;
+    referencia_pago?: string | null;
     estatus_pago: string;
     metal_tipo: string;
     metal_pureza: string | null;
@@ -416,6 +417,12 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
               <td>Forma de Pago</td>
               <td style={{ fontWeight: 400 }}>{getStringValue(order.forma_pago)}</td>
             </tr>
+            {order.referencia_pago && (
+              <tr>
+                <td>Referencia</td>
+                <td style={{ fontWeight: 400, fontFamily: 'monospace' }}>{getStringValue(order.referencia_pago)}</td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>

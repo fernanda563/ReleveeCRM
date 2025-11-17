@@ -177,6 +177,20 @@ const OrderList = ({ orders, loading, onEdit, onOpenPrint }: OrderListProps) => 
                 </div>
               </div>
 
+              {/* Payment Method and Reference */}
+              <div className="flex flex-col gap-2 text-sm text-muted-foreground pt-2">
+                <div>
+                  <span className="font-medium text-foreground">Forma de Pago:</span>
+                  <span className="ml-2 capitalize">{order.forma_pago}</span>
+                </div>
+                {order.referencia_pago && (
+                  <div>
+                    <span className="font-medium text-foreground">Referencia:</span>
+                    <span className="ml-2 font-mono">{order.referencia_pago}</span>
+                  </div>
+                )}
+              </div>
+
               {/* Date */}
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                 <span>

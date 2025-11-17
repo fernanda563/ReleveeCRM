@@ -84,6 +84,7 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
   const [importeAnticipo, setImporteAnticipo] = useState("");
   const [anticipoError, setAnticipoError] = useState("");
   const [formaPago, setFormaPago] = useState("");
+  const [referenciaPago, setReferenciaPago] = useState("");
   const [estatusPago, setEstatusPago] = useState("anticipo_recibido");
   const [paymentReceipts, setPaymentReceipts] = useState<File[]>([]);
   const [uploadedReceiptUrls, setUploadedReceiptUrls] = useState<string[]>([]);
@@ -163,6 +164,7 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
         setPrecioVenta(formatCurrency(order.precio_venta.toString()));
         setImporteAnticipo(formatCurrency(order.importe_anticipo.toString()));
         setFormaPago(order.forma_pago);
+        setReferenciaPago(order.referencia_pago || "");
         setEstatusPago(order.estatus_pago);
         setMetalTipo(order.metal_tipo as "oro" | "plata" | "platino");
         setMetalPureza(order.metal_pureza || "");
@@ -236,6 +238,7 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
     setImporteAnticipo("");
     setAnticipoError("");
     setFormaPago("");
+    setReferenciaPago("");
     setEstatusPago("anticipo_recibido");
     setMetalTipo("oro");
     setMetalPureza("");
@@ -802,6 +805,7 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
         precio_venta: precioVentaNumeric,
         importe_anticipo: importeAnticipoNumeric,
         forma_pago: formaPago,
+        referencia_pago: referenciaPago || null,
         estatus_pago: estatusPago,
         metal_tipo: metalTipo,
         metal_pureza: metalTipo === "oro" ? metalPureza : null,
@@ -1133,7 +1137,17 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="forma_pago">Forma de Pago *</Label>
-                  <Select value={formaPago} onValueChange={setFormaPago} disabled={loading}>
+                  <Select 
+                    value={formaPago} 
+                    onValueChange={(value) => {
+                      setFormaPago(value);
+                      // Limpiar referencia si cambia a efectivo
+                      if (value === "efectivo") {
+                        setReferenciaPago("");
+                      }
+                    }} 
+                    disabled={loading}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Seleccionar" />
                     </SelectTrigger>
@@ -1159,6 +1173,31 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
                   </Select>
                 </div>
               </div>
+
+              {/* Campo de Referencia - Solo aparece si NO es efectivo */}
+              {formaPago && formaPago !== "efectivo" && (
+                <div className="space-y-2">
+                  <Label htmlFor="referencia_pago">
+                    Referencia
+                    <span className="text-muted-foreground text-xs ml-1">
+                      (Opcional - Ej: SPEI, autorización de tarjeta, número de cheque)
+                    </span>
+                  </Label>
+                  <Input
+                    id="referencia_pago"
+                    type="text"
+                    value={referenciaPago}
+                    onChange={(e) => {
+                      // Convertir a mayúsculas y permitir solo alfanuméricos, guiones y guiones bajos
+                      const value = e.target.value.toUpperCase().replace(/[^A-Z0-9\-_]/g, '');
+                      setReferenciaPago(value);
+                    }}
+                    maxLength={100}
+                    disabled={loading}
+                    placeholder="Ej: SPEI123456789"
+                  />
+                </div>
+              )}
 
               <div className="space-y-2 mt-4">
                 <Label>Comprobantes de Pago</Label>

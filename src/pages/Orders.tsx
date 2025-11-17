@@ -25,6 +25,7 @@ export interface Order {
   precio_venta: number;
   importe_anticipo: number;
   forma_pago: string;
+  referencia_pago?: string | null;
   estatus_pago: string;
   metal_tipo: string;
   metal_pureza?: string;

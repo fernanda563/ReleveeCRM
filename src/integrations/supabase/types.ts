@@ -256,6 +256,7 @@ export type Database = {
           notas: string | null
           piedra_tipo: string
           precio_venta: number
+          referencia_pago: string | null
           stl_file_id: string | null
           talla: number | null
           tipo_accesorio: string | null
@@ -288,6 +289,7 @@ export type Database = {
           notas?: string | null
           piedra_tipo: string
           precio_venta: number
+          referencia_pago?: string | null
           stl_file_id?: string | null
           talla?: number | null
           tipo_accesorio?: string | null
@@ -320,6 +322,7 @@ export type Database = {
           notas?: string | null
           piedra_tipo?: string
           precio_venta?: number
+          referencia_pago?: string | null
           stl_file_id?: string | null
           talla?: number | null
           tipo_accesorio?: string | null
