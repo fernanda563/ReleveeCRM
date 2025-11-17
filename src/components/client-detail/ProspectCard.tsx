@@ -1,12 +1,9 @@
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { 
   DollarSign, 
   Calendar, 
-  ChevronDown, 
-  ChevronUp, 
   ShoppingCart, 
   MoreVertical, 
   Pencil, 
@@ -83,17 +80,9 @@ export const ProspectCard = ({
   clientName,
   clientId
 }: ProspectCardProps) => {
-  const [isExpanded, setIsExpanded] = useState(false);
   const title = generateProspectTitle(prospect);
 
-  const handleExpandClick = (e?: React.MouseEvent) => {
-    if (e) e.stopPropagation();
-    setIsExpanded(!isExpanded);
-  };
-
-  // Diseño horizontal para vista de proyectos
-  if (showClientName) {
-    return (
+  return (
       <Card
         className={cn(
           "hover:shadow-md transition-all cursor-pointer",
@@ -102,32 +91,84 @@ export const ProspectCard = ({
         onClick={() => onClick?.()}
       >
         <CardContent className="p-4">
-          {/* Fila 1: Cliente, estado, acciones */}
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-3">
-              <p className="text-sm">
-                Cliente: <span className="font-semibold">{clientName}</span>
-              </p>
+          {/* Fila 1: Cliente, estado, acciones (solo si showClientName) */}
+          {showClientName && (
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-3">
+                <p className="text-sm">
+                  Cliente: <span className="font-semibold">{clientName}</span>
+                </p>
+                <Badge className={getStatusColor(prospect.estado)}>
+                  {prospect.estado.replace(/_/g, " ")}
+                </Badge>
+              </div>
+              <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                {clientId && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      window.location.href = `/crm/${clientId}`;
+                    }}
+                  >
+                    Ver cliente
+                  </Button>
+                )}
+                {prospect.estado !== "convertido" && (onEditStatus || onConvertToOrder || onDelete) && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      {onEditStatus && (
+                        <DropdownMenuItem onClick={(e) => {
+                          e.stopPropagation();
+                          onEditStatus(prospect);
+                        }}>
+                          <Pencil className="mr-2 h-4 w-4" />
+                          Editar proyecto
+                        </DropdownMenuItem>
+                      )}
+                      {prospect.estado === "activo" && onConvertToOrder && (
+                        <DropdownMenuItem onClick={(e) => {
+                          e.stopPropagation();
+                          onConvertToOrder(prospect);
+                        }}>
+                          <ShoppingCart className="mr-2 h-4 w-4" />
+                          Convertir a orden
+                        </DropdownMenuItem>
+                      )}
+                      {onDelete && (
+                        <DropdownMenuItem
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDelete(prospect);
+                          }}
+                          className="text-destructive"
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Eliminar
+                        </DropdownMenuItem>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Fila 1b: Estado + acciones (cuando NO showClientName) */}
+          {!showClientName && (
+            <div className="flex items-center justify-between mb-3">
               <Badge className={getStatusColor(prospect.estado)}>
                 {prospect.estado.replace(/_/g, " ")}
               </Badge>
-            </div>
-            <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-              {clientId && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    window.location.href = `/crm/${clientId}`;
-                  }}
-                >
-                  Ver cliente
-                </Button>
-              )}
               {prospect.estado !== "convertido" && (onEditStatus || onConvertToOrder || onDelete) && (
                 <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
+                  <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
                     <Button variant="ghost" size="icon" className="h-8 w-8">
                       <MoreVertical className="h-4 w-4" />
                     </Button>
@@ -167,7 +208,7 @@ export const ProspectCard = ({
                 </DropdownMenu>
               )}
             </div>
-          </div>
+          )}
 
           {/* Fila 2: Título del proyecto */}
           <h3 className="text-lg font-semibold mb-3 capitalize">{title}</h3>
@@ -261,195 +302,4 @@ export const ProspectCard = ({
         </CardContent>
       </Card>
     );
-  }
-
-  // Diseño vertical para vista de detalle del cliente
-  return (
-    <Card
-      className={cn(
-        "cursor-pointer hover:shadow-lg transition-all duration-300",
-        className
-      )}
-      onClick={handleExpandClick}
-      role="button"
-    >
-      <CardHeader className="pb-3">
-        {showClientName && clientName && (
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-sm text-muted-foreground">
-              Cliente: <span className="font-medium text-foreground">{clientName}</span>
-            </p>
-            {clientId && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-7 text-xs"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  window.location.href = `/crm/${clientId}`;
-                }}
-              >
-                Ver cliente
-              </Button>
-            )}
-          </div>
-        )}
-        <div className="flex items-start justify-between gap-2">
-          <CardTitle className="text-lg capitalize flex-1">{title}</CardTitle>
-          <div className="flex items-center gap-2">
-            <Badge className={getStatusColor(prospect.estado)}>{prospect.estado.replace(/_/g, " ")}</Badge>
-            
-            {/* Dropdown de opciones - solo si no está convertido */}
-            {prospect.estado !== "convertido" && (onEditStatus || onClick) && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6 shrink-0"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <MoreVertical className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  {onEditStatus && (
-                    <DropdownMenuItem onClick={(e) => {
-                      e.stopPropagation();
-                      onEditStatus(prospect);
-                    }}>
-                      <Pencil className="mr-2 h-4 w-4" />
-                      Editar proyecto
-                    </DropdownMenuItem>
-                  )}
-                  {prospect.estado === "activo" && onConvertToOrder && (
-                    <DropdownMenuItem onClick={(e) => {
-                      e.stopPropagation();
-                      onConvertToOrder(prospect);
-                    }}>
-                      <ShoppingCart className="mr-2 h-4 w-4" />
-                      Convertir a orden
-                    </DropdownMenuItem>
-                  )}
-                  {onDelete && (
-                    <DropdownMenuItem
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onDelete(prospect);
-                      }}
-                      className="text-destructive"
-                    >
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      Eliminar
-                    </DropdownMenuItem>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
-          </div>
-        </div>
-      </CardHeader>
-
-      <CardContent className="space-y-4">
-        {/* Summary para proyectos (siempre visible) */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between text-sm">
-            {prospect.importe_previsto && (
-              <div className="flex items-center gap-1 text-muted-foreground">
-                <DollarSign className="h-4 w-4" />
-                <span>{formatCurrency(prospect.importe_previsto)}</span>
-              </div>
-            )}
-            {prospect.fecha_entrega_deseada && (
-              <div className="flex items-center gap-1 text-muted-foreground">
-                <Calendar className="h-4 w-4" />
-                <span>{formatDate(prospect.fecha_entrega_deseada)}</span>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Botón de expansión */}
-        <Button
-          variant="ghost"
-          size="sm"
-          className="w-full justify-center"
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsExpanded(!isExpanded);
-          }}
-        >
-          {isExpanded ? (
-            <>
-              <ChevronUp className="h-4 w-4 mr-2" />
-              Ver menos
-            </>
-          ) : (
-            <>
-              <ChevronDown className="h-4 w-4 mr-2" />
-              Ver más detalles
-            </>
-          )}
-        </Button>
-
-        {/* Detalles expandidos */}
-        {isExpanded && (
-          <div className="space-y-4 pt-2 border-t">
-            {/* Detalles del Metal */}
-            {prospect.metal_tipo && (
-              <div className="space-y-1">
-                <p className="text-sm font-medium text-foreground">Metal</p>
-                <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
-                  <span>Tipo: {prospect.metal_tipo}</span>
-                  {prospect.metal_tipo === "Oro" && prospect.color_oro && (
-                    <span>• Color: {prospect.color_oro}</span>
-                  )}
-                  {prospect.metal_tipo === "Oro" && prospect.pureza_oro && (
-                    <span>• Pureza: {prospect.pureza_oro}</span>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Detalles de Piedra */}
-            <div className="space-y-1">
-              <p className="text-sm font-medium text-foreground">Piedra</p>
-              <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
-                <span>Incluye piedra: {prospect.incluye_piedra || "No especificado"}</span>
-                {prospect.incluye_piedra === "Sí" && prospect.tipo_piedra && (
-                  <span>• Tipo: {prospect.tipo_piedra}</span>
-                )}
-              </div>
-            </div>
-
-            {/* Estilo de Anillo si aplica */}
-            {prospect.estilo_anillo && (
-              <div className="space-y-1">
-                <p className="text-sm font-medium text-foreground">Estilo de Anillo</p>
-                <p className="text-sm text-muted-foreground capitalize">
-                  {prospect.estilo_anillo.replace(/_/g, " ")}
-                </p>
-              </div>
-            )}
-
-            {/* Largo aproximado */}
-            {prospect.largo_aprox && (
-              <div className="space-y-1">
-                <p className="text-sm font-medium text-foreground">Largo aproximado</p>
-                <p className="text-sm text-muted-foreground">{prospect.largo_aprox}</p>
-              </div>
-            )}
-
-            {/* Observaciones */}
-            {prospect.observaciones && (
-              <div className="space-y-1">
-                <p className="text-sm font-medium text-foreground">Observaciones</p>
-                <p className="text-sm text-muted-foreground">{prospect.observaciones}</p>
-              </div>
-            )}
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
 };
