@@ -82,10 +82,10 @@ const OrderList = ({ orders, loading, onEdit, onOpenPrint, onSendToSign }: Order
               {/* Header with badges and actions dropdown */}
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <h3 className="text-xl font-semibold text-foreground">
-                      {order.clients?.nombre} {order.clients?.apellido}
-                    </h3>
+                  <h3 className="text-xl font-semibold text-foreground mb-2">
+                    {order.clients?.nombre} {order.clients?.apellido}
+                  </h3>
+                  <div className="flex items-center gap-2 flex-wrap mb-2">
                     {getPaymentStatusBadge(order.estatus_pago)}
                     {getProductionStatus(order)}
                     {getSignatureStatusBadge(order.signature_status)}
