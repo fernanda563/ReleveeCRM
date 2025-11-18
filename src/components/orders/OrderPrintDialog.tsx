@@ -28,6 +28,16 @@ const isSignUrlValid = (expiresAt: string | null): boolean => {
   return new Date(expiresAt).getTime() > Date.now();
 };
 
+const ensureClientIdInUrl = (url: string | null | undefined): string | null => {
+  if (!url) return null;
+  // Si ya lo tiene, devolver igual
+  if (/[?&]client_id=/.test(url)) return url;
+  const sep = url.includes('?') ? '&' : '?';
+  // Client ID público (no secreto), ya registrado en ajustes del sistema
+  const clientId = '9591cc59d6f65fda1758df721bdc95c4';
+  return `${url}${sep}client_id=${clientId}`;
+};
+
 const waitForSession = async (timeout = 5000): Promise<boolean> => {
   return new Promise((resolve) => {
     const timeoutId = setTimeout(() => {
@@ -212,9 +222,22 @@ export const OrderPrintDialog = ({ orderId, open, onOpenChange, autoSendToSign =
         order.pending_signature_pdf_url &&
         isSignUrlValid(order.embedded_sign_url_expires_at)
       ) {
-        // Reutilizar URL existente
-        await navigator.clipboard.writeText(order.embedded_sign_url);
-        toast.success("URL de firma copiada al portapapeles (reutilizada)");
+        // Reutilizar URL existente, asegurando que tenga client_id
+        const urlToCopy = ensureClientIdInUrl(order.embedded_sign_url);
+        if (!urlToCopy) throw new Error("No se encontró una URL de firma válida");
+        
+        await navigator.clipboard.writeText(urlToCopy);
+        
+        // Si la URL cambió al agregar el client_id, persistir para futuras veces
+        if (urlToCopy !== order.embedded_sign_url) {
+          await supabase.from('orders')
+            .update({ embedded_sign_url: urlToCopy })
+            .eq('id', orderId);
+          setOrder((prev: any) => prev ? { ...prev, embedded_sign_url: urlToCopy } : prev);
+          setSignUrl(urlToCopy);
+        }
+        
+        toast.success("URL de firma copiada al portapapeles");
         setSendingToSign(false);
         return;
       }
