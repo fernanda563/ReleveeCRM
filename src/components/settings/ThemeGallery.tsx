@@ -6,6 +6,7 @@ import { Check, Calendar, ExternalLink, Star, Trash2, Pencil } from 'lucide-reac
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -174,12 +175,6 @@ export function ThemeGallery({ importedThemes, activeThemeId, onApply, onSetDefa
                           </Button>
                         </>
                       )}
-                      {isDefault && (
-                        <Badge variant="secondary" className="flex items-center gap-1">
-                          <Star className="h-3 w-3 fill-current" />
-                          Predeterminado
-                        </Badge>
-                      )}
                     </div>
                     <CardDescription className="text-xs mt-1 flex items-center gap-1">
                       <Calendar className="h-3 w-3" />
@@ -188,11 +183,34 @@ export function ThemeGallery({ importedThemes, activeThemeId, onApply, onSetDefa
                     {theme.url && (
                       <CardDescription className="text-xs mt-1 flex items-center gap-1 truncate">
                         <ExternalLink className="h-3 w-3 flex-shrink-0" />
-                        <span className="truncate">{theme.url}</span>
+                        <a 
+                          href={theme.url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="truncate hover:text-primary transition-colors"
+                        >
+                          {theme.url}
+                        </a>
                       </CardDescription>
                     )}
                   </div>
-                  {isActive && <Check className="h-5 w-5 text-primary flex-shrink-0 ml-2" />}
+                  <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+                    {isDefault && (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Badge variant="secondary" className="flex items-center p-1.5">
+                              <Star className="h-3 w-3 fill-current" />
+                            </Badge>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Predeterminado</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
+                    {isActive && <Check className="h-5 w-5 text-primary" />}
+                  </div>
                 </div>
               </CardHeader>
               <CardContent className="space-y-3">
