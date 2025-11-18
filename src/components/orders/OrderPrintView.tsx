@@ -369,24 +369,27 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
 
         /* Grid para imágenes de referencia */
         .reference-images-grid {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
+          display: flex;
+          flex-wrap: wrap;
           gap: 16px;
           margin-top: 12px;
+          justify-content: flex-start;
         }
 
         /* Contenedor de cada imagen */
         .reference-image-container {
           border: 1px solid #e5e7eb;
           border-radius: 8px;
-          padding: 8px;
+          padding: 12px;
           background: #f9fafb;
           text-align: center;
+          width: fit-content;
         }
 
         /* Imagen de referencia */
         .reference-image {
-          width: 100%;
+          width: auto;
+          max-width: 150px;
           height: auto;
           max-height: 100px;
           object-fit: contain;
@@ -400,6 +403,7 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
           color: #6b7280;
           margin-top: 6px;
           font-weight: 500;
+          white-space: nowrap;
         }
 
         /* Estilos específicos para impresión */
@@ -417,6 +421,7 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
           
           .reference-image {
             max-height: 80px;
+            max-width: 120px;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
           }
