@@ -222,8 +222,11 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Agregar client_id a la URL para uso directo en navegador
-    const signUrlWithClientId = `${signUrl}&client_id=${dropboxClientId}`;
+    // Agregar client_id y skipDomainVerification (si es modo test) a la URL
+    let signUrlWithClientId = `${signUrl}&client_id=${dropboxClientId}`;
+    if (testMode === 1) {
+      signUrlWithClientId += '&skipDomainVerification=1';
+    }
     console.log('URL de firma con client_id:', signUrlWithClientId);
 
     // Update order with signature request info and embedded URL

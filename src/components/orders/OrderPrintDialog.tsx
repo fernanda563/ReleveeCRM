@@ -30,12 +30,22 @@ const isSignUrlValid = (expiresAt: string | null): boolean => {
 
 const ensureClientIdInUrl = (url: string | null | undefined): string | null => {
   if (!url) return null;
-  // Si ya lo tiene, devolver igual
-  if (/[?&]client_id=/.test(url)) return url;
-  const sep = url.includes('?') ? '&' : '?';
-  // Client ID público (no secreto), ya registrado en ajustes del sistema
+  
+  let correctedUrl = url;
   const clientId = '9591cc59d6f65fda1758df721bdc95c4';
-  return `${url}${sep}client_id=${clientId}`;
+  
+  // Agregar client_id si falta
+  if (!/[?&]client_id=/.test(correctedUrl)) {
+    const sep = correctedUrl.includes('?') ? '&' : '?';
+    correctedUrl = `${correctedUrl}${sep}client_id=${clientId}`;
+  }
+  
+  // Agregar skipDomainVerification=1 si falta (necesario para modo test)
+  if (!/[?&]skipDomainVerification=/.test(correctedUrl)) {
+    correctedUrl += '&skipDomainVerification=1';
+  }
+  
+  return correctedUrl;
 };
 
 const waitForSession = async (timeout = 5000): Promise<boolean> => {
