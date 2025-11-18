@@ -23,6 +23,11 @@ interface OrderPrintDialogProps {
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
+const isSignUrlValid = (expiresAt: string | null): boolean => {
+  if (!expiresAt) return false;
+  return new Date(expiresAt).getTime() > Date.now();
+};
+
 const waitForSession = async (timeout = 5000): Promise<boolean> => {
   return new Promise((resolve) => {
     const timeoutId = setTimeout(() => {
@@ -196,10 +201,25 @@ export const OrderPrintDialog = ({ orderId, open, onOpenChange, autoSendToSign =
   };
 
   const handleSendToSign = async () => {
-    if (!orderId) return;
+    if (!orderId || !order) return;
 
     try {
       setSendingToSign(true);
+
+      // Verificar si ya existe una URL válida
+      if (
+        order.embedded_sign_url && 
+        order.pending_signature_pdf_url &&
+        isSignUrlValid(order.embedded_sign_url_expires_at)
+      ) {
+        // Reutilizar URL existente
+        await navigator.clipboard.writeText(order.embedded_sign_url);
+        toast.success("URL de firma copiada al portapapeles (reutilizada)");
+        setSendingToSign(false);
+        return;
+      }
+
+      // Si no hay URL válida, generar nueva
       toast.info("Generando documento PDF...");
 
       // Generar y subir PDF a Storage
@@ -232,7 +252,10 @@ export const OrderPrintDialog = ({ orderId, open, onOpenChange, autoSendToSign =
       if (data.signUrl) {
         setSignUrl(data.signUrl);
         setSignUrlExpires(data.expiresAt);
-        toast.success("¡URL de firma generada! Cópiala y envíala al cliente");
+        
+        // Copiar automáticamente al portapapeles
+        await navigator.clipboard.writeText(data.signUrl);
+        toast.success("URL de firma copiada al portapapeles");
       }
       
       // Refresh order data para obtener nuevo signature_status
@@ -444,46 +467,9 @@ export const OrderPrintDialog = ({ orderId, open, onOpenChange, autoSendToSign =
         )}
 
         {!loading && !error && order && companyInfo && (
-          <>
-            <div ref={printRef} style={{ backgroundColor: '#ffffff' }}>
-              <OrderPrintView order={order} companyInfo={companyInfo} />
-            </div>
-            
-            {signUrl && (
-              <div className="mt-4 p-4 bg-primary/5 border border-primary/20 rounded-lg">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-foreground mb-1">
-                      URL de firma generada
-                    </p>
-                    <p className="text-xs text-muted-foreground mb-2">
-                      Expira: {signUrlExpires ? new Date(signUrlExpires).toLocaleString('es-MX', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      }) : 'N/A'}
-                    </p>
-                    <div className="bg-background p-2 rounded border border-border text-xs break-all font-mono">
-                      {signUrl}
-                    </div>
-                  </div>
-                  <Button
-                    onClick={() => {
-                      navigator.clipboard.writeText(signUrl);
-                      toast.success("URL copiada al portapapeles");
-                    }}
-                    size="sm"
-                    variant="outline"
-                  >
-                    <Copy className="h-4 w-4 mr-2" />
-                    Copiar
-                  </Button>
-                </div>
-              </div>
-            )}
-          </>
+          <div ref={printRef} style={{ backgroundColor: '#ffffff' }}>
+            <OrderPrintView order={order} companyInfo={companyInfo} />
+          </div>
         )}
       </DialogContent>
     </Dialog>
