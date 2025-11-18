@@ -56,8 +56,37 @@ export const useThemeCustomization = () => {
         }
       }
       
-      // Use only imported themes (no default themes)
-      const importedThemes = settings.imported_themes || [];
+      // Robustly read imported themes
+      let importedThemes: ImportedTheme[] = [];
+      
+      const rawImported = (settings as any).imported_themes;
+      
+      if (Array.isArray(rawImported)) {
+        importedThemes = rawImported;
+      } else if (rawImported && typeof rawImported === "object" && "value" in rawImported && Array.isArray(rawImported.value)) {
+        importedThemes = rawImported.value;
+      } else {
+        importedThemes = [];
+      }
+      
+      // Generate fallback theme from current active theme if no imported themes exist
+      if (
+        importedThemes.length === 0 &&
+        lightColors &&
+        Object.keys(lightColors).length > 0 &&
+        darkColors &&
+        Object.keys(darkColors).length > 0
+      ) {
+        importedThemes = [{
+          id: settings.active_preset || "current_theme",
+          name: settings.active_preset || "Tema actual",
+          url: settings.tweakcn_registry_url || "",
+          importedAt: new Date().toISOString(),
+          isDefault: true,
+          light: lightColors,
+          dark: darkColors,
+        }];
+      }
       
       // Ensure exactly one theme is marked as default if there are themes
       if (importedThemes.length > 0) {
