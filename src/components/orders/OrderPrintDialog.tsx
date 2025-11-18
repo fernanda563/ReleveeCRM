@@ -380,13 +380,20 @@ export const OrderPrintDialog = ({ orderId, open, onOpenChange, autoSendToSign =
             .maybeSingle();
 
           if (themeSettings && themeSettings.value) {
-            const colors = themeSettings.value as any;
+            const raw = themeSettings.value as any;
+            // Si viene como { value: { primary, border, ... } }, extraer el .value interno
+            const colors =
+              raw && typeof raw === 'object' && 'value' in raw
+                ? raw.value
+                : raw;
+
             // Convertir formato HSL "221.2 83.2% 53.3%" a "hsl(221.2, 83.2%, 53.3%)"
             themeColors = {
-              primary: colors.primary ? `hsl(${colors.primary})` : null,
-              border: colors.border ? `hsl(${colors.border})` : null,
-              foreground: colors.foreground ? `hsl(${colors.foreground})` : null,
+              primary: colors?.primary ? `hsl(${colors.primary})` : null,
+              border: colors?.border ? `hsl(${colors.border})` : null,
+              foreground: colors?.foreground ? `hsl(${colors.foreground})` : null,
             };
+            console.log('Theme colors for PDF:', themeColors);
           }
         } catch (themeErr) {
           console.warn("Error fetching theme colors:", themeErr);

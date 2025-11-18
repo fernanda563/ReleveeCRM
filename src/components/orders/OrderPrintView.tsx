@@ -368,14 +368,14 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
         .print-footer {
           margin-top: 48px;
           padding-top: 16px;
-          border-top: 1px solid #000;
+          border-top: 1px solid ${borderColor};
         }
 
         .signature-line {
           margin-top: 48px;
           margin-left: auto;
           margin-right: auto;
-          border-top: 1px solid #000;
+          border-top: 1px solid ${borderColor};
           width: 300px;
           text-align: center;
           padding-top: 8px;
