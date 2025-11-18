@@ -248,13 +248,13 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
 
         .info-section {
           border: 1px solid #000;
-          padding: 12px;
+          padding: 10px;
         }
 
         .section-title {
           font-size: 14px;
           font-weight: 700;
-          margin-bottom: 8px;
+          margin-bottom: 6px;
           text-transform: uppercase;
           border-bottom: 1px solid #000;
           padding-bottom: 4px;
@@ -262,7 +262,7 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
 
         .info-row {
           display: flex;
-          margin-bottom: 6px;
+          margin-bottom: 4px;
           font-size: 11px;
         }
 
@@ -284,11 +284,11 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
         .table-section {
           width: 100%;
           border-collapse: collapse;
-          margin-top: 8px;
+          margin-top: 4px;
         }
 
         .table-section td {
-          padding: 8px;
+          padding: 4px 8px;
           font-size: 11px;
         }
 
@@ -301,11 +301,11 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
         .financial-table {
           width: 100%;
           border-collapse: collapse;
-          margin-top: 8px;
+          margin-top: 4px;
         }
 
         .financial-table td {
-          padding: 8px;
+          padding: 4px 8px;
           font-size: 11px;
         }
 
@@ -335,7 +335,7 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
 
         .column-section {
           border: 1px solid #000;
-          padding: 12px;
+          padding: 10px;
         }
 
         @media print {
