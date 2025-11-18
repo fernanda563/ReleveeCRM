@@ -622,7 +622,6 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
                   className="reference-image"
                   referrerPolicy="no-referrer"
                 />
-                <div className="image-caption">Imagen de Referencia {index + 1}</div>
               </div>
             ))}
           </div>
