@@ -212,9 +212,9 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
           display: flex;
           justify-content: space-between;
           align-items: flex-start;
-          margin-bottom: 24px;
-          padding-bottom: 16px;
-          border-bottom: 2px solid #000;
+          margin-bottom: 20px;
+          padding-bottom: 12px;
+          border-bottom: 1px solid #000;
         }
 
           .company-logo {
@@ -227,43 +227,47 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
         .company-info {
           text-align: right;
           font-size: 9px;
-          line-height: 1.4;
+          line-height: 1.5;
         }
 
         .print-title {
           text-align: center;
-          font-size: 28px;
+          font-size: 24px;
           font-weight: 700;
           letter-spacing: 0.05em;
-          margin-bottom: 24px;
+          margin-bottom: 20px;
           text-transform: uppercase;
+          line-height: 1.2;
         }
 
         .info-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 24px;
-          margin-bottom: 24px;
+          gap: 16px;
+          margin-bottom: 16px;
         }
 
         .info-section {
           border: 1px solid #000;
-          padding: 10px;
+          padding: 12px;
         }
 
         .section-title {
-          font-size: 14px;
+          font-size: 12px;
           font-weight: 700;
-          margin-bottom: 6px;
+          margin-bottom: 8px;
           text-transform: uppercase;
           border-bottom: 1px solid #000;
-          padding-bottom: 4px;
+          padding-bottom: 6px;
+          line-height: 1.3;
+          letter-spacing: 0.02em;
         }
 
         .info-row {
           display: flex;
-          margin-bottom: 4px;
-          font-size: 11px;
+          margin-bottom: 6px;
+          font-size: 10px;
+          line-height: 1.5;
         }
 
         .info-label {
@@ -284,34 +288,36 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
         .table-section {
           width: 100%;
           border-collapse: collapse;
-          margin-top: 4px;
+          margin-top: 8px;
         }
 
         .table-section td {
-          padding: 4px 8px;
-          font-size: 11px;
+          padding: 6px 8px;
+          font-size: 10px;
+          line-height: 1.5;
         }
 
         .table-section td:first-child {
           font-weight: 600;
-          width: 180px;
+          width: 140px;
           background-color: #ffffff;
         }
 
         .financial-table {
           width: 100%;
           border-collapse: collapse;
-          margin-top: 4px;
+          margin-top: 8px;
         }
 
         .financial-table td {
-          padding: 4px 8px;
-          font-size: 11px;
+          padding: 6px 8px;
+          font-size: 10px;
+          line-height: 1.5;
         }
 
         .financial-table td:first-child {
           font-weight: 600;
-          width: 180px;
+          width: 140px;
           background-color: #ffffff;
         }
 
@@ -322,7 +328,7 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
 
         .financial-total {
           background-color: #ffffff;
-          font-size: 12px !important;
+          font-size: 11px !important;
         }
 
         /* Layout de dos columnas para Producto y Pago */
@@ -335,7 +341,7 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
 
         .column-section {
           border: 1px solid #000;
-          padding: 10px;
+          padding: 12px;
         }
 
         @media print {
@@ -371,17 +377,17 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
         .reference-images-grid {
           display: flex;
           flex-wrap: wrap;
-          gap: 16px;
+          gap: 12px;
           margin-top: 12px;
           justify-content: flex-start;
         }
 
         /* Contenedor de cada imagen */
         .reference-image-container {
-          border: 1px solid #e5e7eb;
-          border-radius: 8px;
-          padding: 12px;
-          background: #f9fafb;
+          border: 1px solid #d1d5db;
+          border-radius: 4px;
+          padding: 8px;
+          background: #fafafa;
           text-align: center;
           width: fit-content;
         }
@@ -393,17 +399,19 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
           height: auto;
           max-height: 100px;
           object-fit: contain;
-          border-radius: 4px;
+          border-radius: 2px;
           background: #fff;
+          display: block;
         }
 
         /* Pie de foto */
         .image-caption {
-          font-size: 10px;
+          font-size: 9px;
           color: #6b7280;
           margin-top: 6px;
           font-weight: 500;
           white-space: nowrap;
+          line-height: 1.3;
         }
 
         /* Estilos específicos para impresión */
@@ -444,10 +452,10 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
           )}
         </div>
         <div className="company-info">
-          <div style={{ fontSize: '12px', fontWeight: 700 }}>{getStringValue(companyInfo.name)}</div>
-          {companyInfo.address && <div>{getStringValue(companyInfo.address)}</div>}
-          {companyInfo.phone && <div>Tel: {getStringValue(companyInfo.phone)}</div>}
-          <div>Email: contacto@relevee.mx</div>
+          <div style={{ fontSize: '11px', fontWeight: 700, lineHeight: 1.3 }}>{getStringValue(companyInfo.name)}</div>
+          {companyInfo.address && <div style={{ lineHeight: 1.5 }}>{getStringValue(companyInfo.address)}</div>}
+          {companyInfo.phone && <div style={{ lineHeight: 1.5 }}>Tel: {getStringValue(companyInfo.phone)}</div>}
+          <div style={{ lineHeight: 1.5 }}>Email: contacto@relevee.mx</div>
         </div>
       </div>
 
@@ -623,7 +631,7 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
       {order.notas && (
         <div className="full-section">
           <div className="section-title">Notas Adicionales</div>
-          <div style={{ fontSize: '11px', marginTop: '8px', lineHeight: '1.5' }}>
+          <div style={{ fontSize: '10px', marginTop: '8px', lineHeight: '1.5' }}>
             {getStringValue(order.notas)}
           </div>
         </div>
@@ -631,39 +639,41 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
 
       {/* Sección de firma */}
       <div style={{
-        marginTop: '40px',
-        paddingTop: '30px',
-        borderTop: '2px solid #e5e7eb',
+        marginTop: '24px',
+        paddingTop: '16px',
+        borderTop: '1px solid #000',
         pageBreakInside: 'avoid'
       }}>
         <div style={{
           display: 'flex',
-          gap: '40px',
+          gap: '24px',
           justifyContent: 'space-between'
         }}>
           {/* Área de firma del cliente */}
           <div style={{ flex: 1 }}>
             <div style={{
-              fontWeight: 'bold',
-              marginBottom: '10px',
-              fontSize: '12px',
-              color: '#374151'
+              fontWeight: 700,
+              marginBottom: '8px',
+              fontSize: '11px',
+              color: '#000',
+              textTransform: 'uppercase',
+              letterSpacing: '0.02em'
             }}>
               Firma del Cliente
             </div>
             <div style={{
-              border: '2px solid #1f2937',
-              height: '100px',
+              border: '1px solid #000',
+              height: '80px',
               backgroundColor: 'white',
-              marginBottom: '10px',
-              borderRadius: '4px'
+              marginBottom: '8px'
             }}></div>
             <div style={{
-              fontSize: '11px',
+              fontSize: '9px',
               textAlign: 'center',
-              color: '#6b7280',
-              borderTop: '1px solid #9ca3af',
-              paddingTop: '5px'
+              color: '#000',
+              borderTop: '1px solid #000',
+              paddingTop: '4px',
+              lineHeight: 1.3
             }}>
               {order.clients.nombre} {order.clients.apellido}
             </div>
@@ -672,28 +682,30 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
           {/* Área de fecha */}
           <div style={{ flex: 1 }}>
             <div style={{
-              fontWeight: 'bold',
-              marginBottom: '10px',
-              fontSize: '12px',
-              color: '#374151'
+              fontWeight: 700,
+              marginBottom: '8px',
+              fontSize: '11px',
+              color: '#000',
+              textTransform: 'uppercase',
+              letterSpacing: '0.02em'
             }}>
               Fecha
             </div>
             <div style={{
-              border: '2px solid #1f2937',
-              height: '60px',
-              backgroundColor: 'white',
-              borderRadius: '4px'
+              border: '1px solid #000',
+              height: '50px',
+              backgroundColor: 'white'
             }}></div>
           </div>
         </div>
         
         {/* Footer info */}
         <div style={{ 
-          marginTop: '20px', 
-          fontSize: '10px', 
-          color: '#6b7280',
-          textAlign: 'center'
+          marginTop: '16px', 
+          fontSize: '9px', 
+          color: '#666',
+          textAlign: 'center',
+          lineHeight: 1.4
         }}>
           <div>Documento generado el {formatDate(new Date().toISOString())}</div>
           <div style={{ marginTop: '4px' }}>
