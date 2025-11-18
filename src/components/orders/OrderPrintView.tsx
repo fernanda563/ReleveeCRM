@@ -42,6 +42,11 @@ interface OrderPrintViewProps {
     address: string | null;
     phone: string | null;
     email: string | null;
+    themeColors?: {
+      primary: string | null;
+      border: string | null;
+      foreground: string | null;
+    } | null;
   };
 }
 
@@ -164,6 +169,10 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
     };
   }, [order.imagenes_referencia]);
 
+  // Extraer colores del tema o usar valores por defecto
+  const primaryColor = companyInfo.themeColors?.primary || '#000';
+  const borderColor = companyInfo.themeColors?.border || '#000';
+
   const saldoPendiente = order.precio_venta - order.importe_anticipo;
 
   return (
@@ -214,7 +223,7 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
           align-items: flex-start;
           margin-bottom: 20px;
           padding-bottom: 12px;
-          border-bottom: 1px solid #000;
+          border-bottom: 1px solid ${borderColor};
         }
 
           .company-logo {
@@ -238,6 +247,7 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
           margin-bottom: 20px;
           text-transform: uppercase;
           line-height: 1.2;
+          color: ${primaryColor};
         }
 
         .info-grid {
@@ -256,10 +266,11 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
           font-weight: 700;
           margin-bottom: 8px;
           text-transform: uppercase;
-          border-bottom: 1px solid #000;
+          border-bottom: 1px solid ${borderColor};
           padding-bottom: 6px;
           line-height: 1.3;
           letter-spacing: 0.02em;
+          color: ${primaryColor};
         }
 
         .info-row {
@@ -639,7 +650,7 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
       <div style={{
         marginTop: '24px',
         paddingTop: '16px',
-        borderTop: '1px solid #000',
+        borderTop: `1px solid ${borderColor}`,
         pageBreakInside: 'avoid'
       }}>
         <div style={{
@@ -659,7 +670,7 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
               Firma del Cliente
             </div>
             <div style={{
-              border: '1px solid #000',
+              border: `1px solid ${borderColor}`,
               height: '80px',
               backgroundColor: 'white'
             }}></div>

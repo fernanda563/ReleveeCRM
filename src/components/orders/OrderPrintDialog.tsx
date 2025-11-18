@@ -369,12 +369,36 @@ export const OrderPrintDialog = ({ orderId, open, onOpenChange, autoSendToSign =
           console.warn("Error fetching company logo:", logoErr);
         }
 
+        // Cargar colores del tema activo
+        let themeColors = null;
+        try {
+          const { data: themeSettings } = await supabase
+            .from("system_settings")
+            .select("key, value")
+            .eq("category", "appearance")
+            .eq("key", "custom_theme_light")
+            .maybeSingle();
+
+          if (themeSettings && themeSettings.value) {
+            const colors = themeSettings.value as any;
+            // Convertir formato HSL "221.2 83.2% 53.3%" a "hsl(221.2, 83.2%, 53.3%)"
+            themeColors = {
+              primary: colors.primary ? `hsl(${colors.primary})` : null,
+              border: colors.border ? `hsl(${colors.border})` : null,
+              foreground: colors.foreground ? `hsl(${colors.foreground})` : null,
+            };
+          }
+        } catch (themeErr) {
+          console.warn("Error fetching theme colors:", themeErr);
+        }
+
         const companyData = {
           name: "Levant Jewelry",
           logo_light_url: logoUrl,
           address: null,
           phone: null,
           email: null,
+          themeColors: themeColors,
         };
 
         try {
