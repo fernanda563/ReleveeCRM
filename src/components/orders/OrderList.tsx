@@ -120,7 +120,7 @@ const OrderList = ({ orders, loading, onEdit, onOpenPrint, onSendToSign }: Order
                   <h3 className="text-xl font-semibold text-foreground mb-2">
                     {order.clients?.nombre} {order.clients?.apellido}
                   </h3>
-                  <div className="flex items-center gap-2 flex-wrap mb-2">
+                  <div className="flex items-center gap-2 flex-wrap mb-4">
                     {getPaymentStatusBadge(order.estatus_pago)}
                     {getProductionStatus(order)}
                     {getSignatureStatusBadge(order.signature_status)}
