@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Edit, Loader2, Eye, ChevronDown, FileText, FileSignature, Check, Clock, X, Box } from "lucide-react";
+import { Edit, Loader2, Eye, ChevronDown, FileText, FileSignature, Check, Clock, X, Box, DollarSign, Settings } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,16 +28,36 @@ const OrderList = ({ orders, loading, onEdit, onOpenPrint, onSendToSign }: Order
 
   const getPaymentStatusBadge = (status: string) => {
     if (status === "liquidado") {
-      return <Badge className="bg-foreground text-background">Liquidado</Badge>;
+      return (
+        <Badge className="bg-foreground text-background flex items-center gap-1">
+          <Check className="h-3 w-3" />
+          Liquidado
+        </Badge>
+      );
     }
-    return <Badge variant="secondary">Anticipo Recibido</Badge>;
+    return (
+      <Badge variant="secondary" className="flex items-center gap-1">
+        <DollarSign className="h-3 w-3" />
+        Anticipo Recibido
+      </Badge>
+    );
   };
 
   const getProductionStatus = (order: Order) => {
     if (order.estatus_piedra === "piedra_montada" && order.estatus_montura === "entregado_levant") {
-      return <Badge className="bg-foreground text-background">Completada</Badge>;
+      return (
+        <Badge className="bg-foreground text-background flex items-center gap-1">
+          <Check className="h-3 w-3" />
+          Completada
+        </Badge>
+      );
     }
-    return <Badge className="bg-foreground/10 text-foreground border border-foreground">En Producción</Badge>;
+    return (
+      <Badge className="bg-foreground/10 text-foreground border border-foreground flex items-center gap-1">
+        <Settings className="h-3 w-3" />
+        En Producción
+      </Badge>
+    );
   };
 
   const getSignatureStatusBadge = (status?: string | null) => {
