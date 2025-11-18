@@ -222,6 +222,10 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Agregar client_id a la URL para uso directo en navegador
+    const signUrlWithClientId = `${signUrl}&client_id=${dropboxClientId}`;
+    console.log('URL de firma con client_id:', signUrlWithClientId);
+
     // Update order with signature request info and embedded URL
     const { error: updateError } = await supabase
       .from('orders')
@@ -229,7 +233,7 @@ Deno.serve(async (req) => {
         signature_request_id: signatureRequestId,
         signature_status: 'pending',
         signature_sent_at: new Date().toISOString(),
-        embedded_sign_url: signUrl,
+        embedded_sign_url: signUrlWithClientId,
         embedded_sign_url_expires_at: new Date(expiresAt * 1000).toISOString(),
       })
       .eq('id', orderId);
@@ -249,7 +253,7 @@ Deno.serve(async (req) => {
         success: true, 
         message: 'URL de firma generada exitosamente',
         signatureRequestId,
-        signUrl,
+        signUrl: signUrlWithClientId,
         expiresAt: new Date(expiresAt * 1000).toISOString()
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
