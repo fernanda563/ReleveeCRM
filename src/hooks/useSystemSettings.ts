@@ -27,7 +27,11 @@ export const useSystemSettings = (category?: SettingCategory) => {
         acc[setting.key] = raw && typeof raw === 'object' && 'value' in raw ? raw.value : raw;
         // expose imported_themes if present on any row
         if (setting.imported_themes) {
-          acc['imported_themes'] = setting.imported_themes;
+          const rawThemes = setting.imported_themes;
+          // Apply the same value extraction logic as line 27
+          acc['imported_themes'] = rawThemes && typeof rawThemes === 'object' && 'value' in rawThemes 
+            ? rawThemes.value 
+            : rawThemes;
         }
         return acc;
       }, {} as Record<string, any>) || {};
