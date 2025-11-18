@@ -195,8 +195,13 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
               display: none !important;
             }
 
-            * {
+            .info-row, .table-section td, .company-info, .info-value, .info-label {
               color: #000 !important;
+            }
+
+            /* Permitir que los colores del tema se apliquen a títulos y bordes */
+            .print-title, .section-title {
+              color: ${primaryColor} !important;
             }
 
             body, html, .print-container {
