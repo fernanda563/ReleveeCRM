@@ -121,8 +121,8 @@ Deno.serve(async (req) => {
     const testMode = signingSetting?.value?.value === 'production' ? 0 : 1;
     console.log('Modo de firma seleccionado:', testMode === 1 ? 'TEST' : 'PRODUCCIÓN');
 
-    // Send signature request to Dropbox Sign
-    const dropboxResponse = await fetch('https://api.hellosign.com/v3/signature_request/send', {
+    // Create embedded signature request to Dropbox Sign
+    const dropboxResponse = await fetch('https://api.hellosign.com/v3/signature_request/create_embedded', {
       method: 'POST',
       headers: {
         'Authorization': `Basic ${btoa(dropboxSignApiKey + ':')}`,
@@ -137,11 +137,9 @@ Deno.serve(async (req) => {
           {
             email_address: orderData.clients.email,
             name: `${orderData.clients.nombre} ${orderData.clients.apellido}`,
-            order: 0,
           },
         ],
         file_url: [pdfUrl],
-        signing_redirect_url: `${supabaseUrl}/orders`,
       }),
     });
 
@@ -158,22 +156,60 @@ Deno.serve(async (req) => {
     console.log('Respuesta de Dropbox Sign:', dropboxData);
 
     const signatureRequestId = dropboxData.signature_request?.signature_request_id;
+    const signatureId = dropboxData.signature_request?.signatures?.[0]?.signature_id;
 
-    if (!signatureRequestId) {
-      console.error('No se recibió signature_request_id');
+    if (!signatureRequestId || !signatureId) {
+      console.error('No se recibió signature_request_id o signature_id');
       return new Response(
         JSON.stringify({ error: 'Error inesperado de Dropbox Sign' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Update order with signature request info
+    // Get embedded sign URL
+    console.log('Obteniendo URL de firma embebida para signature_id:', signatureId);
+    const embedUrlResponse = await fetch(
+      `https://api.hellosign.com/v3/embedded/sign_url/${signatureId}`,
+      {
+        method: 'GET',
+        headers: {
+          'Authorization': `Basic ${btoa(dropboxSignApiKey + ':')}`,
+        },
+      }
+    );
+
+    if (!embedUrlResponse.ok) {
+      const errorText = await embedUrlResponse.text();
+      console.error('Error obteniendo URL embebida:', errorText);
+      return new Response(
+        JSON.stringify({ error: 'Error al obtener URL de firma', details: errorText }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const embedData = await embedUrlResponse.json();
+    console.log('URL de firma embebida obtenida:', embedData);
+    
+    const signUrl = embedData.embedded?.sign_url;
+    const expiresAt = embedData.embedded?.expires_at;
+
+    if (!signUrl) {
+      console.error('No se recibió sign_url');
+      return new Response(
+        JSON.stringify({ error: 'Error inesperado al obtener URL de firma' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Update order with signature request info and embedded URL
     const { error: updateError } = await supabase
       .from('orders')
       .update({
         signature_request_id: signatureRequestId,
         signature_status: 'pending',
         signature_sent_at: new Date().toISOString(),
+        embedded_sign_url: signUrl,
+        embedded_sign_url_expires_at: new Date(expiresAt * 1000).toISOString(),
       })
       .eq('id', orderId);
 
@@ -185,13 +221,15 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log('Documento enviado exitosamente');
+    console.log('URL de firma generada exitosamente');
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: 'Documento enviado a firmar exitosamente',
-        signatureRequestId 
+        message: 'URL de firma generada exitosamente',
+        signatureRequestId,
+        signUrl,
+        expiresAt: new Date(expiresAt * 1000).toISOString()
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import OrderPrintView from "@/components/orders/OrderPrintView";
-import { Loader2, Printer, Download, Send } from "lucide-react";
+import { Loader2, Printer, Download, Send, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -58,6 +58,8 @@ export const OrderPrintDialog = ({ orderId, open, onOpenChange, autoSendToSign =
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sendingToSign, setSendingToSign] = useState(false);
+  const [signUrl, setSignUrl] = useState<string | null>(null);
+  const [signUrlExpires, setSignUrlExpires] = useState<string | null>(null);
   const printRef = useRef<HTMLDivElement>(null);
   const autoSentRef = useRef(false);
 
@@ -227,7 +229,11 @@ export const OrderPrintDialog = ({ orderId, open, onOpenChange, autoSendToSign =
 
       if (error) throw error;
 
-      toast.success("Documento enviado exitosamente a Dropbox Sign");
+      if (data.signUrl) {
+        setSignUrl(data.signUrl);
+        setSignUrlExpires(data.expiresAt);
+        toast.success("¡URL de firma generada! Cópiala y envíala al cliente");
+      }
       
       // Refresh order data para obtener nuevo signature_status
       const { data: updatedOrder } = await supabase
@@ -305,6 +311,12 @@ export const OrderPrintDialog = ({ orderId, open, onOpenChange, autoSendToSign =
 
         const combinedOrder = { ...orderBase, clients: clientInfo };
         setOrder(combinedOrder);
+
+        // Cargar URL de firma embebida si existe
+        if (orderBase.embedded_sign_url) {
+          setSignUrl(orderBase.embedded_sign_url);
+          setSignUrlExpires(orderBase.embedded_sign_url_expires_at);
+        }
 
         // Obtener logo de la configuración del sistema
         let logoUrl = null;
@@ -409,7 +421,7 @@ export const OrderPrintDialog = ({ orderId, open, onOpenChange, autoSendToSign =
                       ) : (
                         <Send className="h-4 w-4 mr-2" />
                       )}
-                      Enviar a firma
+                      Generar link de firma
                     </Button>
                   )}
                 </>
@@ -432,9 +444,46 @@ export const OrderPrintDialog = ({ orderId, open, onOpenChange, autoSendToSign =
         )}
 
         {!loading && !error && order && companyInfo && (
-          <div ref={printRef} style={{ backgroundColor: '#ffffff' }}>
-            <OrderPrintView order={order} companyInfo={companyInfo} />
-          </div>
+          <>
+            <div ref={printRef} style={{ backgroundColor: '#ffffff' }}>
+              <OrderPrintView order={order} companyInfo={companyInfo} />
+            </div>
+            
+            {signUrl && (
+              <div className="mt-4 p-4 bg-primary/5 border border-primary/20 rounded-lg">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-foreground mb-1">
+                      URL de firma generada
+                    </p>
+                    <p className="text-xs text-muted-foreground mb-2">
+                      Expira: {signUrlExpires ? new Date(signUrlExpires).toLocaleString('es-MX', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      }) : 'N/A'}
+                    </p>
+                    <div className="bg-background p-2 rounded border border-border text-xs break-all font-mono">
+                      {signUrl}
+                    </div>
+                  </div>
+                  <Button
+                    onClick={() => {
+                      navigator.clipboard.writeText(signUrl);
+                      toast.success("URL copiada al portapapeles");
+                    }}
+                    size="sm"
+                    variant="outline"
+                  >
+                    <Copy className="h-4 w-4 mr-2" />
+                    Copiar
+                  </Button>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </DialogContent>
     </Dialog>

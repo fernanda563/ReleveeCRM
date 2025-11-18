@@ -240,6 +240,8 @@ export type Database = {
           diamante_forma: string | null
           diamante_quilataje: number | null
           disenador_id: string | null
+          embedded_sign_url: string | null
+          embedded_sign_url_expires_at: string | null
           estatus_montura: string | null
           estatus_pago: string
           estatus_piedra: string | null
@@ -279,6 +281,8 @@ export type Database = {
           diamante_forma?: string | null
           diamante_quilataje?: number | null
           disenador_id?: string | null
+          embedded_sign_url?: string | null
+          embedded_sign_url_expires_at?: string | null
           estatus_montura?: string | null
           estatus_pago?: string
           estatus_piedra?: string | null
@@ -318,6 +322,8 @@ export type Database = {
           diamante_forma?: string | null
           diamante_quilataje?: number | null
           disenador_id?: string | null
+          embedded_sign_url?: string | null
+          embedded_sign_url_expires_at?: string | null
           estatus_montura?: string | null
           estatus_pago?: string
           estatus_piedra?: string | null

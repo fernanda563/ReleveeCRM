@@ -55,6 +55,8 @@ export interface Order {
   signed_document_url?: string | null;
   signature_sent_at?: string | null;
   signature_completed_at?: string | null;
+  embedded_sign_url?: string | null;
+  embedded_sign_url_expires_at?: string | null;
   created_at: string;
   clients?: {
     nombre: string;
