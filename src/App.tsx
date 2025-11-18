@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import Auth from "./pages/Auth";
+import Sign from "./pages/Sign";
 import CRM from "./pages/CRM";
 import ClientDetail from "./pages/ClientDetail";
 import Projects from "./pages/Projects";
@@ -23,10 +24,11 @@ import { DashboardLayout } from "./components/DashboardLayout";
 const App = () => (
   <BrowserRouter>
     <Sonner />
-    <Routes>
-      <Route path="/" element={<Index />} />
-      <Route path="/auth" element={<Auth />} />
-      <Route path="/stl-viewer-fullscreen" element={<STLViewerFullscreen />} />
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/sign" element={<Sign />} />
+          <Route path="/stl-viewer-fullscreen" element={<STLViewerFullscreen />} />
       <Route element={<DashboardLayout />}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/crm" element={<CRM />} />

@@ -28,24 +28,10 @@ const isSignUrlValid = (expiresAt: string | null): boolean => {
   return new Date(expiresAt).getTime() > Date.now();
 };
 
-const ensureClientIdInUrl = (url: string | null | undefined): string | null => {
-  if (!url) return null;
-  
-  let correctedUrl = url;
-  const clientId = '9591cc59d6f65fda1758df721bdc95c4';
-  
-  // Agregar client_id si falta
-  if (!/[?&]client_id=/.test(correctedUrl)) {
-    const sep = correctedUrl.includes('?') ? '&' : '?';
-    correctedUrl = `${correctedUrl}${sep}client_id=${clientId}`;
-  }
-  
-  // Agregar skipDomainVerification=1 si falta (necesario para modo test)
-  if (!/[?&]skipDomainVerification=/.test(correctedUrl)) {
-    correctedUrl += '&skipDomainVerification=1';
-  }
-  
-  return correctedUrl;
+// Genera el enlace de nuestra app para firma embebida
+const generateAppSignLink = (dropboxSignUrl: string): string => {
+  const encodedUrl = encodeURIComponent(dropboxSignUrl);
+  return `${window.location.origin}/sign?u=${encodedUrl}`;
 };
 
 const waitForSession = async (timeout = 5000): Promise<boolean> => {
@@ -232,20 +218,9 @@ export const OrderPrintDialog = ({ orderId, open, onOpenChange, autoSendToSign =
         order.pending_signature_pdf_url &&
         isSignUrlValid(order.embedded_sign_url_expires_at)
       ) {
-        // Reutilizar URL existente, asegurando que tenga client_id
-        const urlToCopy = ensureClientIdInUrl(order.embedded_sign_url);
-        if (!urlToCopy) throw new Error("No se encontró una URL de firma válida");
-        
-        await navigator.clipboard.writeText(urlToCopy);
-        
-        // Si la URL cambió al agregar el client_id, persistir para futuras veces
-        if (urlToCopy !== order.embedded_sign_url) {
-          await supabase.from('orders')
-            .update({ embedded_sign_url: urlToCopy })
-            .eq('id', orderId);
-          setOrder((prev: any) => prev ? { ...prev, embedded_sign_url: urlToCopy } : prev);
-          setSignUrl(urlToCopy);
-        }
+        // Generar link de la app y copiar
+        const appLink = generateAppSignLink(order.embedded_sign_url);
+        await navigator.clipboard.writeText(appLink);
         
         toast.success("URL de firma copiada al portapapeles");
         setSendingToSign(false);
