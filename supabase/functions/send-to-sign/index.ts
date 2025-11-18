@@ -161,6 +161,22 @@ Deno.serve(async (req) => {
           },
         ],
         file_url: [pdfUrl],
+        form_fields_per_document: [
+          [
+            {
+              api_id: 'firma_cliente',
+              name: 'Firma del Cliente',
+              type: 'signature',
+              x: 50,
+              y: 680,
+              width: 200,
+              height: 50,
+              required: true,
+              signer: 0,
+              page: 1
+            }
+          ]
+        ]
       }),
     });
 
