@@ -248,7 +248,6 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
         }
 
         .info-section {
-          border: 1px solid #000;
           padding: 12px;
         }
 
@@ -280,7 +279,6 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
         }
 
         .full-section {
-          border: 1px solid #000;
           padding: 12px;
           margin-bottom: 16px;
         }
@@ -342,7 +340,6 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
         }
 
         .column-section {
-          border: 1px solid #000;
           padding: 12px;
         }
 
