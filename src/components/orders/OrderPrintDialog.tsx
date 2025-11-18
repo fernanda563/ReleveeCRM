@@ -433,18 +433,30 @@ export const OrderPrintDialog = ({ orderId, open, onOpenChange, autoSendToSign =
                     <Download className="h-4 w-4 mr-2" />
                     Descargar PDF
                   </Button>
-                  {order && (!order.signature_status || order.signature_status === 'declined') && (
+                  {order && order.signature_status !== 'signed' && (
                     <Button 
                       onClick={handleSendToSign} 
                       size="sm"
                       disabled={sendingToSign}
+                      variant={
+                        order.embedded_sign_url && isSignUrlValid(order.embedded_sign_url_expires_at)
+                          ? "outline"
+                          : "default"
+                      }
                     >
                       {sendingToSign ? (
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                       ) : (
-                        <Send className="h-4 w-4 mr-2" />
+                        order.embedded_sign_url && isSignUrlValid(order.embedded_sign_url_expires_at) ? (
+                          <Copy className="h-4 w-4 mr-2" />
+                        ) : (
+                          <Send className="h-4 w-4 mr-2" />
+                        )
                       )}
-                      Generar link de firma
+                      {order.embedded_sign_url && isSignUrlValid(order.embedded_sign_url_expires_at)
+                        ? "Copiar URL de firma"
+                        : "Generar link de firma"
+                      }
                     </Button>
                   )}
                 </>
