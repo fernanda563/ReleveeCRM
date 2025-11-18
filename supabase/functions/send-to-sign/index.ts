@@ -121,6 +121,26 @@ Deno.serve(async (req) => {
     const testMode = signingSetting?.value?.value === 'production' ? 0 : 1;
     console.log('Modo de firma seleccionado:', testMode === 1 ? 'TEST' : 'PRODUCCIÓN');
 
+    // Read Dropbox Sign client_id for embedded signing from system settings
+    const { data: clientIdSetting, error: clientIdError } = await supabase
+      .from('system_settings')
+      .select('value')
+      .eq('category', 'signing')
+      .eq('key', 'client_id')
+      .maybeSingle();
+
+    if (clientIdError) {
+      console.error('No se pudo leer signing.client_id:', clientIdError);
+    }
+
+    const dropboxClientId = clientIdSetting?.value?.value;
+    if (!dropboxClientId) {
+      return new Response(
+        JSON.stringify({ error: 'Falta configurar el Client ID de Dropbox Sign (signing.client_id) para firma embebida.' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Create embedded signature request to Dropbox Sign
     const dropboxResponse = await fetch('https://api.hellosign.com/v3/signature_request/create_embedded', {
       method: 'POST',
@@ -130,6 +150,7 @@ Deno.serve(async (req) => {
       },
       body: JSON.stringify({
         test_mode: testMode, // 1 for testing (default), 0 for production
+        client_id: dropboxClientId,
         title: documentTitle,
         subject: `Firma de Orden de Compra - ${orderData.clients.nombre} ${orderData.clients.apellido}`,
         message: 'Por favor firma este documento para confirmar tu orden de compra de joyería personalizada.',
