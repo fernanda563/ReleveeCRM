@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -865,12 +865,53 @@ export const InternalOrderDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
-            Nueva Compra a Proveedor - Paso {currentStep} de 5
-          </DialogTitle>
+          <DialogTitle>Nueva Compra a Proveedor</DialogTitle>
+          <DialogDescription>
+            Completa la información para registrar la compra
+          </DialogDescription>
         </DialogHeader>
+
+        {/* Stepper visual */}
+        <div className="flex items-center justify-between mb-8 px-4">
+          {[1, 2, 3, 4, 5].map((step) => (
+            <div key={step} className="flex items-center flex-1">
+              <div className="flex flex-col items-center flex-1">
+                <div
+                  className={cn(
+                    "w-10 h-10 rounded-full flex items-center justify-center border-2 font-semibold transition-colors",
+                    currentStep === step && "border-accent bg-accent text-accent-foreground",
+                    currentStep > step && "border-primary bg-primary text-primary-foreground",
+                    currentStep < step && "border-muted-foreground/30 text-muted-foreground"
+                  )}
+                >
+                  {currentStep > step ? "✓" : step}
+                </div>
+                <span
+                  className={cn(
+                    "text-xs mt-2 font-medium transition-colors text-center",
+                    currentStep >= step ? "text-foreground" : "text-muted-foreground"
+                  )}
+                >
+                  {step === 1 && "Proveedor"}
+                  {step === 2 && "Producto"}
+                  {step === 3 && "Especificaciones"}
+                  {step === 4 && "Archivos"}
+                  {step === 5 && "Pago"}
+                </span>
+              </div>
+              {step < 5 && (
+                <div
+                  className={cn(
+                    "h-0.5 flex-1 mx-2 transition-colors",
+                    currentStep > step ? "bg-primary" : "bg-muted-foreground/30"
+                  )}
+                />
+              )}
+            </div>
+          ))}
+        </div>
 
         <div className="py-4">
           {currentStep === 1 && renderStep1()}
