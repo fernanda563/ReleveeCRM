@@ -332,7 +332,6 @@ const Orders = () => {
                   setIsInternalOrderDialogOpen(true);
                 }
               }}
-              className="bg-accent hover:bg-accent/90 text-accent-foreground"
               size="lg"
             >
               <Plus className="h-4 w-4 mr-2" />
