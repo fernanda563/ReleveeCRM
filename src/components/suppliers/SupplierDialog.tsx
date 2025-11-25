@@ -35,6 +35,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { COUNTRIES } from "@/lib/countries";
 import { PRODUCT_TYPES } from "@/lib/product-types";
+import { COUNTRY_PHONE_CODES } from "@/lib/country-phone-codes";
 
 interface Supplier {
   id: string;
@@ -118,6 +119,23 @@ export const SupplierDialog = ({
 
   const handlePhoneChange = (value: string) => {
     setFormData({ ...formData, telefono: value });
+  };
+
+  const handleCountryChange = (selectedCountry: string) => {
+    const phoneCode = COUNTRY_PHONE_CODES[selectedCountry] || "+52";
+    
+    // Extraer solo el número del teléfono actual (sin código de país)
+    const currentPhone = formData.telefono;
+    const phoneMatch = currentPhone.match(/^(\+\d{1,4})(\d+)$/);
+    const phoneNumber = phoneMatch ? phoneMatch[2] : currentPhone.replace(/^\+\d{1,4}/, "");
+    
+    // Actualizar país y código de país
+    setFormData({
+      ...formData,
+      pais: selectedCountry,
+      telefono_codigo_pais: phoneCode,
+      telefono: phoneNumber ? `${phoneCode}${phoneNumber}` : phoneCode,
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -233,9 +251,7 @@ export const SupplierDialog = ({
                   <Label htmlFor="pais">País *</Label>
                   <Select
                     value={formData.pais}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, pais: value })
-                    }
+                    onValueChange={handleCountryChange}
                     required
                   >
                     <SelectTrigger>
@@ -295,7 +311,7 @@ export const SupplierDialog = ({
                   <PhoneInput
                     value={formData.telefono}
                     onChange={handlePhoneChange}
-                    defaultCountryCode="+52"
+                    defaultCountryCode={formData.telefono_codigo_pais || "+52"}
                   />
                 </div>
               </div>
