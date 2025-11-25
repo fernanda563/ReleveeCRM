@@ -60,6 +60,7 @@ export interface Order {
   signature_completed_at?: string | null;
   embedded_sign_url?: string | null;
   embedded_sign_url_expires_at?: string | null;
+  internal_order_id?: string | null;
   created_at: string;
   clients?: {
     nombre: string;

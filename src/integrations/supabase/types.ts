@@ -251,6 +251,7 @@ export type Database = {
           id: string
           imagenes_referencia: Json | null
           importe_anticipo: number
+          internal_order_id: string | null
           joyero_id: string | null
           metal_color: string | null
           metal_pureza: string | null
@@ -292,6 +293,7 @@ export type Database = {
           id?: string
           imagenes_referencia?: Json | null
           importe_anticipo: number
+          internal_order_id?: string | null
           joyero_id?: string | null
           metal_color?: string | null
           metal_pureza?: string | null
@@ -333,6 +335,7 @@ export type Database = {
           id?: string
           imagenes_referencia?: Json | null
           importe_anticipo?: number
+          internal_order_id?: string | null
           joyero_id?: string | null
           metal_color?: string | null
           metal_pureza?: string | null
@@ -365,6 +368,13 @@ export type Database = {
             columns: ["disenador_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_internal_order_id_fkey"
+            columns: ["internal_order_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_orders_internal"
             referencedColumns: ["id"]
           },
           {

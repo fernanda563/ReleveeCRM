@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Edit, Loader2, ChevronDown, FileText, FileSignature, Check, Clock, X, Box, DollarSign, Settings } from "lucide-react";
+import { Edit, Loader2, ChevronDown, FileText, FileSignature, Check, Clock, X, Box, DollarSign, Settings, Link } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,6 +12,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import OrderDialog from "@/components/orders/OrderDialog";
 import { OrderPrintDialog } from "@/components/orders/OrderPrintDialog";
+import { OrderStatusDialog } from "@/components/orders/OrderStatusDialog";
+import { LinkSupplierOrderDialog } from "@/components/orders/LinkSupplierOrderDialog";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -54,6 +56,10 @@ export const OrdersHistory = ({ clientId }: OrdersHistoryProps) => {
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [orderToPrint, setOrderToPrint] = useState<string | null>(null);
+  const [statusDialogOpen, setStatusDialogOpen] = useState(false);
+  const [linkDialogOpen, setLinkDialogOpen] = useState(false);
+  const [selectedOrderForStatus, setSelectedOrderForStatus] = useState<Order | null>(null);
+  const [selectedOrderForLink, setSelectedOrderForLink] = useState<Order | null>(null);
 
   useEffect(() => {
     fetchOrders();
@@ -169,6 +175,16 @@ export const OrdersHistory = ({ clientId }: OrdersHistoryProps) => {
     }
   };
 
+  const handleOpenStatusDialog = (order: Order) => {
+    setSelectedOrderForStatus(order);
+    setStatusDialogOpen(true);
+  };
+
+  const handleOpenLinkDialog = (order: Order) => {
+    setSelectedOrderForLink(order);
+    setLinkDialogOpen(true);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -261,6 +277,14 @@ export const OrdersHistory = ({ clientId }: OrdersHistoryProps) => {
                             Ver Documento Firmado
                           </DropdownMenuItem>
                         )}
+                        <DropdownMenuItem onClick={() => handleOpenStatusDialog(order)}>
+                          <Settings className="h-4 w-4 mr-2" />
+                          Modificar Estatus
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleOpenLinkDialog(order)}>
+                          <Link className="h-4 w-4 mr-2" />
+                          Vincular a Orden de Proveedor
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
@@ -271,7 +295,7 @@ export const OrdersHistory = ({ clientId }: OrdersHistoryProps) => {
                   <div>
                     <span className="font-medium text-foreground">Metal:</span>
                     <span className="text-muted-foreground ml-2">
-                      {order.metal_tipo === "oro" && `Oro ${order.metal_pureza} ${order.metal_color}`}
+                      {order.metal_tipo === "oro" && `Oro ${order.metal_pureza} ${order.metal_color ? order.metal_color.charAt(0).toUpperCase() + order.metal_color.slice(1).toLowerCase() : ''}`}
                       {order.metal_tipo === "plata" && "Plata"}
                       {order.metal_tipo === "platino" && "Platino"}
                     </span>
@@ -280,7 +304,7 @@ export const OrdersHistory = ({ clientId }: OrdersHistoryProps) => {
                     <span className="font-medium text-foreground">Piedra:</span>
                     <span className="text-muted-foreground ml-2">
                       {order.piedra_tipo === "diamante" &&
-                        `Diamante ${order.diamante_quilataje}ct ${order.diamante_forma}`}
+                        `Diamante ${order.diamante_quilataje}ct ${order.diamante_forma ? order.diamante_forma.charAt(0).toUpperCase() + order.diamante_forma.slice(1).toLowerCase() : ''}`}
                       {order.piedra_tipo === "gema" && "Gema"}
                     </span>
                   </div>
@@ -369,6 +393,32 @@ export const OrdersHistory = ({ clientId }: OrdersHistoryProps) => {
               setOrderToPrint(null);
               fetchOrders();
             }
+          }}
+        />
+      )}
+
+      {/* Status Dialog */}
+      {selectedOrderForStatus && (
+        <OrderStatusDialog
+          open={statusDialogOpen}
+          onOpenChange={setStatusDialogOpen}
+          orderId={selectedOrderForStatus.id}
+          currentPiedraStatus={selectedOrderForStatus.estatus_piedra || "en_busqueda"}
+          currentMonturaStatus={selectedOrderForStatus.estatus_montura || "en_espera"}
+          onSuccess={() => {
+            fetchOrders();
+          }}
+        />
+      )}
+
+      {/* Link Supplier Order Dialog */}
+      {selectedOrderForLink && (
+        <LinkSupplierOrderDialog
+          open={linkDialogOpen}
+          onOpenChange={setLinkDialogOpen}
+          orderId={selectedOrderForLink.id}
+          onSuccess={() => {
+            fetchOrders();
           }}
         />
       )}

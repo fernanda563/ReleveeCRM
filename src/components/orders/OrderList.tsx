@@ -1,7 +1,8 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Edit, Loader2, Eye, ChevronDown, FileText, FileSignature, Check, Clock, X, Box, DollarSign, Settings } from "lucide-react";
+import { Edit, Loader2, Eye, ChevronDown, FileText, FileSignature, Check, Clock, X, Box, DollarSign, Settings, Link } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,6 +12,8 @@ import {
 import type { Order } from "@/pages/Orders";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { OrderStatusDialog } from "./OrderStatusDialog";
+import { LinkSupplierOrderDialog } from "./LinkSupplierOrderDialog";
 
 interface OrderListProps {
   orders: Order[];
@@ -22,8 +25,23 @@ interface OrderListProps {
 }
 
 const OrderList = ({ orders, loading, onEdit, onOpenPrint, onSendToSign }: OrderListProps) => {
+  const [statusDialogOpen, setStatusDialogOpen] = useState(false);
+  const [linkDialogOpen, setLinkDialogOpen] = useState(false);
+  const [selectedOrderForStatus, setSelectedOrderForStatus] = useState<Order | null>(null);
+  const [selectedOrderForLink, setSelectedOrderForLink] = useState<Order | null>(null);
+  
   const handleGeneratePDF = (order: Order) => {
     onOpenPrint(order.id);
+  };
+
+  const handleOpenStatusDialog = (order: Order) => {
+    setSelectedOrderForStatus(order);
+    setStatusDialogOpen(true);
+  };
+
+  const handleOpenLinkDialog = (order: Order) => {
+    setSelectedOrderForLink(order);
+    setLinkDialogOpen(true);
   };
 
   const capitalizeFirst = (text: string) => {
@@ -114,6 +132,7 @@ const OrderList = ({ orders, loading, onEdit, onOpenPrint, onSendToSign }: Order
   }
 
   return (
+    <>
     <div className="space-y-4">
       {orders.map((order) => (
         <Card key={order.id}>
@@ -189,6 +208,14 @@ const OrderList = ({ orders, loading, onEdit, onOpenPrint, onSendToSign }: Order
                       Ver Documento Firmado
                     </DropdownMenuItem>
                   )}
+                  <DropdownMenuItem onClick={() => handleOpenStatusDialog(order)}>
+                    <Settings className="h-4 w-4 mr-2" />
+                    Modificar Estatus
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleOpenLinkDialog(order)}>
+                    <Link className="h-4 w-4 mr-2" />
+                    Vincular a Orden de Proveedor
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => {
                     const detailUrl = `/crm/${order.client_id}`;
                     window.open(detailUrl, '_blank');
@@ -278,6 +305,35 @@ const OrderList = ({ orders, loading, onEdit, onOpenPrint, onSendToSign }: Order
         </Card>
       ))}
     </div>
+
+    {/* Status Dialog */}
+    {selectedOrderForStatus && (
+      <OrderStatusDialog
+        open={statusDialogOpen}
+        onOpenChange={setStatusDialogOpen}
+        orderId={selectedOrderForStatus.id}
+        currentPiedraStatus={selectedOrderForStatus.estatus_piedra}
+        currentMonturaStatus={selectedOrderForStatus.estatus_montura}
+        onSuccess={() => {
+          // Refresh will be handled by parent component
+          window.location.reload();
+        }}
+      />
+    )}
+
+    {/* Link Supplier Order Dialog */}
+    {selectedOrderForLink && (
+      <LinkSupplierOrderDialog
+        open={linkDialogOpen}
+        onOpenChange={setLinkDialogOpen}
+        orderId={selectedOrderForLink.id}
+        onSuccess={() => {
+          // Refresh will be handled by parent component
+          window.location.reload();
+        }}
+      />
+    )}
+    </>
   );
 };
 
