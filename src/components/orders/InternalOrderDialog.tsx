@@ -1225,22 +1225,23 @@ export const InternalOrderDialog = ({
       return `$${num.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     };
 
+    const displayValue = formData.precio_compra 
+      ? formatCurrency(formData.precio_compra)
+      : '';
+
     return (
       <div className="space-y-4">
         <div>
           <Label htmlFor="precio_compra">Precio de Compra *</Label>
           <Input
             id="precio_compra"
-            value={formData.precio_compra}
+            type="text"
+            value={displayValue}
             onChange={(e) => {
               const value = e.target.value.replace(/[^0-9.]/g, '');
               updateFormData('precio_compra', value);
             }}
             placeholder="$0.00"
-            onBlur={(e) => {
-              const formatted = formatCurrency(e.target.value);
-              e.target.value = formatted;
-            }}
           />
         </div>
 
