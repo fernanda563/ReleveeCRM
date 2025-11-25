@@ -796,33 +796,33 @@ export const InternalOrderDialog = ({
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Stock#</TableHead>
-                    <TableHead>Forma</TableHead>
-                    <TableHead>Quilates</TableHead>
-                    <TableHead>Color</TableHead>
-                    <TableHead>Claridad</TableHead>
-                    <TableHead>Corte</TableHead>
-                    <TableHead>Pulido</TableHead>
-                    <TableHead>Simetría</TableHead>
-                    <TableHead>Lab</TableHead>
-                    <TableHead>Medidas</TableHead>
-                    <TableHead>No. Reporte</TableHead>
+                    <TableHead className="text-xs py-2">Stock#</TableHead>
+                    <TableHead className="text-xs py-2">Forma</TableHead>
+                    <TableHead className="text-xs py-2">Quilates</TableHead>
+                    <TableHead className="text-xs py-2">Color</TableHead>
+                    <TableHead className="text-xs py-2">Claridad</TableHead>
+                    <TableHead className="text-xs py-2">Corte</TableHead>
+                    <TableHead className="text-xs py-2">Pulido</TableHead>
+                    <TableHead className="text-xs py-2">Simetría</TableHead>
+                    <TableHead className="text-xs py-2">Lab</TableHead>
+                    <TableHead className="text-xs py-2">Medidas</TableHead>
+                    <TableHead className="text-xs py-2">No. Reporte</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {formData.csv_data.map((diamond, index) => (
                     <TableRow key={index}>
-                      <TableCell className="font-medium">{diamond.stock_number}</TableCell>
-                      <TableCell>{diamond.shape}</TableCell>
-                      <TableCell>{diamond.carats}</TableCell>
-                      <TableCell>{diamond.color}</TableCell>
-                      <TableCell>{diamond.clarity}</TableCell>
-                      <TableCell>{diamond.cut}</TableCell>
-                      <TableCell>{diamond.polish}</TableCell>
-                      <TableCell>{diamond.symmetry}</TableCell>
-                      <TableCell>{diamond.lab}</TableCell>
-                      <TableCell>{diamond.measurements}</TableCell>
-                      <TableCell>{diamond.report_number}</TableCell>
+                      <TableCell className="font-medium text-xs py-2">{diamond.stock_number}</TableCell>
+                      <TableCell className="text-xs py-2">{diamond.shape}</TableCell>
+                      <TableCell className="text-xs py-2">{diamond.carats}</TableCell>
+                      <TableCell className="text-xs py-2">{diamond.color}</TableCell>
+                      <TableCell className="text-xs py-2">{diamond.clarity}</TableCell>
+                      <TableCell className="text-xs py-2">{diamond.cut}</TableCell>
+                      <TableCell className="text-xs py-2">{diamond.polish}</TableCell>
+                      <TableCell className="text-xs py-2">{diamond.symmetry}</TableCell>
+                      <TableCell className="text-xs py-2">{diamond.lab}</TableCell>
+                      <TableCell className="text-xs py-2">{diamond.measurements}</TableCell>
+                      <TableCell className="text-xs py-2">{diamond.report_number}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
