@@ -26,6 +26,11 @@ const OrderList = ({ orders, loading, onEdit, onOpenPrint, onSendToSign }: Order
     onOpenPrint(order.id);
   };
 
+  const capitalizeFirst = (text: string) => {
+    if (!text) return '';
+    return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+  };
+
   const getPaymentStatusBadge = (status: string) => {
     if (status === "liquidado") {
       return (
@@ -202,7 +207,7 @@ const OrderList = ({ orders, loading, onEdit, onOpenPrint, onSendToSign }: Order
               <div className="space-y-2">
                 <h4 className="font-semibold text-sm">Metal</h4>
                 <p className="text-sm">
-                  {order.metal_tipo === "oro" && `Oro ${order.metal_pureza} ${order.metal_color}`}
+                  {order.metal_tipo === "oro" && `Oro ${order.metal_pureza} ${capitalizeFirst(order.metal_color || '')}`}
                   {order.metal_tipo === "plata" && "Plata"}
                   {order.metal_tipo === "platino" && "Platino"}
                 </p>
@@ -211,7 +216,7 @@ const OrderList = ({ orders, loading, onEdit, onOpenPrint, onSendToSign }: Order
                 <h4 className="font-semibold text-sm">Piedra</h4>
                 <p className="text-sm">
                   {order.piedra_tipo === "diamante" &&
-                    `Diamante ${order.diamante_quilataje}ct ${order.diamante_forma}`}
+                    `Diamante ${order.diamante_quilataje}ct ${capitalizeFirst(order.diamante_forma || '')}`}
                   {order.piedra_tipo === "gema" && "Gema"}
                 </p>
               </div>
