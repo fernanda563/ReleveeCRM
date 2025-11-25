@@ -44,6 +44,40 @@ export const InternalOrderCard = ({
     return text.charAt(0).toUpperCase() + text.slice(1);
   };
 
+  const formatShape = (shape: string | undefined) => {
+    if (!shape) return '';
+    
+    const shapes: Record<string, string> = {
+      // English to Spanish translations
+      'round': 'Redondo',
+      'princess': 'Princesa',
+      'emerald': 'Esmeralda',
+      'asscher': 'Asscher',
+      'marquise': 'Marquesa',
+      'oval': 'Oval',
+      'radiant': 'Radiante',
+      'pear': 'Pera',
+      'heart': 'Corazón',
+      'cushion': 'Cojín',
+      'baguette': 'Baguette',
+      'trilliant': 'Trilliant',
+      'rose': 'Rosa',
+      // Spanish forms (normalize capitalization)
+      'redondo': 'Redondo',
+      'princesa': 'Princesa',
+      'esmeralda': 'Esmeralda',
+      'marquesa': 'Marquesa',
+      'radiante': 'Radiante',
+      'pera': 'Pera',
+      'corazon': 'Corazón',
+      'cojin': 'Cojín',
+      'rosa': 'Rosa',
+    };
+    
+    const normalized = shape.toLowerCase();
+    return shapes[normalized] || capitalizeFirst(shape);
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -99,7 +133,7 @@ export const InternalOrderCard = ({
               <p><span className="font-medium">Color:</span> {order.color}</p>
               <p><span className="font-medium">Claridad:</span> {order.claridad}</p>
               <p><span className="font-medium">Corte:</span> {order.corte}</p>
-              <p><span className="font-medium">Forma:</span> {order.forma}</p>
+              <p><span className="font-medium">Forma:</span> {formatShape(order.forma)}</p>
               <p><span className="font-medium">Certificado:</span> {order.certificado}</p>
             </div>
             {order.numero_reporte && (
