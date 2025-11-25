@@ -9,9 +9,10 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Card, CardContent } from "@/components/ui/card";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { CalendarIcon, ChevronLeft, ChevronRight, FileText, ImageIcon, Loader2, Upload, X } from "lucide-react";
+import { CalendarIcon, ChevronLeft, ChevronRight, FileText, ImageIcon, Loader2, Upload, X, Package, FileSpreadsheet } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ProductType, Currency, InternalPaymentStatus, InternalOrderFormData, Supplier, CSVDiamondRow } from "@/types/internal-orders";
@@ -694,24 +695,48 @@ export const InternalOrderDialog = ({
     <div className="space-y-4">
       <div>
         <Label className="mb-3 block">Modo de Carga *</Label>
-        <RadioGroup 
-          value={formData.carga_multiple ? "multiple" : "single"} 
-          onValueChange={(value) => {
-            updateFormData('carga_multiple', value === "multiple");
-            if (value === "single") {
+        <div className="grid grid-cols-2 gap-4">
+          {/* Single Product Card */}
+          <Card 
+            className={`cursor-pointer transition-all hover:border-primary/50 ${
+              !formData.carga_multiple 
+                ? 'border-primary bg-primary/5 shadow-md' 
+                : 'border-border hover:shadow-sm'
+            }`}
+            onClick={() => {
+              updateFormData('carga_multiple', false);
               updateFormData('csv_data', []);
-            }
-          }}
-        >
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="single" id="single" />
-            <Label htmlFor="single" className="font-normal cursor-pointer">Un producto</Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="multiple" id="multiple" />
-            <Label htmlFor="multiple" className="font-normal cursor-pointer">Múltiples productos (CSV)</Label>
-          </div>
-        </RadioGroup>
+            }}
+          >
+            <CardContent className="pt-6 pb-6 text-center">
+              <Package className="h-10 w-10 mx-auto mb-3 text-primary" />
+              <h3 className="font-semibold mb-1">Un producto</h3>
+              <p className="text-xs text-muted-foreground">
+                Registrar un producto individual
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Multiple Products Card */}
+          <Card 
+            className={`cursor-pointer transition-all hover:border-primary/50 ${
+              formData.carga_multiple 
+                ? 'border-primary bg-primary/5 shadow-md' 
+                : 'border-border hover:shadow-sm'
+            }`}
+            onClick={() => {
+              updateFormData('carga_multiple', true);
+            }}
+          >
+            <CardContent className="pt-6 pb-6 text-center">
+              <FileSpreadsheet className="h-10 w-10 mx-auto mb-3 text-primary" />
+              <h3 className="font-semibold mb-1">Múltiples productos</h3>
+              <p className="text-xs text-muted-foreground">
+                Carga masiva mediante CSV
+              </p>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
       {formData.carga_multiple ? (
