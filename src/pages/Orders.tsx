@@ -387,7 +387,7 @@ const Orders = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-accent">{stats.inProduction}</div>
+              <div className="text-3xl font-bold text-foreground">{stats.inProduction}</div>
             </CardContent>
           </Card>
         </div>
@@ -557,7 +557,7 @@ const Orders = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-accent">{internalStats.recibidas}</div>
+                  <div className="text-3xl font-bold text-foreground">{internalStats.recibidas}</div>
                 </CardContent>
               </Card>
             </div>
