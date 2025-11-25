@@ -77,6 +77,17 @@ export const InternalOrderDialog = ({
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  // Handle product type change with bulk mode reset
+  const handleProductTypeChange = (value: ProductType) => {
+    setFormData(prev => ({
+      ...prev,
+      tipo_producto: value,
+      // Reset bulk mode if changing away from diamante
+      carga_multiple: value === 'diamante' ? prev.carga_multiple : false,
+      csv_data: value === 'diamante' ? prev.csv_data : [],
+    }));
+  };
+
   // Cargar proveedores activos
   useEffect(() => {
     const fetchSuppliers = async () => {
@@ -142,18 +153,20 @@ export const InternalOrderDialog = ({
   };
 
   const validateStep2 = () => {
-    if (formData.carga_multiple) {
-      if (formData.csv_data.length === 0) {
-        toast.error("Debes cargar un archivo CSV con diamantes");
-        return false;
-      }
-      return true;
-    }
-    
+    // Product type is always required
     if (!formData.tipo_producto) {
       toast.error("Selecciona el tipo de producto");
       return false;
     }
+    
+    // If diamonds in bulk mode, CSV must be loaded
+    if (formData.tipo_producto === 'diamante' && formData.carga_multiple) {
+      if (formData.csv_data.length === 0) {
+        toast.error("Debes cargar un archivo CSV con diamantes");
+        return false;
+      }
+    }
+    
     return true;
   };
 
@@ -693,54 +706,79 @@ export const InternalOrderDialog = ({
 
   const renderStep2 = () => (
     <div className="space-y-4">
+      {/* Product Type Selection - Always shown first */}
       <div>
-        <Label className="mb-3 block">Modo de Carga *</Label>
-        <div className="grid grid-cols-2 gap-4">
-          {/* Single Product Card */}
-          <Card 
-            className={`cursor-pointer transition-all hover:border-primary/50 ${
-              !formData.carga_multiple 
-                ? 'border-primary bg-primary/5 shadow-md' 
-                : 'border-border hover:shadow-sm'
-            }`}
-            onClick={() => {
-              updateFormData('carga_multiple', false);
-              updateFormData('csv_data', []);
-            }}
-          >
-            <CardContent className="pt-6 pb-6 text-center">
-              <Package className="h-10 w-10 mx-auto mb-3 text-primary" />
-              <h3 className="font-semibold mb-1">Un producto</h3>
-              <p className="text-xs text-muted-foreground">
-                Registrar un producto individual
-              </p>
-            </CardContent>
-          </Card>
-
-          {/* Multiple Products Card */}
-          <Card 
-            className={`cursor-pointer transition-all hover:border-primary/50 ${
-              formData.carga_multiple 
-                ? 'border-primary bg-primary/5 shadow-md' 
-                : 'border-border hover:shadow-sm'
-            }`}
-            onClick={() => {
-              updateFormData('carga_multiple', true);
-            }}
-          >
-            <CardContent className="pt-6 pb-6 text-center">
-              <FileSpreadsheet className="h-10 w-10 mx-auto mb-3 text-primary" />
-              <h3 className="font-semibold mb-1">Múltiples productos</h3>
-              <p className="text-xs text-muted-foreground">
-                Carga masiva mediante CSV
-              </p>
-            </CardContent>
-          </Card>
-        </div>
+        <Label htmlFor="tipo_producto">Tipo de Producto *</Label>
+        <Select value={formData.tipo_producto} onValueChange={handleProductTypeChange}>
+          <SelectTrigger>
+            <SelectValue placeholder="Seleccionar tipo" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="diamante">Diamante</SelectItem>
+            <SelectItem value="gema">Gema</SelectItem>
+            <SelectItem value="anillo">Anillo</SelectItem>
+            <SelectItem value="collar">Collar</SelectItem>
+            <SelectItem value="arete">Arete</SelectItem>
+            <SelectItem value="dije">Dije</SelectItem>
+            <SelectItem value="cadena">Cadena</SelectItem>
+            <SelectItem value="componente">Componente</SelectItem>
+            <SelectItem value="otro">Otro</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
-      {formData.carga_multiple ? (
-        <div className="space-y-4">
+      {/* Mode Selection Cards - Only for diamonds */}
+      {formData.tipo_producto === 'diamante' && (
+        <div className="animate-fade-in">
+          <Label className="mb-3 block">Modo de Carga *</Label>
+          <div className="grid grid-cols-2 gap-4">
+            {/* Single Product Card */}
+            <Card 
+              className={`cursor-pointer transition-all hover:border-primary/50 ${
+                !formData.carga_multiple 
+                  ? 'border-primary bg-primary/5 shadow-md' 
+                  : 'border-border hover:shadow-sm'
+              }`}
+              onClick={() => {
+                updateFormData('carga_multiple', false);
+                updateFormData('csv_data', []);
+              }}
+            >
+              <CardContent className="pt-6 pb-6 text-center">
+                <Package className="h-10 w-10 mx-auto mb-3 text-primary" />
+                <h3 className="font-semibold mb-1">Un producto</h3>
+                <p className="text-xs text-muted-foreground">
+                  Registrar un diamante individual
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Multiple Products Card */}
+            <Card 
+              className={`cursor-pointer transition-all hover:border-primary/50 ${
+                formData.carga_multiple 
+                  ? 'border-primary bg-primary/5 shadow-md' 
+                  : 'border-border hover:shadow-sm'
+              }`}
+              onClick={() => {
+                updateFormData('carga_multiple', true);
+              }}
+            >
+              <CardContent className="pt-6 pb-6 text-center">
+                <FileSpreadsheet className="h-10 w-10 mx-auto mb-3 text-primary" />
+                <h3 className="font-semibold mb-1">Múltiples productos</h3>
+                <p className="text-xs text-muted-foreground">
+                  Carga masiva mediante CSV
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      )}
+
+      {/* CSV Uploader - Only for diamonds in multiple mode */}
+      {formData.tipo_producto === 'diamante' && formData.carga_multiple && (
+        <div className="space-y-4 animate-fade-in">
           <div className="space-y-2">
             <Label>Subir archivo CSV de diamantes *</Label>
             <div className="border-2 border-dashed rounded-lg p-6 text-center">
@@ -773,40 +811,21 @@ export const InternalOrderDialog = ({
             </div>
           </div>
         </div>
-      ) : (
-        <>
-          <div>
-            <Label htmlFor="tipo_producto">Tipo de Producto *</Label>
-            <Select value={formData.tipo_producto} onValueChange={(value) => updateFormData('tipo_producto', value as ProductType)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Seleccionar tipo" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="diamante">Diamante</SelectItem>
-                <SelectItem value="gema">Gema</SelectItem>
-                <SelectItem value="anillo">Anillo</SelectItem>
-                <SelectItem value="collar">Collar</SelectItem>
-                <SelectItem value="arete">Arete</SelectItem>
-                <SelectItem value="dije">Dije</SelectItem>
-                <SelectItem value="cadena">Cadena</SelectItem>
-                <SelectItem value="componente">Componente</SelectItem>
-                <SelectItem value="otro">Otro</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+      )}
 
-          <div>
-            <Label htmlFor="descripcion">Descripción General</Label>
-            <Textarea
-              id="descripcion"
-              value={formData.descripcion}
-              onChange={(e) => updateFormData('descripcion', e.target.value)}
-              placeholder="Descripción del producto"
-              maxLength={500}
-              rows={4}
-            />
-          </div>
-        </>
+      {/* Description Field - For non-diamond products or single diamond */}
+      {formData.tipo_producto && formData.tipo_producto !== 'diamante' && (
+        <div className="animate-fade-in">
+          <Label htmlFor="descripcion">Descripción General</Label>
+          <Textarea
+            id="descripcion"
+            value={formData.descripcion}
+            onChange={(e) => updateFormData('descripcion', e.target.value)}
+            placeholder="Descripción del producto"
+            maxLength={500}
+            rows={4}
+          />
+        </div>
       )}
     </div>
   );
