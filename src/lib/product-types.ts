@@ -9,4 +9,6 @@ export const PRODUCT_TYPES = [
   { value: "insumos", label: "Insumos y materiales" },
   { value: "maquinaria", label: "Maquinaria" },
   { value: "empaques", label: "Empaques y exhibidores" },
+  { value: "joyeria_terminada", label: "Joyería terminada" },
+  { value: "otros", label: "Otros" },
 ] as const;

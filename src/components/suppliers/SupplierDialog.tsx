@@ -312,6 +312,7 @@ export const SupplierDialog = ({
                     value={formData.telefono}
                     onChange={handlePhoneChange}
                     defaultCountryCode={formData.telefono_codigo_pais || "+52"}
+                    readOnlyCountryCode={true}
                   />
                 </div>
               </div>

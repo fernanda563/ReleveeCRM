@@ -64,10 +64,11 @@ export interface PhoneInputProps {
   placeholder?: string;
   className?: string;
   defaultCountryCode?: string;
+  readOnlyCountryCode?: boolean;
 }
 
 export const PhoneInput = React.forwardRef<HTMLInputElement, PhoneInputProps>(
-  ({ value = "", onChange, disabled, placeholder, className, defaultCountryCode = "+52" }, ref) => {
+  ({ value = "", onChange, disabled, placeholder, className, defaultCountryCode = "+52", readOnlyCountryCode = false }, ref) => {
     // Separar el código de país del número
     const getCountryCodeAndNumber = (fullNumber: string) => {
       if (!fullNumber) return { countryCode: defaultCountryCode, number: "" };
@@ -119,21 +120,27 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, PhoneInputProps>(
 
     return (
       <div className={cn("flex gap-2", className)}>
-        <Select value={countryCode} onValueChange={handleCountryChange} disabled={disabled}>
-          <SelectTrigger className="w-[110px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {COUNTRY_CODES.map((country) => (
-              <SelectItem key={country.code} value={country.code}>
-                <span className="flex items-center gap-2">
-                  <span>{country.flag}</span>
-                  <span>{country.code}</span>
-                </span>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {readOnlyCountryCode ? (
+          <div className="w-[110px] h-10 px-3 py-2 border border-input bg-muted rounded-md flex items-center justify-center text-sm font-medium">
+            {countryCode}
+          </div>
+        ) : (
+          <Select value={countryCode} onValueChange={handleCountryChange} disabled={disabled}>
+            <SelectTrigger className="w-[110px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {COUNTRY_CODES.map((country) => (
+                <SelectItem key={country.code} value={country.code}>
+                  <span className="flex items-center gap-2">
+                    <span>{country.flag}</span>
+                    <span>{country.code}</span>
+                  </span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
         <Input
           ref={ref}
           type="tel"
