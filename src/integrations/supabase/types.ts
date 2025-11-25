@@ -505,14 +505,18 @@ export type Database = {
           forma: string | null
           id: string
           imagenes_producto: Json | null
+          medidas: string | null
           moneda: string
           notas_adicionales: string | null
           numero_factura: string
           numero_reporte: string | null
+          numero_stock: string | null
           precio_compra: number
           proveedor_contacto: string | null
           proveedor_nombre: string
+          pulido: string | null
           quilataje: number | null
+          simetria: string | null
           supplier_id: string | null
           tipo_orden: Database["public"]["Enums"]["order_type"]
           tipo_producto: Database["public"]["Enums"]["product_type"]
@@ -535,14 +539,18 @@ export type Database = {
           forma?: string | null
           id?: string
           imagenes_producto?: Json | null
+          medidas?: string | null
           moneda?: string
           notas_adicionales?: string | null
           numero_factura: string
           numero_reporte?: string | null
+          numero_stock?: string | null
           precio_compra: number
           proveedor_contacto?: string | null
           proveedor_nombre: string
+          pulido?: string | null
           quilataje?: number | null
+          simetria?: string | null
           supplier_id?: string | null
           tipo_orden?: Database["public"]["Enums"]["order_type"]
           tipo_producto: Database["public"]["Enums"]["product_type"]
@@ -565,14 +573,18 @@ export type Database = {
           forma?: string | null
           id?: string
           imagenes_producto?: Json | null
+          medidas?: string | null
           moneda?: string
           notas_adicionales?: string | null
           numero_factura?: string
           numero_reporte?: string | null
+          numero_stock?: string | null
           precio_compra?: number
           proveedor_contacto?: string | null
           proveedor_nombre?: string
+          pulido?: string | null
           quilataje?: number | null
+          simetria?: string | null
           supplier_id?: string | null
           tipo_orden?: Database["public"]["Enums"]["order_type"]
           tipo_producto?: Database["public"]["Enums"]["product_type"]
