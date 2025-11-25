@@ -962,7 +962,7 @@ export const InternalOrderDialog = ({
         </DialogHeader>
 
         {/* Stepper visual */}
-        <div className="flex justify-center mb-6 px-8">
+        <div className="flex justify-center mt-6 mb-3 px-8">
           <div className="flex items-start w-full max-w-3xl justify-between">
             {[1, 2, 3, 4, 5].map((step, index) => (
               <div key={step} className="flex items-center">
@@ -1003,7 +1003,7 @@ export const InternalOrderDialog = ({
           </div>
         </div>
 
-        <div className="space-y-6 mt-8">
+        <div className="space-y-6 mt-6">
           {currentStep === 1 && renderStep1()}
           {currentStep === 2 && renderStep2()}
           {currentStep === 3 && renderStep3()}
