@@ -934,20 +934,52 @@ export const InternalOrderDialog = ({
           />
         </div>
 
-        <div className="border rounded-lg p-4 bg-muted/50 space-y-2">
-          <h4 className="font-semibold flex items-center gap-2">
-            <FileText className="h-4 w-4" />
-            Resumen de la Orden
-          </h4>
-          <div className="space-y-1 text-sm">
-            <p><strong>Proveedor:</strong> {formData.proveedor_nombre}</p>
-            <p><strong>Producto:</strong> {formData.tipo_producto} (cantidad: {formData.cantidad})</p>
-            <p><strong>Precio:</strong> {formatCurrency(formData.precio_compra)} {formData.moneda}</p>
-            <p><strong>Factura:</strong> {formData.numero_factura}</p>
-            <p><strong>Fecha compra:</strong> {formData.fecha_compra ? format(formData.fecha_compra, "PP", { locale: es }) : ''}</p>
-            {formData.factura_pdf && <p className="text-green-600">✅ PDF adjunto</p>}
+        <div className="border rounded-lg p-4 bg-muted/50 space-y-3">
+          <h4 className="font-semibold text-base">Resumen de la Orden</h4>
+          
+          <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
+            <div>
+              <span className="text-muted-foreground">Proveedor</span>
+              <p className="font-medium">{formData.proveedor_nombre}</p>
+            </div>
+            
+            <div>
+              <span className="text-muted-foreground">Factura</span>
+              <p className="font-medium">{formData.numero_factura}</p>
+            </div>
+            
+            <div>
+              <span className="text-muted-foreground">Producto</span>
+              <p className="font-medium capitalize">{formData.tipo_producto}</p>
+            </div>
+            
+            <div>
+              <span className="text-muted-foreground">Cantidad</span>
+              <p className="font-medium">{formData.cantidad}</p>
+            </div>
+            
+            <div>
+              <span className="text-muted-foreground">Precio Total</span>
+              <p className="font-medium">{formatCurrency(formData.precio_compra)} {formData.moneda}</p>
+            </div>
+            
+            <div>
+              <span className="text-muted-foreground">Fecha de Compra</span>
+              <p className="font-medium">{formData.fecha_compra ? format(formData.fecha_compra, "PP", { locale: es }) : 'No especificada'}</p>
+            </div>
+          </div>
+
+          <div className="pt-2 border-t grid grid-cols-2 gap-2 text-sm">
+            <div>
+              <span className="text-muted-foreground">Factura PDF</span>
+              <p className="font-medium">{formData.factura_pdf ? 'Adjuntado' : 'No adjuntado'}</p>
+            </div>
+            
             {formData.imagenes_producto.length > 0 && (
-              <p className="text-green-600">🖼️ {formData.imagenes_producto.length} imagen(es) adjunta(s)</p>
+              <div>
+                <span className="text-muted-foreground">Imágenes del producto</span>
+                <p className="font-medium">{formData.imagenes_producto.length} imagen(es)</p>
+              </div>
             )}
           </div>
         </div>
