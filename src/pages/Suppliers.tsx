@@ -9,20 +9,19 @@ import { toast } from "sonner";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useNavigate } from "react-router-dom";
 import { SupplierDialog } from "@/components/suppliers/SupplierDialog";
+import { PRODUCT_TYPES } from "@/lib/product-types";
 
 interface Supplier {
   id: string;
   nombre_empresa: string;
   nombre_contacto: string;
-  apellido_contacto: string | null;
   email: string;
   telefono: string | null;
   telefono_codigo_pais: string | null;
   pais: string | null;
-  ciudad: string | null;
-  direccion: string | null;
   notas: string | null;
   activo: boolean;
+  tipos_productos: string[];
   created_at: string;
 }
 
@@ -54,7 +53,6 @@ const Suppliers = () => {
       const filtered = suppliers.filter((supplier) =>
         supplier.nombre_empresa.toLowerCase().includes(searchTerm.toLowerCase()) ||
         supplier.nombre_contacto.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (supplier.apellido_contacto?.toLowerCase().includes(searchTerm.toLowerCase())) ||
         supplier.email.toLowerCase().includes(searchTerm.toLowerCase())
       );
       setFilteredSuppliers(filtered);
@@ -71,8 +69,15 @@ const Suppliers = () => {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      setSuppliers(data || []);
-      setFilteredSuppliers(data || []);
+      
+      // Cast tipos_productos from Json to string[]
+      const suppliersWithTypes = (data || []).map(supplier => ({
+        ...supplier,
+        tipos_productos: (supplier.tipos_productos as string[]) || []
+      }));
+      
+      setSuppliers(suppliersWithTypes as Supplier[]);
+      setFilteredSuppliers(suppliersWithTypes as Supplier[]);
     } catch (error) {
       console.error("Error fetching suppliers:", error);
       toast.error("Error al cargar los proveedores");
@@ -212,19 +217,30 @@ const Suppliers = () => {
                       
                       <div className="space-y-2 text-sm text-muted-foreground">
                         <p className="font-medium text-foreground">
-                          Contacto: {supplier.nombre_contacto} {supplier.apellido_contacto || ""}
+                          Contacto: {supplier.nombre_contacto}
                         </p>
                         <p>📧 {supplier.email}</p>
                         {supplier.telefono && (
                           <p>📞 {supplier.telefono_codigo_pais || "+52"} {supplier.telefono}</p>
                         )}
-                        {(supplier.pais || supplier.ciudad) && (
-                          <p>
-                            🌍 {supplier.ciudad ? `${supplier.ciudad}, ` : ""}{supplier.pais || ""}
-                          </p>
+                        {supplier.pais && (
+                          <p>🌍 {supplier.pais}</p>
                         )}
-                        {supplier.direccion && <p>📍 {supplier.direccion}</p>}
                       </div>
+
+                      {/* Badges de tipos de productos */}
+                      {supplier.tipos_productos && supplier.tipos_productos.length > 0 && (
+                        <div className="mt-3 flex flex-wrap gap-1">
+                          {supplier.tipos_productos.map((tipo) => {
+                            const productType = PRODUCT_TYPES.find((p) => p.value === tipo);
+                            return (
+                              <Badge key={tipo} variant="secondary" className="text-xs">
+                                {productType?.label || tipo}
+                              </Badge>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
                     <Button
                       variant="outline"

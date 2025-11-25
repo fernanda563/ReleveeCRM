@@ -33,6 +33,30 @@ const COUNTRY_CODES = [
   { code: "+61", country: "AU", flag: "🇦🇺" },
 ];
 
+// Mapa de validaciones de teléfono por código de país
+const PHONE_VALIDATIONS: Record<string, { maxLength: number; name: string }> = {
+  "+1": { maxLength: 10, name: "EE.UU./Canadá" },
+  "+52": { maxLength: 10, name: "México" },
+  "+44": { maxLength: 10, name: "Reino Unido" },
+  "+33": { maxLength: 9, name: "Francia" },
+  "+49": { maxLength: 11, name: "Alemania" },
+  "+34": { maxLength: 9, name: "España" },
+  "+39": { maxLength: 10, name: "Italia" },
+  "+55": { maxLength: 11, name: "Brasil" },
+  "+54": { maxLength: 10, name: "Argentina" },
+  "+56": { maxLength: 9, name: "Chile" },
+  "+57": { maxLength: 10, name: "Colombia" },
+  "+51": { maxLength: 9, name: "Perú" },
+  "+58": { maxLength: 10, name: "Venezuela" },
+  "+593": { maxLength: 9, name: "Ecuador" },
+  "+598": { maxLength: 9, name: "Uruguay" },
+  "+86": { maxLength: 11, name: "China" },
+  "+91": { maxLength: 10, name: "India" },
+  "+81": { maxLength: 10, name: "Japón" },
+  "+82": { maxLength: 11, name: "Corea del Sur" },
+  "+61": { maxLength: 9, name: "Australia" },
+};
+
 export interface PhoneInputProps {
   value?: string;
   onChange?: (value: string) => void;
@@ -81,8 +105,12 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, PhoneInputProps>(
       // Solo permitir dígitos
       const newNumber = e.target.value.replace(/\D/g, '');
       
-      // Limitar a 10 dígitos
-      if (newNumber.length <= 10) {
+      // Obtener límite de longitud según el código de país
+      const validation = PHONE_VALIDATIONS[countryCode];
+      const maxLength = validation?.maxLength || 15;
+      
+      // Limitar según el código de país
+      if (newNumber.length <= maxLength) {
         setPhoneNumber(newNumber);
         const fullNumber = newNumber ? `${countryCode}${newNumber}` : countryCode;
         onChange?.(fullNumber);
@@ -114,7 +142,7 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, PhoneInputProps>(
           disabled={disabled}
           placeholder={placeholder || "1234567890"}
           className="flex-1"
-          maxLength={10}
+          maxLength={PHONE_VALIDATIONS[countryCode]?.maxLength || 15}
         />
       </div>
     );

@@ -11,6 +11,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { PhoneInput } from "@/components/ui/phone-input";
@@ -25,20 +33,20 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { COUNTRIES } from "@/lib/countries";
+import { PRODUCT_TYPES } from "@/lib/product-types";
 
 interface Supplier {
   id: string;
   nombre_empresa: string;
   nombre_contacto: string;
-  apellido_contacto: string | null;
   email: string;
   telefono: string | null;
   telefono_codigo_pais: string | null;
   pais: string | null;
-  ciudad: string | null;
-  direccion: string | null;
   notas: string | null;
   activo: boolean;
+  tipos_productos: string[];
 }
 
 interface SupplierDialogProps {
@@ -60,15 +68,13 @@ export const SupplierDialog = ({
   const [formData, setFormData] = useState({
     nombre_empresa: "",
     nombre_contacto: "",
-    apellido_contacto: "",
     email: "",
     telefono: "",
     telefono_codigo_pais: "+52",
     pais: "",
-    ciudad: "",
-    direccion: "",
     notas: "",
     activo: true,
+    tipos_productos: [] as string[],
   });
 
   useEffect(() => {
@@ -80,29 +86,25 @@ export const SupplierDialog = ({
       setFormData({
         nombre_empresa: supplier.nombre_empresa,
         nombre_contacto: supplier.nombre_contacto,
-        apellido_contacto: supplier.apellido_contacto || "",
         email: supplier.email,
         telefono: fullPhone,
         telefono_codigo_pais: supplier.telefono_codigo_pais || "+52",
         pais: supplier.pais || "",
-        ciudad: supplier.ciudad || "",
-        direccion: supplier.direccion || "",
         notas: supplier.notas || "",
         activo: supplier.activo,
+        tipos_productos: supplier.tipos_productos || [],
       });
     } else {
       setFormData({
         nombre_empresa: "",
         nombre_contacto: "",
-        apellido_contacto: "",
         email: "",
         telefono: "",
         telefono_codigo_pais: "+52",
         pais: "",
-        ciudad: "",
-        direccion: "",
         notas: "",
         activo: true,
+        tipos_productos: [],
       });
     }
   }, [supplier, open]);
@@ -131,17 +133,13 @@ export const SupplierDialog = ({
       const supplierData = {
         nombre_empresa: formData.nombre_empresa.trim(),
         nombre_contacto: capitalizeWords(formData.nombre_contacto.trim()),
-        apellido_contacto: formData.apellido_contacto 
-          ? capitalizeWords(formData.apellido_contacto.trim())
-          : null,
         email: formData.email.toLowerCase().trim(),
         telefono: phoneNumber || null,
         telefono_codigo_pais: phoneNumber ? countryCode : null,
         pais: formData.pais.trim() || null,
-        ciudad: formData.ciudad.trim() || null,
-        direccion: formData.direccion.trim() || null,
         notas: formData.notas.trim() || null,
         activo: formData.activo,
+        tipos_productos: formData.tipos_productos,
       };
 
       if (supplier) {
@@ -231,37 +229,26 @@ export const SupplierDialog = ({
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="pais">País</Label>
-                  <Input
-                    id="pais"
-                    value={formData.pais}
-                    onChange={(e) =>
-                      setFormData({ ...formData, pais: e.target.value })
-                    }
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="ciudad">Ciudad</Label>
-                  <Input
-                    id="ciudad"
-                    value={formData.ciudad}
-                    onChange={(e) =>
-                      setFormData({ ...formData, ciudad: e.target.value })
-                    }
-                  />
-                </div>
-
                 <div className="col-span-2 space-y-2">
-                  <Label htmlFor="direccion">Dirección Completa</Label>
-                  <Input
-                    id="direccion"
-                    value={formData.direccion}
-                    onChange={(e) =>
-                      setFormData({ ...formData, direccion: e.target.value })
+                  <Label htmlFor="pais">País *</Label>
+                  <Select
+                    value={formData.pais}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, pais: value })
                     }
-                  />
+                    required
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona un país" />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-[300px]">
+                      {COUNTRIES.map((country) => (
+                        <SelectItem key={country} value={country}>
+                          {country}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
             </div>
@@ -272,8 +259,8 @@ export const SupplierDialog = ({
                 Información de Contacto
               </h3>
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="nombre_contacto">Nombre del Contacto *</Label>
+                <div className="col-span-2 space-y-2">
+                  <Label htmlFor="nombre_contacto">Nombre Completo del Contacto *</Label>
                   <Input
                     id="nombre_contacto"
                     value={formData.nombre_contacto}
@@ -287,23 +274,6 @@ export const SupplierDialog = ({
                       })
                     }
                     required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="apellido_contacto">Apellido del Contacto</Label>
-                  <Input
-                    id="apellido_contacto"
-                    value={formData.apellido_contacto}
-                    onChange={(e) =>
-                      setFormData({ ...formData, apellido_contacto: e.target.value })
-                    }
-                    onBlur={(e) =>
-                      setFormData({
-                        ...formData,
-                        apellido_contacto: capitalizeWords(e.target.value),
-                      })
-                    }
                   />
                 </div>
 
@@ -328,6 +298,44 @@ export const SupplierDialog = ({
                     defaultCountryCode="+52"
                   />
                 </div>
+              </div>
+            </div>
+
+            {/* Tipos de Productos */}
+            <div className="space-y-4">
+              <h3 className="text-sm font-semibold text-foreground">
+                Tipos de Productos que Vende
+              </h3>
+              <div className="grid grid-cols-2 gap-4">
+                {PRODUCT_TYPES.map((product) => (
+                  <div key={product.value} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={product.value}
+                      checked={formData.tipos_productos.includes(product.value)}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setFormData({
+                            ...formData,
+                            tipos_productos: [...formData.tipos_productos, product.value],
+                          });
+                        } else {
+                          setFormData({
+                            ...formData,
+                            tipos_productos: formData.tipos_productos.filter(
+                              (t) => t !== product.value
+                            ),
+                          });
+                        }
+                      }}
+                    />
+                    <Label
+                      htmlFor={product.value}
+                      className="text-sm font-normal cursor-pointer"
+                    >
+                      {product.label}
+                    </Label>
+                  </div>
+                ))}
               </div>
             </div>
 

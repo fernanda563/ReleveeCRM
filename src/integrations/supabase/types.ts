@@ -684,10 +684,7 @@ export type Database = {
       suppliers: {
         Row: {
           activo: boolean | null
-          apellido_contacto: string | null
-          ciudad: string | null
           created_at: string | null
-          direccion: string | null
           email: string
           id: string
           nombre_contacto: string
@@ -696,14 +693,12 @@ export type Database = {
           pais: string | null
           telefono: string | null
           telefono_codigo_pais: string | null
+          tipos_productos: Json | null
           updated_at: string | null
         }
         Insert: {
           activo?: boolean | null
-          apellido_contacto?: string | null
-          ciudad?: string | null
           created_at?: string | null
-          direccion?: string | null
           email: string
           id?: string
           nombre_contacto: string
@@ -712,14 +707,12 @@ export type Database = {
           pais?: string | null
           telefono?: string | null
           telefono_codigo_pais?: string | null
+          tipos_productos?: Json | null
           updated_at?: string | null
         }
         Update: {
           activo?: boolean | null
-          apellido_contacto?: string | null
-          ciudad?: string | null
           created_at?: string | null
-          direccion?: string | null
           email?: string
           id?: string
           nombre_contacto?: string
@@ -728,6 +721,7 @@ export type Database = {
           pais?: string | null
           telefono?: string | null
           telefono_codigo_pais?: string | null
+          tipos_productos?: Json | null
           updated_at?: string | null
         }
         Relationships: []
