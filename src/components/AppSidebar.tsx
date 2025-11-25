@@ -20,6 +20,7 @@ import {
   CheckCircle,
   PackageCheck,
   Truck,
+  Building2,
 } from "lucide-react";
 import { useUserRole } from "@/hooks/useUserRole";
 import {
@@ -85,6 +86,7 @@ const menuSections = [
     label: "Administración",
     items: [
       { title: "Gestión de Usuarios", url: "/users", icon: Shield, adminOnly: true },
+      { title: "Gestión de Proveedores", url: "/suppliers", icon: Building2, adminOnly: true },
     ],
   },
 ];
