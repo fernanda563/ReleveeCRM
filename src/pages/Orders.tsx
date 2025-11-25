@@ -332,7 +332,6 @@ const Orders = () => {
                   setIsInternalOrderDialogOpen(true);
                 }
               }}
-              size="lg"
             >
               <Plus className="h-4 w-4 mr-2" />
               {activeTab === "external" ? "Nueva Orden de Cliente" : "Nueva Compra a Proveedor"}
