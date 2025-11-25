@@ -51,8 +51,8 @@ export const OrderTypeSelectionDialog = ({
             }}
           >
             <div className="flex flex-col items-center text-center space-y-4">
-              <div className="h-16 w-16 rounded-full bg-secondary/10 flex items-center justify-center">
-                <Package className="h-8 w-8 text-secondary" />
+              <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
+                <Package className="h-8 w-8 text-primary" />
               </div>
               <div>
                 <h3 className="font-semibold text-lg mb-2">Compra a Proveedor</h3>
