@@ -86,6 +86,12 @@ const Orders = () => {
   const [autoSendToSign, setAutoSendToSign] = useState(false);
   const [isOrderTypeDialogOpen, setIsOrderTypeDialogOpen] = useState(false);
   const [isInternalOrderDialogOpen, setIsInternalOrderDialogOpen] = useState(false);
+  const [internalOrders, setInternalOrders] = useState<any[]>([]);
+  const [filteredInternalOrders, setFilteredInternalOrders] = useState<any[]>([]);
+  const [loadingInternal, setLoadingInternal] = useState(true);
+  const [internalSearchTerm, setInternalSearchTerm] = useState("");
+  const [internalFilterTipo, setInternalFilterTipo] = useState("todos");
+  const [internalFilterEstatus, setInternalFilterEstatus] = useState("todos");
 
   // Stats
   const [stats, setStats] = useState({
@@ -104,8 +110,12 @@ const Orders = () => {
 
   useEffect(() => {
     fetchOrders();
-    fetchInternalOrdersStats();
+    fetchInternalOrders();
   }, []);
+  
+  useEffect(() => {
+    applyInternalFilters();
+  }, [internalOrders, internalSearchTerm, internalFilterTipo, internalFilterEstatus]);
 
   useEffect(() => {
     let filtered = [...orders];
@@ -200,28 +210,53 @@ const Orders = () => {
     });
   };
 
-  const fetchInternalOrdersStats = async () => {
+  const fetchInternalOrders = async () => {
     try {
+      setLoadingInternal(true);
       const { data, error } = await supabase
         .from('purchase_orders_internal')
-        .select('*');
+        .select('*')
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
 
-      const total = data?.length || 0;
-      const gasto = data?.reduce((sum, order) => sum + Number(order.precio_compra), 0) || 0;
-      const enTransito = data?.filter(o => o.estatus === 'en_transito').length || 0;
-      const recibidas = data?.filter(o => o.estatus === 'recibido').length || 0;
+      setInternalOrders(data || []);
+      
+      // Calculate stats
+      const stats = {
+        totalCompras: data?.length || 0,
+        gastoTotal: data?.reduce((sum, order) => sum + (order.precio_compra || 0), 0) || 0,
+        enTransito: data?.filter(order => order.estatus === 'en_transito').length || 0,
+        recibidas: data?.filter(order => order.estatus === 'recibido').length || 0,
+      };
 
-      setInternalStats({
-        totalCompras: total,
-        gastoTotal: gasto,
-        enTransito,
-        recibidas,
-      });
+      setInternalStats(stats);
     } catch (error) {
-      console.error('Error fetching internal stats:', error);
+      console.error('Error fetching internal orders:', error);
+      toast.error("Error al cargar órdenes internas");
+    } finally {
+      setLoadingInternal(false);
     }
+  };
+  
+  const applyInternalFilters = () => {
+    let filtered = internalOrders;
+
+    if (internalSearchTerm) {
+      filtered = filtered.filter(order =>
+        order.proveedor_nombre.toLowerCase().includes(internalSearchTerm.toLowerCase())
+      );
+    }
+
+    if (internalFilterTipo !== "todos") {
+      filtered = filtered.filter(order => order.tipo_producto === internalFilterTipo);
+    }
+
+    if (internalFilterEstatus !== "todos") {
+      filtered = filtered.filter(order => order.estatus === internalFilterEstatus);
+    }
+
+    setFilteredInternalOrders(filtered);
   };
 
   const handleOrderAction = (order?: Order) => {
@@ -260,11 +295,21 @@ const Orders = () => {
     <div className="min-h-full bg-background">
       <main className="container mx-auto px-6 py-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">Órdenes de Compra</h1>
-          <p className="text-muted-foreground">
-            Gestión completa de pedidos y producción
-          </p>
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground mb-2">Órdenes de Compra</h1>
+            <p className="text-muted-foreground">
+              Gestión completa de pedidos y producción
+            </p>
+          </div>
+          <Button
+            onClick={handleNewOrder}
+            className="bg-accent hover:bg-accent/90 text-accent-foreground"
+            size="lg"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Nueva Orden
+          </Button>
         </div>
 
         {/* Tabs */}
@@ -334,27 +379,18 @@ const Orders = () => {
           </Card>
         </div>
 
-        {/* Search and Actions */}
+        {/* Search and Filters */}
         <Card className="mb-6">
           <CardContent className="pt-6">
             <div className="space-y-4">
-              <div className="flex items-center gap-4">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Buscar por cliente o número de orden..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-                <Button
-                  onClick={handleNewOrder}
-                  className="bg-accent hover:bg-accent/90 text-accent-foreground"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Nueva Orden
-                </Button>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar por cliente o número de orden..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
               </div>
 
               {/* Date Range Filter */}
@@ -514,7 +550,70 @@ const Orders = () => {
             </div>
 
             {/* Internal Orders List */}
-            <InternalOrderList onRefresh={fetchInternalOrdersStats} />
+            {/* Search and Filters */}
+            <Card className="mb-6">
+              <CardContent className="pt-6">
+                <div className="flex flex-col md:flex-row gap-4">
+                  <div className="flex-1 relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Buscar por proveedor..."
+                      value={internalSearchTerm}
+                      onChange={(e) => setInternalSearchTerm(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+
+                  <select
+                    value={internalFilterTipo}
+                    onChange={(e) => setInternalFilterTipo(e.target.value)}
+                    className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <option value="todos">Todos los productos</option>
+                    <option value="diamante">Diamante</option>
+                    <option value="gema">Gema</option>
+                    <option value="anillo">Anillo</option>
+                    <option value="collar">Collar</option>
+                    <option value="arete">Arete</option>
+                    <option value="dije">Dije</option>
+                    <option value="cadena">Cadena</option>
+                    <option value="componente">Componente</option>
+                    <option value="otro">Otro</option>
+                  </select>
+
+                  <select
+                    value={internalFilterEstatus}
+                    onChange={(e) => setInternalFilterEstatus(e.target.value)}
+                    className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <option value="todos">Todos los estatus</option>
+                    <option value="pendiente">Pendiente</option>
+                    <option value="en_transito">En Tránsito</option>
+                    <option value="recibido">Recibido</option>
+                    <option value="cancelado">Cancelado</option>
+                  </select>
+
+                  {(internalSearchTerm || internalFilterTipo !== "todos" || internalFilterEstatus !== "todos") && (
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setInternalSearchTerm("");
+                        setInternalFilterTipo("todos");
+                        setInternalFilterEstatus("todos");
+                      }}
+                    >
+                      Limpiar
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            <InternalOrderList 
+              orders={filteredInternalOrders}
+              loading={loadingInternal}
+              onRefresh={fetchInternalOrders} 
+            />
           </TabsContent>
         </Tabs>
       </main>
@@ -548,7 +647,7 @@ const Orders = () => {
         open={isInternalOrderDialogOpen}
         onOpenChange={setIsInternalOrderDialogOpen}
         onSuccess={() => {
-          fetchInternalOrdersStats();
+          fetchInternalOrders();
           toast.success("Orden interna creada exitosamente");
         }}
       />
