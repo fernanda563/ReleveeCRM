@@ -43,10 +43,10 @@ const Suppliers = () => {
   }, [isAdmin, roleLoading, navigate]);
 
   useEffect(() => {
-    if (isAdmin()) {
+    if (isAdmin() && !roleLoading) {
       fetchSuppliers();
     }
-  }, [isAdmin]);
+  }, [isAdmin, roleLoading]);
 
   useEffect(() => {
     if (searchTerm) {
@@ -63,12 +63,16 @@ const Suppliers = () => {
 
   const fetchSuppliers = async () => {
     try {
+      setLoading(true);
       const { data, error } = await supabase
         .from("suppliers")
         .select("*")
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase error:", error);
+        throw error;
+      }
       
       // Cast tipos_productos from Json to string[]
       const suppliersWithTypes = (data || []).map(supplier => ({
@@ -78,9 +82,12 @@ const Suppliers = () => {
       
       setSuppliers(suppliersWithTypes as Supplier[]);
       setFilteredSuppliers(suppliersWithTypes as Supplier[]);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching suppliers:", error);
-      toast.error("Error al cargar los proveedores");
+      // Solo mostrar toast si hay un error real, no si la tabla está vacía
+      if (error?.message && !error?.message.includes("Failed to fetch")) {
+        toast.error("Error al cargar los proveedores");
+      }
     } finally {
       setLoading(false);
     }
