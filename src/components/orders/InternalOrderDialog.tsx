@@ -7,13 +7,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { CalendarIcon, ChevronLeft, ChevronRight, FileText, ImageIcon, Loader2, Upload, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { ProductType, Currency, InternalPaymentStatus, InternalOrderFormData, Supplier } from "@/types/internal-orders";
+import { ProductType, Currency, InternalPaymentStatus, InternalOrderFormData, Supplier, CSVDiamondRow } from "@/types/internal-orders";
 import { cn } from "@/lib/utils";
+import { parseCSV } from "@/lib/csv-parser";
 
 interface InternalOrderDialogProps {
   open: boolean;
@@ -65,6 +68,8 @@ export const InternalOrderDialog = ({
     moneda: "MXN",
     estatus_pago: "pendiente",
     notas_adicionales: "",
+    carga_multiple: false,
+    csv_data: [],
   });
 
   const updateFormData = (field: keyof InternalOrderFormData, value: any) => {
@@ -136,6 +141,14 @@ export const InternalOrderDialog = ({
   };
 
   const validateStep2 = () => {
+    if (formData.carga_multiple) {
+      if (formData.csv_data.length === 0) {
+        toast.error("Debes cargar un archivo CSV con diamantes");
+        return false;
+      }
+      return true;
+    }
+    
     if (!formData.tipo_producto) {
       toast.error("Selecciona el tipo de producto");
       return false;
@@ -144,6 +157,11 @@ export const InternalOrderDialog = ({
   };
 
   const validateStep3 = () => {
+    // Skip validation for CSV mode
+    if (formData.carga_multiple) {
+      return true;
+    }
+    
     if (formData.tipo_producto === 'diamante') {
       if (!formData.quilataje.trim() || !formData.color || !formData.claridad || 
           !formData.corte || !formData.forma || !formData.numero_reporte || !formData.certificado) {
@@ -271,96 +289,252 @@ export const InternalOrderDialog = ({
     return urls;
   };
 
+  const uploadPDFOnly = async (orderId: string): Promise<string> => {
+    if (!formData.factura_pdf) throw new Error("No PDF file");
+    
+    const facturaPath = `${orderId}/facturas/${Date.now()}_${Math.random().toString(36).substring(7)}.pdf`;
+    const { error: facturaError } = await supabase.storage
+      .from('purchase-order-documents')
+      .upload(facturaPath, formData.factura_pdf);
+
+    if (facturaError) throw facturaError;
+
+    const { data: facturaData } = supabase.storage
+      .from('purchase-order-documents')
+      .getPublicUrl(facturaPath);
+
+    return facturaData.publicUrl;
+  };
+
   const handleSubmit = async () => {
     setLoading(true);
 
     try {
-      // Create temporary ID for file uploads
-      const tempId = crypto.randomUUID();
-      const { factura, imagenes } = await uploadFiles(tempId);
+      if (formData.carga_multiple && formData.csv_data.length > 0) {
+        // Multi-order creation from CSV
+        const tempId = crypto.randomUUID();
+        
+        // Upload PDF once (shared by all orders)
+        const facturaPdfUrl = await uploadPDFOnly(tempId);
+        
+        let successCount = 0;
+        let failedCount = 0;
+        const errors: string[] = [];
 
-      // Prepare data for insertion
-    const insertData: any = {
-      tipo_producto: formData.tipo_producto,
-      supplier_id: formData.supplier_id,
-      proveedor_nombre: formData.proveedor_nombre,
-      proveedor_contacto: formData.proveedor_contacto || null,
-      numero_factura: formData.numero_factura,
-        fecha_compra: format(formData.fecha_compra!, 'yyyy-MM-dd'),
-        fecha_entrega_esperada: formData.fecha_entrega_esperada ? format(formData.fecha_entrega_esperada, 'yyyy-MM-dd') : null,
-        cantidad: parseInt(formData.cantidad),
-        descripcion: formData.descripcion || null,
-        precio_compra: parseFloat(formData.precio_compra),
-        moneda: formData.moneda,
-        estatus_pago: formData.estatus_pago,
-        notas_adicionales: formData.notas_adicionales || null,
-        factura_pdf_url: factura,
-        imagenes_producto: imagenes,
-        estatus: 'pendiente',
-      };
+        // Create an order for each CSV row
+        for (let i = 0; i < formData.csv_data.length; i++) {
+          const diamond = formData.csv_data[i];
+          
+          try {
+            // Download and upload diamond image
+            let imageUrl = '';
+            if (diamond.image_link) {
+              try {
+                const { data: imgData, error: imgError } = await supabase.functions.invoke(
+                  'download-diamond-image',
+                  {
+                    body: { 
+                      imageUrl: diamond.image_link,
+                      orderId: tempId
+                    }
+                  }
+                );
+                
+                if (imgError) throw imgError;
+                if (imgData?.url) {
+                  imageUrl = imgData.url;
+                }
+              } catch (imgErr) {
+                console.error(`Error downloading image for diamond ${i + 1}:`, imgErr);
+                // Continue without image if download fails
+              }
+            }
 
-      // Add diamond-specific fields
-      if (formData.tipo_producto === 'diamante') {
-        insertData.quilataje = parseFloat(formData.quilataje);
-        insertData.color = formData.color;
-        insertData.claridad = formData.claridad;
-        insertData.corte = formData.corte;
-        insertData.forma = formData.forma;
-        insertData.numero_reporte = formData.numero_reporte;
-        insertData.certificado = formData.certificado;
-      } else if (formData.tipo_producto === 'gema') {
-        insertData.descripcion = `Tipo: ${formData.tipo_gema}. ${formData.descripcion || ''}`.trim();
-        if (formData.gema_quilataje) insertData.quilataje = parseFloat(formData.gema_quilataje);
-        if (formData.gema_color) insertData.color = formData.gema_color;
-        if (formData.gema_claridad) insertData.claridad = formData.gema_claridad;
-        if (formData.gema_forma) insertData.forma = formData.gema_forma;
-        if (formData.gema_certificado) insertData.certificado = formData.gema_certificado;
+            // Create order for this diamond
+            const insertData = {
+              tipo_producto: 'diamante' as ProductType,
+              supplier_id: formData.supplier_id,
+              proveedor_nombre: formData.proveedor_nombre,
+              proveedor_contacto: formData.proveedor_contacto || null,
+              numero_factura: formData.numero_factura,
+              fecha_compra: format(formData.fecha_compra!, 'yyyy-MM-dd'),
+              fecha_entrega_esperada: formData.fecha_entrega_esperada 
+                ? format(formData.fecha_entrega_esperada, 'yyyy-MM-dd') 
+                : null,
+              cantidad: 1,
+              descripcion: formData.descripcion || null,
+              precio_compra: parseFloat(formData.precio_compra),
+              moneda: formData.moneda,
+              estatus_pago: formData.estatus_pago,
+              notas_adicionales: formData.notas_adicionales || null,
+              factura_pdf_url: facturaPdfUrl,
+              imagenes_producto: imageUrl ? [imageUrl] : [],
+              estatus: 'pendiente' as const,
+              
+              // Diamond-specific fields from CSV
+              numero_stock: diamond.stock_number,
+              quilataje: parseFloat(diamond.carats) || null,
+              color: diamond.color,
+              claridad: diamond.clarity,
+              corte: diamond.cut,
+              forma: diamond.shape,
+              pulido: diamond.polish,
+              simetria: diamond.symmetry,
+              certificado: diamond.lab,
+              medidas: diamond.measurements,
+              numero_reporte: diamond.report_number,
+            };
+
+            const { error } = await supabase
+              .from('purchase_orders_internal')
+              .insert([insertData]);
+
+            if (error) throw error;
+            successCount++;
+            
+          } catch (err: any) {
+            console.error(`Error creating order for diamond ${i + 1}:`, err);
+            failedCount++;
+            errors.push(`Diamante ${i + 1} (${diamond.stock_number}): ${err.message}`);
+          }
+        }
+
+        // Show results
+        if (successCount > 0) {
+          toast.success(`${successCount} orden(es) creada(s) exitosamente`);
+        }
+        if (failedCount > 0) {
+          toast.error(`${failedCount} orden(es) fallaron. Ver consola para detalles.`);
+          console.error('Failed orders:', errors);
+        }
+
+        onSuccess();
+        onOpenChange(false);
+        setCurrentStep(1);
+        setFormData({
+          supplier_id: "",
+          proveedor_nombre: "",
+          proveedor_contacto: "",
+          numero_factura: "",
+          fecha_compra: undefined,
+          fecha_entrega_esperada: undefined,
+          tipo_producto: "",
+          cantidad: "1",
+          descripcion: "",
+          quilataje: "",
+          color: "",
+          claridad: "",
+          corte: "",
+          forma: "",
+          numero_reporte: "",
+          certificado: "",
+          tipo_gema: "",
+          gema_quilataje: "",
+          gema_color: "",
+          gema_claridad: "",
+          gema_forma: "",
+          gema_certificado: "",
+          material: "",
+          talla: "",
+          dimensiones: "",
+          especificaciones: "",
+          factura_pdf: null,
+          imagenes_producto: [],
+          precio_compra: "",
+          moneda: "MXN",
+          estatus_pago: "pendiente",
+          notas_adicionales: "",
+          carga_multiple: false,
+          csv_data: [],
+        });
+      } else {
+        // Single order creation (original logic)
+        const tempId = crypto.randomUUID();
+        const { factura, imagenes } = await uploadFiles(tempId);
+
+        const insertData: any = {
+          tipo_producto: formData.tipo_producto,
+          supplier_id: formData.supplier_id,
+          proveedor_nombre: formData.proveedor_nombre,
+          proveedor_contacto: formData.proveedor_contacto || null,
+          numero_factura: formData.numero_factura,
+          fecha_compra: format(formData.fecha_compra!, 'yyyy-MM-dd'),
+          fecha_entrega_esperada: formData.fecha_entrega_esperada ? format(formData.fecha_entrega_esperada, 'yyyy-MM-dd') : null,
+          cantidad: parseInt(formData.cantidad),
+          descripcion: formData.descripcion || null,
+          precio_compra: parseFloat(formData.precio_compra),
+          moneda: formData.moneda,
+          estatus_pago: formData.estatus_pago,
+          notas_adicionales: formData.notas_adicionales || null,
+          factura_pdf_url: factura,
+          imagenes_producto: imagenes,
+          estatus: 'pendiente' as const,
+        };
+
+        if (formData.tipo_producto === 'diamante') {
+          insertData.quilataje = parseFloat(formData.quilataje);
+          insertData.color = formData.color;
+          insertData.claridad = formData.claridad;
+          insertData.corte = formData.corte;
+          insertData.forma = formData.forma;
+          insertData.numero_reporte = formData.numero_reporte;
+          insertData.certificado = formData.certificado;
+        } else if (formData.tipo_producto === 'gema') {
+          insertData.descripcion = `Tipo: ${formData.tipo_gema}. ${formData.descripcion || ''}`.trim();
+          if (formData.gema_quilataje) insertData.quilataje = parseFloat(formData.gema_quilataje);
+          if (formData.gema_color) insertData.color = formData.gema_color;
+          if (formData.gema_claridad) insertData.claridad = formData.gema_claridad;
+          if (formData.gema_forma) insertData.forma = formData.gema_forma;
+          if (formData.gema_certificado) insertData.certificado = formData.gema_certificado;
+        }
+
+        const { error } = await supabase
+          .from('purchase_orders_internal')
+          .insert([insertData]);
+
+        if (error) throw error;
+
+        toast.success("Orden interna creada exitosamente");
+        onSuccess();
+        onOpenChange(false);
+        setCurrentStep(1);
+        setFormData({
+          supplier_id: "",
+          proveedor_nombre: "",
+          proveedor_contacto: "",
+          numero_factura: "",
+          fecha_compra: undefined,
+          fecha_entrega_esperada: undefined,
+          tipo_producto: "",
+          cantidad: "1",
+          descripcion: "",
+          quilataje: "",
+          color: "",
+          claridad: "",
+          corte: "",
+          forma: "",
+          numero_reporte: "",
+          certificado: "",
+          tipo_gema: "",
+          gema_quilataje: "",
+          gema_color: "",
+          gema_claridad: "",
+          gema_forma: "",
+          gema_certificado: "",
+          material: "",
+          talla: "",
+          dimensiones: "",
+          especificaciones: "",
+          factura_pdf: null,
+          imagenes_producto: [],
+          precio_compra: "",
+          moneda: "MXN",
+          estatus_pago: "pendiente",
+          notas_adicionales: "",
+          carga_multiple: false,
+          csv_data: [],
+        });
       }
-
-      const { error } = await supabase
-        .from('purchase_orders_internal')
-        .insert([insertData]);
-
-      if (error) throw error;
-
-      toast.success("Orden interna creada exitosamente");
-      onSuccess();
-      onOpenChange(false);
-      setCurrentStep(1);
-      setFormData({
-        supplier_id: "",
-        proveedor_nombre: "",
-        proveedor_contacto: "",
-        numero_factura: "",
-        fecha_compra: undefined,
-        fecha_entrega_esperada: undefined,
-        tipo_producto: "",
-        cantidad: "1",
-        descripcion: "",
-        quilataje: "",
-        color: "",
-        claridad: "",
-        corte: "",
-        forma: "",
-        numero_reporte: "",
-        certificado: "",
-        tipo_gema: "",
-        gema_quilataje: "",
-        gema_color: "",
-        gema_claridad: "",
-        gema_forma: "",
-        gema_certificado: "",
-        material: "",
-        talla: "",
-        dimensiones: "",
-        especificaciones: "",
-        factura_pdf: null,
-        imagenes_producto: [],
-        precio_compra: "",
-        moneda: "MXN",
-        estatus_pago: "pendiente",
-        notas_adicionales: "",
-      });
     } catch (error: any) {
       console.error('Error creating internal order:', error);
       toast.error(error.message || "Error al crear la orden interna");
@@ -393,6 +567,35 @@ export const InternalOrderDialog = ({
 
   const removeImage = (index: number) => {
     updateFormData('imagenes_producto', formData.imagenes_producto.filter((_, i) => i !== index));
+  };
+
+  const handleCSVUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("El archivo CSV no puede exceder 5MB");
+      return;
+    }
+
+    if (!file.name.endsWith('.csv')) {
+      toast.error("Solo se permiten archivos CSV");
+      return;
+    }
+
+    try {
+      const csvData = await parseCSV(file);
+      if (csvData.length === 0) {
+        toast.error("El archivo CSV está vacío");
+        return;
+      }
+      updateFormData('csv_data', csvData);
+      updateFormData('tipo_producto', 'diamante');
+      toast.success(`${csvData.length} diamantes cargados exitosamente`);
+    } catch (error: any) {
+      console.error('Error parsing CSV:', error);
+      toast.error(error.message || "Error al procesar el archivo CSV");
+    }
   };
 
   const renderStep1 = () => (
@@ -485,40 +688,150 @@ export const InternalOrderDialog = ({
   const renderStep2 = () => (
     <div className="space-y-4">
       <div>
-        <Label htmlFor="tipo_producto">Tipo de Producto *</Label>
-        <Select value={formData.tipo_producto} onValueChange={(value) => updateFormData('tipo_producto', value as ProductType)}>
-          <SelectTrigger>
-            <SelectValue placeholder="Seleccionar tipo" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="diamante">Diamante</SelectItem>
-            <SelectItem value="gema">Gema</SelectItem>
-            <SelectItem value="anillo">Anillo</SelectItem>
-            <SelectItem value="collar">Collar</SelectItem>
-            <SelectItem value="arete">Arete</SelectItem>
-            <SelectItem value="dije">Dije</SelectItem>
-            <SelectItem value="cadena">Cadena</SelectItem>
-            <SelectItem value="componente">Componente</SelectItem>
-            <SelectItem value="otro">Otro</SelectItem>
-          </SelectContent>
-        </Select>
+        <Label className="mb-3 block">Modo de Carga *</Label>
+        <RadioGroup 
+          value={formData.carga_multiple ? "multiple" : "single"} 
+          onValueChange={(value) => {
+            updateFormData('carga_multiple', value === "multiple");
+            if (value === "single") {
+              updateFormData('csv_data', []);
+            }
+          }}
+        >
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="single" id="single" />
+            <Label htmlFor="single" className="font-normal cursor-pointer">Un producto</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="multiple" id="multiple" />
+            <Label htmlFor="multiple" className="font-normal cursor-pointer">Múltiples productos (CSV)</Label>
+          </div>
+        </RadioGroup>
       </div>
 
-      <div>
-        <Label htmlFor="descripcion">Descripción General</Label>
-        <Textarea
-          id="descripcion"
-          value={formData.descripcion}
-          onChange={(e) => updateFormData('descripcion', e.target.value)}
-          placeholder="Descripción del producto"
-          maxLength={500}
-          rows={4}
-        />
-      </div>
+      {formData.carga_multiple ? (
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label>Subir archivo CSV de diamantes *</Label>
+            <div className="border-2 border-dashed rounded-lg p-6 text-center">
+              <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+              <div className="space-y-2">
+                <Input
+                  type="file"
+                  accept=".csv"
+                  onChange={handleCSVUpload}
+                  className="hidden"
+                  id="csv-upload"
+                />
+                <Label htmlFor="csv-upload" className="cursor-pointer">
+                  <div className="text-sm">
+                    Arrastra tu archivo CSV aquí o{" "}
+                    <span className="text-primary hover:underline">haz clic para seleccionar</span>
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    Máximo 5MB. Debe contener: Stock#, Shape, Cts, Color, Grade, Cut, Pol, Sym, Lab, Measurements, Report No, Image Link
+                  </div>
+                </Label>
+              </div>
+              {formData.csv_data.length > 0 && (
+                <div className="mt-4 p-3 bg-primary/10 rounded-md">
+                  <p className="text-sm font-medium">
+                    ✓ {formData.csv_data.length} diamante(s) cargado(s)
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      ) : (
+        <>
+          <div>
+            <Label htmlFor="tipo_producto">Tipo de Producto *</Label>
+            <Select value={formData.tipo_producto} onValueChange={(value) => updateFormData('tipo_producto', value as ProductType)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Seleccionar tipo" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="diamante">Diamante</SelectItem>
+                <SelectItem value="gema">Gema</SelectItem>
+                <SelectItem value="anillo">Anillo</SelectItem>
+                <SelectItem value="collar">Collar</SelectItem>
+                <SelectItem value="arete">Arete</SelectItem>
+                <SelectItem value="dije">Dije</SelectItem>
+                <SelectItem value="cadena">Cadena</SelectItem>
+                <SelectItem value="componente">Componente</SelectItem>
+                <SelectItem value="otro">Otro</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label htmlFor="descripcion">Descripción General</Label>
+            <Textarea
+              id="descripcion"
+              value={formData.descripcion}
+              onChange={(e) => updateFormData('descripcion', e.target.value)}
+              placeholder="Descripción del producto"
+              maxLength={500}
+              rows={4}
+            />
+          </div>
+        </>
+      )}
     </div>
   );
 
   const renderStep3 = () => {
+    // If CSV mode, show table
+    if (formData.carga_multiple && formData.csv_data.length > 0) {
+      return (
+        <div className="space-y-4">
+          <div className="rounded-md border">
+            <div className="max-h-[400px] overflow-y-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Stock#</TableHead>
+                    <TableHead>Forma</TableHead>
+                    <TableHead>Quilates</TableHead>
+                    <TableHead>Color</TableHead>
+                    <TableHead>Claridad</TableHead>
+                    <TableHead>Corte</TableHead>
+                    <TableHead>Pulido</TableHead>
+                    <TableHead>Simetría</TableHead>
+                    <TableHead>Lab</TableHead>
+                    <TableHead>Medidas</TableHead>
+                    <TableHead>No. Reporte</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {formData.csv_data.map((diamond, index) => (
+                    <TableRow key={index}>
+                      <TableCell className="font-medium">{diamond.stock_number}</TableCell>
+                      <TableCell>{diamond.shape}</TableCell>
+                      <TableCell>{diamond.carats}</TableCell>
+                      <TableCell>{diamond.color}</TableCell>
+                      <TableCell>{diamond.clarity}</TableCell>
+                      <TableCell>{diamond.cut}</TableCell>
+                      <TableCell>{diamond.polish}</TableCell>
+                      <TableCell>{diamond.symmetry}</TableCell>
+                      <TableCell>{diamond.lab}</TableCell>
+                      <TableCell>{diamond.measurements}</TableCell>
+                      <TableCell>{diamond.report_number}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
+          <div className="text-sm text-muted-foreground text-center">
+            Total de diamantes: <span className="font-semibold">{formData.csv_data.length}</span>
+          </div>
+        </div>
+      );
+    }
+
+    // Single product mode
     if (formData.tipo_producto === 'diamante') {
       return (
         <div className="space-y-4">
@@ -797,52 +1110,62 @@ export const InternalOrderDialog = ({
         </div>
       </div>
 
-      <div className="space-y-2">
-        <Label>Imágenes del Producto (Opcional)</Label>
-        <div className="border-2 border-dashed rounded-lg p-6 text-center">
-          <ImageIcon className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-          <div className="space-y-2">
-            <Input
-              type="file"
-              accept=".jpg,.jpeg,.png,.webp"
-              multiple
-              onChange={(e) => handleFileChange(e, 'images')}
-              className="hidden"
-              id="images-upload"
-            />
-            <Label htmlFor="images-upload" className="cursor-pointer">
-              <div className="text-sm">
-                Arrastra tus imágenes aquí o{" "}
-                <span className="text-primary hover:underline">haz clic para seleccionar</span>
-              </div>
-              <div className="text-xs text-muted-foreground mt-1">
-                JPG, PNG o WEBP. Máximo 5 imágenes de 10MB cada una
-              </div>
-            </Label>
-          </div>
-          {formData.imagenes_producto.length > 0 && (
-            <div className="mt-4 grid grid-cols-3 gap-2">
-              {formData.imagenes_producto.map((img, idx) => (
-                <div key={idx} className="relative group">
-                  <img
-                    src={URL.createObjectURL(img)}
-                    alt={`Preview ${idx + 1}`}
-                    className="w-full h-24 object-cover rounded"
-                  />
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                    onClick={() => removeImage(idx)}
-                  >
-                    <X className="h-3 w-3" />
-                  </Button>
+      {!formData.carga_multiple && (
+        <div className="space-y-2">
+          <Label>Imágenes del Producto (Opcional)</Label>
+          <div className="border-2 border-dashed rounded-lg p-6 text-center">
+            <ImageIcon className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+            <div className="space-y-2">
+              <Input
+                type="file"
+                accept=".jpg,.jpeg,.png,.webp"
+                multiple
+                onChange={(e) => handleFileChange(e, 'images')}
+                className="hidden"
+                id="images-upload"
+              />
+              <Label htmlFor="images-upload" className="cursor-pointer">
+                <div className="text-sm">
+                  Arrastra tus imágenes aquí o{" "}
+                  <span className="text-primary hover:underline">haz clic para seleccionar</span>
                 </div>
-              ))}
+                <div className="text-xs text-muted-foreground mt-1">
+                  JPG, PNG o WEBP. Máximo 5 imágenes de 10MB cada una
+                </div>
+              </Label>
             </div>
-          )}
+            {formData.imagenes_producto.length > 0 && (
+              <div className="mt-4 grid grid-cols-3 gap-2">
+                {formData.imagenes_producto.map((img, idx) => (
+                  <div key={idx} className="relative group">
+                    <img
+                      src={URL.createObjectURL(img)}
+                      alt={`Preview ${idx + 1}`}
+                      className="w-full h-24 object-cover rounded"
+                    />
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={() => removeImage(idx)}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      )}
+
+      {formData.carga_multiple && (
+        <div className="p-4 bg-muted/50 rounded-lg">
+          <p className="text-sm text-muted-foreground">
+            Las imágenes de los productos se obtendrán automáticamente desde el CSV
+          </p>
+        </div>
+      )}
     </div>
   );
 
@@ -915,7 +1238,9 @@ export const InternalOrderDialog = ({
         </div>
 
         <div className="border rounded-lg p-4 bg-muted/50 space-y-3">
-          <h4 className="font-semibold text-base">Resumen de la Orden</h4>
+          <h4 className="font-semibold text-base">
+            {formData.carga_multiple ? "Resumen de Carga Múltiple" : "Resumen de la Orden"}
+          </h4>
           
           <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
             <div>
@@ -928,15 +1253,31 @@ export const InternalOrderDialog = ({
               <p className="font-medium">{formData.numero_factura}</p>
             </div>
             
-            <div>
-              <span className="text-muted-foreground">Producto</span>
-              <p className="font-medium capitalize">{formData.tipo_producto}</p>
-            </div>
-            
-            <div>
-              <span className="text-muted-foreground">Precio</span>
-              <p className="font-medium">{formatCurrency(formData.precio_compra)} {formData.moneda}</p>
-            </div>
+            {formData.carga_multiple ? (
+              <>
+                <div>
+                  <span className="text-muted-foreground">Total de Diamantes</span>
+                  <p className="font-medium text-primary">{formData.csv_data.length}</p>
+                </div>
+                
+                <div>
+                  <span className="text-muted-foreground">Precio por Unidad</span>
+                  <p className="font-medium">{formatCurrency(formData.precio_compra)} {formData.moneda}</p>
+                </div>
+              </>
+            ) : (
+              <>
+                <div>
+                  <span className="text-muted-foreground">Producto</span>
+                  <p className="font-medium capitalize">{formData.tipo_producto}</p>
+                </div>
+                
+                <div>
+                  <span className="text-muted-foreground">Precio</span>
+                  <p className="font-medium">{formatCurrency(formData.precio_compra)} {formData.moneda}</p>
+                </div>
+              </>
+            )}
             
             <div>
               <span className="text-muted-foreground">Fecha de Compra</span>
@@ -944,16 +1285,32 @@ export const InternalOrderDialog = ({
             </div>
           </div>
 
+          {formData.carga_multiple && (
+            <div className="pt-2 border-t">
+              <p className="text-xs text-muted-foreground">
+                Se crearán <span className="font-semibold text-foreground">{formData.csv_data.length}</span> órdenes individuales, 
+                cada una con un precio de <span className="font-semibold text-foreground">{formatCurrency(formData.precio_compra)} {formData.moneda}</span>
+              </p>
+            </div>
+          )}
+
           <div className="pt-2 border-t grid grid-cols-2 gap-2 text-sm">
             <div>
               <span className="text-muted-foreground">Factura PDF</span>
               <p className="font-medium">{formData.factura_pdf ? 'Adjuntado' : 'No adjuntado'}</p>
             </div>
             
-            {formData.imagenes_producto.length > 0 && (
+            {!formData.carga_multiple && formData.imagenes_producto.length > 0 && (
               <div>
                 <span className="text-muted-foreground">Imágenes del producto</span>
                 <p className="font-medium">{formData.imagenes_producto.length} imagen(es)</p>
+              </div>
+            )}
+            
+            {formData.carga_multiple && (
+              <div>
+                <span className="text-muted-foreground">Imágenes</span>
+                <p className="font-medium">Desde CSV</p>
               </div>
             )}
           </div>

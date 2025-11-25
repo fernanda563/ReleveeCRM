@@ -57,6 +57,10 @@ export interface InternalOrder {
   corte?: string;
   forma?: string;
   certificado?: string;
+  numero_stock?: string;
+  pulido?: string;
+  simetria?: string;
+  medidas?: string;
   
   // Adicional
   cantidad: number;
@@ -126,6 +130,25 @@ export interface InternalOrderFormData {
   moneda: Currency;
   estatus_pago: InternalPaymentStatus;
   notas_adicionales: string;
+  
+  // CSV Upload
+  carga_multiple: boolean;
+  csv_data: CSVDiamondRow[];
+}
+
+export interface CSVDiamondRow {
+  stock_number: string;
+  shape: string;
+  carats: string;
+  color: string;
+  clarity: string;
+  cut: string;
+  polish: string;
+  symmetry: string;
+  lab: string;
+  measurements: string;
+  report_number: string;
+  image_link: string;
 }
 
 export interface InternalOrderStats {
