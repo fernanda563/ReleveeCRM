@@ -88,16 +88,18 @@ export const InternalOrderCard = ({
     <Card>
       <CardHeader>
         <div className="flex items-start justify-between">
-          <div className="space-y-1">
-            <CardTitle className="flex items-center gap-2">
-              <Package className="h-5 w-5" />
-              Orden Interna #{order.id.slice(0, 8)}
-            </CardTitle>
-            {order.batch_id && order.batch_count && (
-              <Badge variant="secondary" className="mt-2">
-                Lote de {order.batch_count} diamantes
-              </Badge>
-            )}
+          <div className="flex-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <CardTitle className="flex items-center gap-2">
+                <Package className="h-5 w-5" />
+                {order.supplier?.nombre_empresa || order.proveedor_nombre} #{order.numero_factura}
+              </CardTitle>
+              {order.batch_id && order.batch_count && (
+                <Badge variant="secondary">
+                  Lote de {order.batch_count} diamantes
+                </Badge>
+              )}
+            </div>
           </div>
           
           {/* Actions Dropdown */}
