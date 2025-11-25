@@ -2,11 +2,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { InternalOrder, Supplier } from "@/types/internal-orders";
-import { Package, FileText, Image as ImageIcon, Edit, Trash2 } from "lucide-react";
+import { Package, FileText, Image as ImageIcon, Edit, Trash2, ChevronDown, MoreVertical } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface InternalOrderCardProps {
   order: InternalOrder;
@@ -93,6 +99,45 @@ export const InternalOrderCard = ({
               </Badge>
             )}
           </div>
+          
+          {/* Actions Dropdown */}
+          {showActions && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                  Acciones
+                  <ChevronDown className="h-4 w-4 ml-1" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem onClick={() => window.open(order.factura_pdf_url, '_blank')}>
+                  <FileText className="h-4 w-4 mr-2" />
+                  Descargar Factura
+                </DropdownMenuItem>
+                {order.imagenes_producto.length > 0 && (
+                  <DropdownMenuItem onClick={() => setShowGallery(true)}>
+                    <ImageIcon className="h-4 w-4 mr-2" />
+                    Ver Galería ({order.imagenes_producto.length})
+                  </DropdownMenuItem>
+                )}
+                {onEdit && (
+                  <DropdownMenuItem onClick={onEdit}>
+                    <Edit className="h-4 w-4 mr-2" />
+                    Editar
+                  </DropdownMenuItem>
+                )}
+                {isAdmin && onDelete && (
+                  <DropdownMenuItem 
+                    onClick={onDelete}
+                    className="text-destructive focus:text-destructive"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Eliminar
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
       </CardHeader>
 
@@ -170,47 +215,10 @@ export const InternalOrderCard = ({
           </div>
         </div>
 
-        <div className="space-y-2 border-t pt-4">
-          <h4 className="font-semibold text-sm">Archivos</h4>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => window.open(order.factura_pdf_url, '_blank')}
-            >
-              <FileText className="h-4 w-4 mr-2" />
-              Descargar Factura
-            </Button>
-            {order.imagenes_producto.length > 0 && (
-              <Button variant="outline" size="sm" onClick={() => setShowGallery(true)}>
-                <ImageIcon className="h-4 w-4 mr-2" />
-                Ver Galería ({order.imagenes_producto.length} imágenes)
-              </Button>
-            )}
-          </div>
-        </div>
-
         {order.notas_adicionales && (
           <div className="space-y-2 border-t pt-4">
             <h4 className="font-semibold text-sm">Notas</h4>
             <p className="text-sm text-muted-foreground">{order.notas_adicionales}</p>
-          </div>
-        )}
-
-        {showActions && (
-          <div className="flex gap-2 border-t pt-4">
-            {onEdit && (
-              <Button variant="outline" size="sm" onClick={onEdit}>
-                <Edit className="h-4 w-4 mr-2" />
-                Editar
-              </Button>
-            )}
-            {isAdmin && onDelete && (
-              <Button variant="destructive" size="sm" onClick={onDelete}>
-                <Trash2 className="h-4 w-4 mr-2" />
-                Eliminar
-              </Button>
-            )}
           </div>
         )}
       </CardContent>
