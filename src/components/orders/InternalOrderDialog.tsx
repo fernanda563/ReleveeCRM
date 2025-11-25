@@ -426,12 +426,7 @@ export const InternalOrderDialog = ({
             <SelectContent className="max-h-[300px] bg-background">
               {suppliers.map((supplier) => (
                 <SelectItem key={supplier.id} value={supplier.id}>
-                  <div className="flex flex-col">
-                    <span className="font-medium">{supplier.nombre_empresa}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {supplier.nombre_contacto}
-                    </span>
-                  </div>
+                  {supplier.nombre_empresa} ({supplier.nombre_contacto})
                 </SelectItem>
               ))}
             </SelectContent>
@@ -967,11 +962,11 @@ export const InternalOrderDialog = ({
         </DialogHeader>
 
         {/* Stepper visual */}
-        <div className="flex justify-center mb-8 px-8">
-          <div className="flex items-center w-full max-w-3xl">
-            {[1, 2, 3, 4, 5].map((step) => (
-              <div key={step} className="flex items-center flex-1">
-                <div className="flex flex-col items-center w-full">
+        <div className="flex justify-center mb-6 px-8">
+          <div className="flex items-start w-full max-w-3xl justify-between">
+            {[1, 2, 3, 4, 5].map((step, index) => (
+              <div key={step} className="flex items-center">
+                <div className="flex flex-col items-center">
                   <div
                     className={cn(
                       "w-10 h-10 rounded-full flex items-center justify-center border-2 font-semibold transition-colors",
@@ -995,10 +990,10 @@ export const InternalOrderDialog = ({
                     {step === 5 && "Pago"}
                   </span>
                 </div>
-                {step < 5 && (
+                {index < 4 && (
                   <div
                     className={cn(
-                      "h-0.5 flex-1 mx-4 transition-colors",
+                      "w-16 h-0.5 mx-2 transition-colors",
                       currentStep > step ? "bg-primary" : "bg-muted-foreground/30"
                     )}
                   />
@@ -1008,7 +1003,7 @@ export const InternalOrderDialog = ({
           </div>
         </div>
 
-        <div className="py-4">
+        <div className="space-y-6 mt-8">
           {currentStep === 1 && renderStep1()}
           {currentStep === 2 && renderStep2()}
           {currentStep === 3 && renderStep3()}
