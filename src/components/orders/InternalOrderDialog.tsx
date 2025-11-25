@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +12,7 @@ import { es } from "date-fns/locale";
 import { CalendarIcon, ChevronLeft, ChevronRight, FileText, ImageIcon, Loader2, Upload, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { ProductType, Currency, InternalPaymentStatus, InternalOrderFormData } from "@/types/internal-orders";
+import { ProductType, Currency, InternalPaymentStatus, InternalOrderFormData, Supplier } from "@/types/internal-orders";
 import { cn } from "@/lib/utils";
 
 interface InternalOrderDialogProps {
@@ -30,7 +30,10 @@ export const InternalOrderDialog = ({
 }: InternalOrderDialogProps) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const [loadingSuppliers, setLoadingSuppliers] = useState(true);
   const [formData, setFormData] = useState<InternalOrderFormData>({
+    supplier_id: "",
     proveedor_nombre: "",
     proveedor_contacto: "",
     numero_factura: "",
@@ -68,9 +71,49 @@ export const InternalOrderDialog = ({
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  // Cargar proveedores activos
+  useEffect(() => {
+    const fetchSuppliers = async () => {
+      if (!open) return;
+      
+      setLoadingSuppliers(true);
+      try {
+        const { data, error } = await supabase
+          .from('suppliers')
+          .select('id, nombre_empresa, nombre_contacto, email, telefono, activo')
+          .eq('activo', true)
+          .order('nombre_empresa', { ascending: true });
+
+        if (error) throw error;
+        setSuppliers(data || []);
+      } catch (error) {
+        console.error('Error loading suppliers:', error);
+        toast.error("Error al cargar proveedores");
+      } finally {
+        setLoadingSuppliers(false);
+      }
+    };
+
+    fetchSuppliers();
+  }, [open]);
+
+  // Manejar selección de proveedor
+  const handleSupplierChange = (supplierId: string) => {
+    const selectedSupplier = suppliers.find(s => s.id === supplierId);
+    
+    if (selectedSupplier) {
+      setFormData(prev => ({
+        ...prev,
+        supplier_id: supplierId,
+        proveedor_nombre: selectedSupplier.nombre_empresa,
+        proveedor_contacto: selectedSupplier.nombre_contacto
+      }));
+    }
+  };
+
   const validateStep1 = () => {
-    if (!formData.proveedor_nombre.trim()) {
-      toast.error("El nombre del proveedor es obligatorio");
+    if (!formData.supplier_id) {
+      toast.error("Debes seleccionar un proveedor");
       return false;
     }
     if (!formData.numero_factura.trim()) {
@@ -242,11 +285,12 @@ export const InternalOrderDialog = ({
       const { factura, imagenes } = await uploadFiles(tempId);
 
       // Prepare data for insertion
-      const insertData: any = {
-        tipo_producto: formData.tipo_producto,
-        proveedor_nombre: formData.proveedor_nombre,
-        proveedor_contacto: formData.proveedor_contacto || null,
-        numero_factura: formData.numero_factura,
+    const insertData: any = {
+      tipo_producto: formData.tipo_producto,
+      supplier_id: formData.supplier_id,
+      proveedor_nombre: formData.proveedor_nombre,
+      proveedor_contacto: formData.proveedor_contacto || null,
+      numero_factura: formData.numero_factura,
         fecha_compra: format(formData.fecha_compra!, 'yyyy-MM-dd'),
         fecha_entrega_esperada: formData.fecha_entrega_esperada ? format(formData.fecha_entrega_esperada, 'yyyy-MM-dd') : null,
         cantidad: parseInt(formData.cantidad),
@@ -288,7 +332,40 @@ export const InternalOrderDialog = ({
       onSuccess();
       onOpenChange(false);
       setCurrentStep(1);
-      // Reset form
+      setFormData({
+        supplier_id: "",
+        proveedor_nombre: "",
+        proveedor_contacto: "",
+        numero_factura: "",
+        fecha_compra: undefined,
+        fecha_entrega_esperada: undefined,
+        tipo_producto: "",
+        cantidad: "1",
+        descripcion: "",
+        quilataje: "",
+        color: "",
+        claridad: "",
+        corte: "",
+        forma: "",
+        numero_reporte: "",
+        certificado: "",
+        tipo_gema: "",
+        gema_quilataje: "",
+        gema_color: "",
+        gema_claridad: "",
+        gema_forma: "",
+        gema_certificado: "",
+        material: "",
+        talla: "",
+        dimensiones: "",
+        especificaciones: "",
+        factura_pdf: null,
+        imagenes_producto: [],
+        precio_compra: "",
+        moneda: "MXN",
+        estatus_pago: "pendiente",
+        notas_adicionales: "",
+      });
     } catch (error: any) {
       console.error('Error creating internal order:', error);
       toast.error(error.message || "Error al crear la orden interna");
@@ -326,24 +403,40 @@ export const InternalOrderDialog = ({
   const renderStep1 = () => (
     <div className="space-y-4">
       <div>
-        <Label htmlFor="proveedor_nombre">Nombre del Proveedor *</Label>
-        <Input
-          id="proveedor_nombre"
-          value={formData.proveedor_nombre}
-          onChange={(e) => updateFormData('proveedor_nombre', e.target.value)}
-          placeholder="XYZ Diamonds"
-          maxLength={200}
-        />
-      </div>
-
-      <div>
-        <Label htmlFor="proveedor_contacto">Contacto (email o teléfono)</Label>
-        <Input
-          id="proveedor_contacto"
-          value={formData.proveedor_contacto}
-          onChange={(e) => updateFormData('proveedor_contacto', e.target.value)}
-          placeholder="contact@xyzdiamonds.com"
-        />
+        <Label htmlFor="supplier_id">Proveedor *</Label>
+        {loadingSuppliers ? (
+          <div className="flex items-center justify-center h-10 border rounded-md bg-background">
+            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            <span className="ml-2 text-sm text-muted-foreground">Cargando proveedores...</span>
+          </div>
+        ) : suppliers.length === 0 ? (
+          <div className="p-4 border rounded-md bg-muted/50">
+            <p className="text-sm text-muted-foreground text-center">
+              No hay proveedores activos en el sistema.
+            </p>
+          </div>
+        ) : (
+          <Select 
+            value={formData.supplier_id} 
+            onValueChange={handleSupplierChange}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Seleccionar proveedor" />
+            </SelectTrigger>
+            <SelectContent className="max-h-[300px] bg-background">
+              {suppliers.map((supplier) => (
+                <SelectItem key={supplier.id} value={supplier.id}>
+                  <div className="flex flex-col">
+                    <span className="font-medium">{supplier.nombre_empresa}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {supplier.nombre_contacto}
+                    </span>
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
       </div>
 
       <div>

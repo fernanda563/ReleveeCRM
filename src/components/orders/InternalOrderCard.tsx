@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { InternalOrder } from "@/types/internal-orders";
+import { InternalOrder, Supplier } from "@/types/internal-orders";
 import { Package, FileText, Image as ImageIcon, Edit, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -99,9 +99,11 @@ export const InternalOrderCard = ({
         <div className="grid md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <h4 className="font-semibold text-sm">Proveedor</h4>
-            <p className="text-sm">{order.proveedor_nombre}</p>
-            {order.proveedor_contacto && (
-              <p className="text-sm text-muted-foreground">{order.proveedor_contacto}</p>
+            <p className="text-sm">{order.supplier?.nombre_empresa || order.proveedor_nombre}</p>
+            {(order.supplier?.nombre_contacto || order.proveedor_contacto) && (
+              <p className="text-sm text-muted-foreground">
+                {order.supplier?.nombre_contacto || order.proveedor_contacto}
+              </p>
             )}
             <p className="text-sm">
               <span className="font-medium">Factura:</span> {order.numero_factura}

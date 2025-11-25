@@ -1,4 +1,4 @@
-import { InternalOrder } from "@/types/internal-orders";
+import { InternalOrder, Supplier } from "@/types/internal-orders";
 import { InternalOrderCard } from "./InternalOrderCard";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";

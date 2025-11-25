@@ -215,7 +215,16 @@ const Orders = () => {
       setLoadingInternal(true);
       const { data, error } = await supabase
         .from('purchase_orders_internal')
-        .select('*')
+        .select(`
+          *,
+          supplier:suppliers(
+            id,
+            nombre_empresa,
+            nombre_contacto,
+            email,
+            telefono
+          )
+        `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;

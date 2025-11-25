@@ -30,10 +30,20 @@ export interface InternalOrder {
   tipo_producto: ProductType;
   
   // Proveedor
+  supplier_id?: string;
   proveedor_nombre: string;
   proveedor_contacto?: string;
   numero_factura: string;
   numero_reporte?: string;
+  
+  // Relación con supplier
+  supplier?: {
+    id: string;
+    nombre_empresa: string;
+    nombre_contacto: string;
+    email: string;
+    telefono: string;
+  };
   
   // Financiero
   precio_compra: number;
@@ -72,6 +82,7 @@ export interface InternalOrder {
 
 export interface InternalOrderFormData {
   // Step 1
+  supplier_id: string;
   proveedor_nombre: string;
   proveedor_contacto: string;
   numero_factura: string;
@@ -122,4 +133,13 @@ export interface InternalOrderStats {
   gastoTotal: number;
   enTransito: number;
   recibidas: number;
+}
+
+export interface Supplier {
+  id: string;
+  nombre_empresa: string;
+  nombre_contacto: string;
+  email: string;
+  telefono: string;
+  activo: boolean;
 }

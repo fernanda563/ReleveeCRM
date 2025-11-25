@@ -513,6 +513,7 @@ export type Database = {
           proveedor_contacto: string | null
           proveedor_nombre: string
           quilataje: number | null
+          supplier_id: string | null
           tipo_orden: Database["public"]["Enums"]["order_type"]
           tipo_producto: Database["public"]["Enums"]["product_type"]
           updated_at: string
@@ -542,6 +543,7 @@ export type Database = {
           proveedor_contacto?: string | null
           proveedor_nombre: string
           quilataje?: number | null
+          supplier_id?: string | null
           tipo_orden?: Database["public"]["Enums"]["order_type"]
           tipo_producto: Database["public"]["Enums"]["product_type"]
           updated_at?: string
@@ -571,11 +573,20 @@ export type Database = {
           proveedor_contacto?: string | null
           proveedor_nombre?: string
           quilataje?: number | null
+          supplier_id?: string | null
           tipo_orden?: Database["public"]["Enums"]["order_type"]
           tipo_producto?: Database["public"]["Enums"]["product_type"]
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "purchase_orders_internal_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       reminders: {
         Row: {
