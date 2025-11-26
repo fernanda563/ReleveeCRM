@@ -264,94 +264,94 @@ const OrderList = ({ orders, loading, onEdit, onOpenPrint, onSendToSign }: Order
                 </DropdownMenu>
               </div>
 
-              {/* Status Badges Row */}
-              <div className="flex flex-wrap gap-2">
-                {/* Tag Estado de Pago */}
-                <Badge variant={order.estatus_pago === "liquidado" ? "default" : "secondary"} className="gap-1">
-                  {order.estatus_pago === "liquidado" ? (
-                    <Check className="h-3 w-3" />
-                  ) : (
-                    <DollarSign className="h-3 w-3" />
-                  )}
-                  {order.estatus_pago === "liquidado" ? "Liquidado" : "Anticipo recibido"}
-                </Badge>
+                {/* Status Badges Row */}
+                <div className="flex flex-wrap gap-2">
+                  {/* Tag Estado de Pago */}
+                  <Badge variant={order.estatus_pago === "liquidado" ? "default" : "secondary"} className="gap-1">
+                    {order.estatus_pago === "liquidado" ? (
+                      <Check className="h-3 w-3" />
+                    ) : (
+                      <DollarSign className="h-3 w-3" />
+                    )}
+                    {order.estatus_pago === "liquidado" ? "Liquidado" : "Anticipo recibido"}
+                  </Badge>
 
-                {/* Tag Estado de Producción */}
-                <Badge variant={order.estatus_piedra === "piedra_montada" && order.estatus_montura === "entregado_levant" ? "default" : "outline"} className="gap-1">
-                  {order.estatus_piedra === "piedra_montada" && order.estatus_montura === "entregado_levant" ? (
-                    <Check className="h-3 w-3" />
-                  ) : (
-                    <Settings className="h-3 w-3" />
-                  )}
-                  {order.estatus_piedra === "piedra_montada" && order.estatus_montura === "entregado_levant" 
-                    ? "Producción completada" 
-                    : "En producción"}
-                </Badge>
-
-                {/* Tag Estado de Firma */}
-                <Badge 
-                  variant={
-                    order.signature_status === "signed" ? "default" : 
-                    order.signature_status === "declined" ? "destructive" : 
-                    "outline"
-                  } 
-                  className="gap-1"
-                >
-                  {order.signature_status === "signed" ? (
-                    <Check className="h-3 w-3" />
-                  ) : order.signature_status === "declined" ? (
-                    <X className="h-3 w-3" />
-                  ) : order.signature_status === "pending" || order.signature_status === "awaiting_signature" ? (
-                    <Clock className="h-3 w-3" />
-                  ) : (
-                    <FileText className="h-3 w-3" />
-                  )}
-                  {order.signature_status === "signed" ? "Firmado" :
-                   order.signature_status === "declined" ? "Rechazado" :
-                   order.signature_status === "pending" || order.signature_status === "awaiting_signature" ? "Por enviar a firma" :
-                   "No firmado"}
-                </Badge>
-
-                {/* Tag Estatus de Piedra */}
-                <Badge variant={order.estatus_piedra === "piedra_montada" ? "default" : "secondary"} className="gap-1">
-                  {order.estatus_piedra === "piedra_montada" ? (
-                    <Check className="h-3 w-3" />
-                  ) : (
-                    <Gem className="h-3 w-3" />
-                  )}
-                  {getStoneStatusLabel(order.estatus_piedra)}
-                </Badge>
-
-                {/* Tag Estatus de Montura */}
-                <Badge variant={order.estatus_montura === "entregado_levant" || order.estatus_montura === "entregado_oyamel" ? "default" : "secondary"} className="gap-1">
-                  {order.estatus_montura === "entregado_levant" || order.estatus_montura === "entregado_oyamel" ? (
-                    <Check className="h-3 w-3" />
-                  ) : (
-                    <Wrench className="h-3 w-3" />
-                  )}
-                  {getMountingStatusLabel(order.estatus_montura)}
-                </Badge>
-
-                {/* STL Badge */}
-                {order.stl_file && (
-                  <a
-                    href={`/stl-viewer-fullscreen?url=${encodeURIComponent(order.stl_file.stl_file_url)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                    }}
+                  {/* Tag Estado de Firma */}
+                  <Badge 
+                    variant={
+                      order.signature_status === "signed" ? "default" : 
+                      order.signature_status === "declined" ? "destructive" : 
+                      "outline"
+                    } 
+                    className="gap-1"
                   >
-                    <Badge 
-                      variant="outline" 
-                      className="text-xs cursor-pointer hover:bg-accent hover:text-accent-foreground transition-colors flex items-center gap-1"
+                    {order.signature_status === "signed" ? (
+                      <Check className="h-3 w-3" />
+                    ) : order.signature_status === "declined" ? (
+                      <X className="h-3 w-3" />
+                    ) : order.signature_status === "pending" || order.signature_status === "awaiting_signature" ? (
+                      <Clock className="h-3 w-3" />
+                    ) : (
+                      <FileText className="h-3 w-3" />
+                    )}
+                    {order.signature_status === "signed" ? "Firmado" :
+                     order.signature_status === "declined" ? "Rechazado" :
+                     order.signature_status === "pending" || order.signature_status === "awaiting_signature" ? "Por enviar a firma" :
+                     "No firmado"}
+                  </Badge>
+
+                  {/* Tag Estado de Producción */}
+                  <Badge variant={order.estatus_piedra === "piedra_montada" && order.estatus_montura === "entregado_levant" ? "default" : "outline"} className="gap-1">
+                    {order.estatus_piedra === "piedra_montada" && order.estatus_montura === "entregado_levant" ? (
+                      <Check className="h-3 w-3" />
+                    ) : (
+                      <Settings className="h-3 w-3" />
+                    )}
+                    {order.estatus_piedra === "piedra_montada" && order.estatus_montura === "entregado_levant" 
+                      ? "Producción completada" 
+                      : "En producción"}
+                  </Badge>
+
+                  {/* Tag Estatus de Piedra */}
+                  <Badge variant={order.estatus_piedra === "piedra_montada" ? "default" : "secondary"} className="gap-1">
+                    {order.estatus_piedra === "piedra_montada" ? (
+                      <Check className="h-3 w-3" />
+                    ) : (
+                      <Gem className="h-3 w-3" />
+                    )}
+                    {getStoneStatusLabel(order.estatus_piedra)}
+                  </Badge>
+
+                  {/* Tag Estatus de Montura */}
+                  <Badge variant={order.estatus_montura === "entregado_levant" || order.estatus_montura === "entregado_oyamel" ? "default" : "secondary"} className="gap-1">
+                    {order.estatus_montura === "entregado_levant" || order.estatus_montura === "entregado_oyamel" ? (
+                      <Check className="h-3 w-3" />
+                    ) : (
+                      <Wrench className="h-3 w-3" />
+                    )}
+                    {getMountingStatusLabel(order.estatus_montura)}
+                  </Badge>
+
+                  {/* STL Badge */}
+                  {order.stl_file && (
+                    <a
+                      href={`/stl-viewer-fullscreen?url=${encodeURIComponent(order.stl_file.stl_file_url)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                      }}
                     >
-                      <Box className="h-3 w-3" />
-                      Ver STL
-                    </Badge>
-                  </a>
-                )}
-              </div>
+                      <Badge 
+                        variant="outline" 
+                        className="text-xs cursor-pointer hover:bg-accent hover:text-accent-foreground transition-colors flex items-center gap-1"
+                      >
+                        <Box className="h-3 w-3" />
+                        Ver STL
+                      </Badge>
+                    </a>
+                  )}
+                </div>
             </div>
           </CardHeader>
 

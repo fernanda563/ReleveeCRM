@@ -347,18 +347,6 @@ export const OrdersHistory = ({ clientId }: OrdersHistoryProps) => {
                     {order.estatus_pago === "liquidado" ? "Liquidado" : "Anticipo recibido"}
                   </Badge>
 
-                  {/* Tag Estado de Producción */}
-                  <Badge variant={order.estatus_piedra === "piedra_montada" && order.estatus_montura === "entregado_levant" ? "default" : "outline"} className="gap-1">
-                    {order.estatus_piedra === "piedra_montada" && order.estatus_montura === "entregado_levant" ? (
-                      <Check className="h-3 w-3" />
-                    ) : (
-                      <Settings className="h-3 w-3" />
-                    )}
-                    {order.estatus_piedra === "piedra_montada" && order.estatus_montura === "entregado_levant" 
-                      ? "Producción completada" 
-                      : "En producción"}
-                  </Badge>
-
                   {/* Tag Estado de Firma */}
                   <Badge 
                     variant={
@@ -381,6 +369,18 @@ export const OrdersHistory = ({ clientId }: OrdersHistoryProps) => {
                      order.signature_status === "declined" ? "Rechazado" :
                      order.signature_status === "pending" || order.signature_status === "awaiting_signature" ? "Por enviar a firma" :
                      "No firmado"}
+                  </Badge>
+
+                  {/* Tag Estado de Producción */}
+                  <Badge variant={order.estatus_piedra === "piedra_montada" && order.estatus_montura === "entregado_levant" ? "default" : "outline"} className="gap-1">
+                    {order.estatus_piedra === "piedra_montada" && order.estatus_montura === "entregado_levant" ? (
+                      <Check className="h-3 w-3" />
+                    ) : (
+                      <Settings className="h-3 w-3" />
+                    )}
+                    {order.estatus_piedra === "piedra_montada" && order.estatus_montura === "entregado_levant" 
+                      ? "Producción completada" 
+                      : "En producción"}
                   </Badge>
 
                   {/* Tag Estatus de Piedra */}
