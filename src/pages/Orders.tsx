@@ -240,10 +240,35 @@ const Orders = () => {
       // Add batch_count to each order
       const ordersWithBatchCount = (data || []).map(order => ({
         ...order,
-        batch_count: order.batch_id ? batchCounts.get(order.batch_id) : undefined
+        batch_size: order.batch_id ? batchCounts.get(order.batch_id) : undefined
       }));
 
-      setInternalOrders(ordersWithBatchCount);
+      // Get linked client orders
+      const internalOrderIds = ordersWithBatchCount.map(o => o.id);
+      const { data: linkedOrders } = await supabase
+        .from('orders')
+        .select('id, custom_id, internal_order_id, clients(nombre, apellido)')
+        .in('internal_order_id', internalOrderIds);
+
+      // Create map of linked orders
+      const linkedOrdersMap = new Map();
+      linkedOrders?.forEach(order => {
+        if (order.internal_order_id) {
+          linkedOrdersMap.set(order.internal_order_id, {
+            id: order.id,
+            custom_id: order.custom_id,
+            client_name: `${order.clients?.nombre} ${order.clients?.apellido}`
+          });
+        }
+      });
+
+      // Add linked client order info to each internal order
+      const ordersWithClientInfo = ordersWithBatchCount.map(order => ({
+        ...order,
+        linked_client_order: linkedOrdersMap.get(order.id)
+      }));
+
+      setInternalOrders(ordersWithClientInfo);
       
       // Calculate stats
       const stats = {
