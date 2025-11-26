@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Search, Plus, DollarSign, Package, TrendingUp, Calendar as CalendarIcon, X, ShoppingBag, LayoutGrid, Table2 } from "lucide-react";
+import { Search, Plus, DollarSign, Package, TrendingUp, Calendar as CalendarIcon, X, ShoppingBag, LayoutGrid, Table2, Printer } from "lucide-react";
 import OrderDialog from "@/components/orders/OrderDialog";
 import OrderList from "@/components/orders/OrderList";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +19,7 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Separator } from "@/components/ui/separator";
 import { OrderTableView } from "@/components/orders/OrderTableView";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
@@ -623,7 +624,11 @@ const Orders = () => {
         </Card>
 
         {/* View Mode Toggle */}
-        <div className="flex justify-end mb-4">
+        <div className="flex items-center justify-end gap-3 mb-4">
+          <span className="text-sm text-muted-foreground">Tipo de vista</span>
+          
+          <Separator orientation="vertical" className="h-6" />
+          
           <ToggleGroup type="single" value={viewMode} onValueChange={(value) => value && setViewMode(value as 'cards' | 'table')}>
             <ToggleGroupItem value="cards" aria-label="Vista de tarjetas">
               <LayoutGrid className="h-4 w-4" />
@@ -632,6 +637,13 @@ const Orders = () => {
               <Table2 className="h-4 w-4" />
             </ToggleGroupItem>
           </ToggleGroup>
+          
+          <Separator orientation="vertical" className="h-6" />
+          
+          <Button variant="outline" size="sm">
+            <Printer className="h-4 w-4 mr-2" />
+            Generar PDF de Impresión
+          </Button>
         </div>
 
         {/* Orders List or Table */}
