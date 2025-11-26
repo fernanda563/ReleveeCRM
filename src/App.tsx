@@ -10,10 +10,9 @@ import ClientDetail from "./pages/ClientDetail";
 import Projects from "./pages/Projects";
 import Orders from "./pages/Orders";
 import WorkOrders from "./pages/WorkOrders";
-import Approvals from "./pages/Approvals";
-import Preparations from "./pages/Preparations";
-import Deliveries from "./pages/Deliveries";
 import Production from "./pages/Production";
+import DesignProcess from "./pages/DesignProcess";
+import WorkshopProcess from "./pages/WorkshopProcess";
 import ProductionDashboard from "./pages/ProductionDashboard";
 import Users from "./pages/Users";
 import Suppliers from "./pages/Suppliers";
@@ -41,10 +40,9 @@ const App = () => (
           <Route path="/projects" element={<Projects />} />
           <Route path="/orders" element={<Orders />} />
           <Route path="/work-orders" element={<WorkOrders />} />
-          <Route path="/approvals" element={<Approvals />} />
-          <Route path="/preparations" element={<Preparations />} />
-          <Route path="/deliveries" element={<Deliveries />} />
           <Route path="/production" element={<Production />} />
+          <Route path="/design-process" element={<DesignProcess />} />
+          <Route path="/workshop-process" element={<WorkshopProcess />} />
         <Route path="/production/dashboard" element={<ProductionDashboard />} />
         <Route path="/users" element={<Users />} />
         <Route path="/suppliers" element={<Suppliers />} />

@@ -1,17 +1,17 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { PackageCheck } from "lucide-react";
+import { Pencil } from "lucide-react";
 
-const Preparations = () => {
+const DesignProcess = () => {
   return (
     <div className="min-h-full bg-background">
       <main className="container mx-auto px-6 py-8">
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
-            <PackageCheck className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-bold text-foreground">Preparaciones</h1>
+            <Pencil className="h-8 w-8 text-primary" />
+            <h1 className="text-3xl font-bold text-foreground">Proceso de Diseño</h1>
           </div>
           <p className="text-muted-foreground">
-            Gestión de preparación de pedidos para entrega
+            Gestión del proceso de diseño de piezas
           </p>
         </div>
 
@@ -21,7 +21,7 @@ const Preparations = () => {
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground">
-              Este módulo estará disponible próximamente para gestionar la preparación de pedidos.
+              Este módulo estará disponible próximamente para gestionar el proceso de diseño.
             </p>
           </CardContent>
         </Card>
@@ -30,4 +30,4 @@ const Preparations = () => {
   );
 };
 
-export default Preparations;
+export default DesignProcess;

@@ -17,10 +17,9 @@ import {
   Cog,
   Users2,
   ClipboardList,
-  CheckCircle,
-  PackageCheck,
-  Truck,
   Building2,
+  Pencil,
+  Wrench,
 } from "lucide-react";
 import { useUserRole } from "@/hooks/useUserRole";
 import {
@@ -58,15 +57,14 @@ const menuSections = [
       { title: "Proyectos", url: "/projects", icon: Gem, adminOnly: false },
       { title: "Órdenes de Compra", url: "/orders", icon: ShoppingCart, adminOnly: false },
       { title: "Órdenes de Trabajo", url: "/work-orders", icon: ClipboardList, adminOnly: false },
-      { title: "Producción", url: "/production", icon: Box, adminOnly: false },
     ],
   },
   {
-    label: "Flujo de Trabajo",
+    label: "Proceso de producción",
     items: [
-      { title: "Aprobaciones", url: "/approvals", icon: CheckCircle, adminOnly: false },
-      { title: "Preparaciones", url: "/preparations", icon: PackageCheck, adminOnly: false },
-      { title: "Entregas", url: "/deliveries", icon: Truck, adminOnly: false },
+      { title: "Producción", url: "/production", icon: Box, adminOnly: false },
+      { title: "Proceso de diseño", url: "/design-process", icon: Pencil, adminOnly: false },
+      { title: "Proceso de taller", url: "/workshop-process", icon: Wrench, adminOnly: false },
     ],
   },
   {
