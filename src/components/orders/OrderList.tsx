@@ -349,7 +349,12 @@ const OrderList = ({ orders, loading, onEdit, onOpenPrint, onSendToSign }: Order
             {/* Product Info */}
             <div className="grid md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <h4 className="font-semibold text-sm">Metal</h4>
+                <h4 className="font-semibold text-sm">
+                  {order.tipo_accesorio && (
+                    <span className="text-muted-foreground">{capitalizeFirst(order.tipo_accesorio)} • </span>
+                  )}
+                  Metal
+                </h4>
                 <p className="text-sm">
                   {order.metal_tipo === "oro" && `Oro ${order.metal_pureza} ${capitalizeFirst(order.metal_color || '')}`}
                   {order.metal_tipo === "plata" && "Plata"}

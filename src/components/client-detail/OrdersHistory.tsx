@@ -43,6 +43,7 @@ interface Order {
   fecha_entrega_esperada?: string | null;
   created_at: string;
   internal_order_id?: string | null;
+  tipo_accesorio?: string | null;
   stl_file?: {
     id: string;
     nombre: string;
@@ -417,7 +418,12 @@ export const OrdersHistory = ({ clientId }: OrdersHistoryProps) => {
                 {/* Product Info */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                   <div>
-                    <span className="font-medium text-foreground">Metal:</span>
+                    <span className="font-medium text-foreground">
+                      {order.tipo_accesorio && (
+                        <span className="text-muted-foreground">{order.tipo_accesorio.charAt(0).toUpperCase() + order.tipo_accesorio.slice(1).toLowerCase()} • </span>
+                      )}
+                      Metal:
+                    </span>
                     <span className="text-muted-foreground ml-2">
                       {order.metal_tipo === "oro" && `Oro ${order.metal_pureza} ${order.metal_color ? order.metal_color.charAt(0).toUpperCase() + order.metal_color.slice(1).toLowerCase() : ''}`}
                       {order.metal_tipo === "plata" && "Plata"}
