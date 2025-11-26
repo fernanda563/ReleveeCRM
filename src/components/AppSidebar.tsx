@@ -62,7 +62,7 @@ const menuSections = [
   {
     label: "Proceso de Producción",
     items: [
-      { title: "Producción", url: "/production", icon: Box, adminOnly: false },
+      { title: "Seguimiento de Producción", url: "/production", icon: Box, adminOnly: false },
       { title: "Proceso de Diseño", url: "/design-process", icon: Pencil, adminOnly: false },
       { title: "Proceso de Taller", url: "/workshop-process", icon: Wrench, adminOnly: false },
     ],
