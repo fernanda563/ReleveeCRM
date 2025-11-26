@@ -152,58 +152,109 @@ const OrderList = ({ orders, loading, onEdit, onOpenPrint, onSendToSign }: Order
           <CardHeader>
             <div className="flex items-start justify-between">
               <div className="flex-1">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <CardTitle>
-                    {order.clients?.nombre} {order.clients?.apellido}
-                  </CardTitle>
-                  <div className="flex items-center gap-2">
-                    {getPaymentStatusBadge(order.estatus_pago)}
-                    {getProductionStatus(order)}
-                    {getSignatureStatusBadge(order.signature_status)}
-                  </div>
-                </div>
-                {order.custom_id && (
-                  <div className="flex items-center gap-2 text-sm mt-2">
-                    <span className="font-medium text-muted-foreground">
-                      {order.custom_id}
+                <CardTitle className="text-lg font-semibold mb-3 flex items-center gap-2">
+                  {order.clients?.nombre} {order.clients?.apellido}
+                  {order.custom_id && (
+                    <span className="text-sm font-normal text-muted-foreground">
+                      #{order.custom_id}
                     </span>
+                  )}
+                </CardTitle>
+                
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {/* Tarjeta Estado de Pago */}
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-lg border bg-card">
+                    <div className="flex items-center gap-1.5">
+                      {order.estatus_pago === "liquidado" ? (
+                        <Check className="h-4 w-4 text-green-600" />
+                      ) : (
+                        <DollarSign className="h-4 w-4 text-muted-foreground" />
+                      )}
+                      <div>
+                        <p className="text-xs text-muted-foreground">Pago</p>
+                        <p className="text-sm font-medium">
+                          {order.estatus_pago === "liquidado" ? "Liquidado" : "Anticipo"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Tarjeta Estado de Producción */}
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-lg border bg-card">
+                    <div className="flex items-center gap-1.5">
+                      {order.estatus_piedra === "piedra_montada" && order.estatus_montura === "entregado_levant" ? (
+                        <Check className="h-4 w-4 text-green-600" />
+                      ) : (
+                        <Settings className="h-4 w-4 text-muted-foreground" />
+                      )}
+                      <div>
+                        <p className="text-xs text-muted-foreground">Producción</p>
+                        <p className="text-sm font-medium">
+                          {order.estatus_piedra === "piedra_montada" && order.estatus_montura === "entregado_levant" 
+                            ? "Completada" 
+                            : "En Proceso"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Tarjeta Estado de Firma */}
+                  {order.signature_status && (
+                    <div className="flex items-center gap-2 px-3 py-2 rounded-lg border bg-card">
+                      <div className="flex items-center gap-1.5">
+                        {order.signature_status === "signed" ? (
+                          <Check className="h-4 w-4 text-green-600" />
+                        ) : order.signature_status === "declined" ? (
+                          <X className="h-4 w-4 text-red-600" />
+                        ) : (
+                          <FileText className="h-4 w-4 text-muted-foreground" />
+                        )}
+                        <div>
+                          <p className="text-xs text-muted-foreground">Firma</p>
+                          <p className="text-sm font-medium">
+                            {order.signature_status === "signed" ? "Firmado" :
+                             order.signature_status === "declined" ? "Rechazado" :
+                             order.signature_status === "awaiting_signature" ? "Pendiente" : "Sin enviar"}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {(order.stl_file || order.internal_order_id) && (
+                  <div className="flex items-center gap-2">
                     {order.stl_file && (
-                      <>
-                        <span className="text-muted-foreground">•</span>
-                        <a
-                          href={`/stl-viewer-fullscreen?url=${encodeURIComponent(order.stl_file.stl_file_url)}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                          }}
-                        >
-                          <Badge 
-                            variant="outline" 
-                            className="text-xs cursor-pointer hover:bg-accent hover:text-accent-foreground transition-colors flex items-center gap-1"
-                          >
-                            <Box className="h-3 w-3" />
-                            Ver STL
-                          </Badge>
-                        </a>
-                      </>
-                    )}
-                    {order.internal_order_id && (
-                      <>
-                        <span className="text-muted-foreground">•</span>
+                      <a
+                        href={`/stl-viewer-fullscreen?url=${encodeURIComponent(order.stl_file.stl_file_url)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                        }}
+                      >
                         <Badge 
                           variant="outline" 
                           className="text-xs cursor-pointer hover:bg-accent hover:text-accent-foreground transition-colors flex items-center gap-1"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedInternalOrderId(order.internal_order_id!);
-                            setSupplierPreviewOpen(true);
-                          }}
                         >
-                          <Package className="h-3 w-3" />
-                          Ver Orden de Proveedor
+                          <Box className="h-3 w-3" />
+                          Ver STL
                         </Badge>
-                      </>
+                      </a>
+                    )}
+                    {order.internal_order_id && (
+                      <Badge 
+                        variant="outline" 
+                        className="text-xs cursor-pointer hover:bg-accent hover:text-accent-foreground transition-colors flex items-center gap-1"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedInternalOrderId(order.internal_order_id!);
+                          setSupplierPreviewOpen(true);
+                        }}
+                      >
+                        <Package className="h-3 w-3" />
+                        Ver Orden de Proveedor
+                      </Badge>
                     )}
                   </div>
                 )}
