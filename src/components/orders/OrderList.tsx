@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Edit, Loader2, Eye, ChevronDown, FileText, FileSignature, Check, Clock, X, Box, DollarSign, Settings, Link, Trash2, Package } from "lucide-react";
+import { Edit, Loader2, Eye, ChevronDown, FileText, FileSignature, Check, Clock, X, Box, DollarSign, Settings, Link, Trash2, Package, Gem, Wrench } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -60,6 +60,41 @@ const OrderList = ({ orders, loading, onEdit, onOpenPrint, onSendToSign }: Order
   const capitalizeFirst = (text: string) => {
     if (!text) return '';
     return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+  };
+
+  const STONE_STATUS_LABELS: Record<string, string> = {
+    en_busqueda: "En búsqueda",
+    piedra_comprada: "Comprada",
+    piedra_transito_pobox: "Tránsito PO Box",
+    piedra_pobox: "En PO Box",
+    piedra_levant: "En Levant",
+    piedra_con_disenador: "Con diseñador",
+    piedra_taller: "En taller",
+    piedra_montada: "Montada",
+  };
+
+  const MOUNTING_STATUS_LABELS: Record<string, string> = {
+    en_espera: "En espera",
+    en_proceso_diseno: "En diseño",
+    impresion_modelo: "Impresión",
+    reimpresion_modelo: "Reimpresión",
+    traslado_modelo: "Traslado",
+    en_espera_taller: "Espera taller",
+    en_proceso_vaciado: "Vaciado",
+    pieza_terminada_taller: "Terminada taller",
+    en_proceso_recoleccion: "Recolección",
+    recolectado: "Recolectado",
+    entregado_oyamel: "En Oyamel",
+    entregado_levant: "En Levant",
+    no_aplica: "No aplica",
+  };
+
+  const getStoneStatusLabel = (status: string | null) => {
+    return status ? STONE_STATUS_LABELS[status] || status : "Sin definir";
+  };
+
+  const getMountingStatusLabel = (status: string | null) => {
+    return status ? MOUNTING_STATUS_LABELS[status] || status : "Sin definir";
   };
 
   const getPaymentStatusBadge = (status: string) => {
@@ -220,6 +255,40 @@ const OrderList = ({ orders, loading, onEdit, onOpenPrint, onSendToSign }: Order
                       </div>
                     </div>
                   )}
+
+                  {/* Tarjeta Estatus de Piedra */}
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-lg border bg-card">
+                    <div className="flex items-center gap-1.5">
+                      {order.estatus_piedra === "piedra_montada" ? (
+                        <Check className="h-4 w-4 text-green-600" />
+                      ) : (
+                        <Gem className="h-4 w-4 text-muted-foreground" />
+                      )}
+                      <div>
+                        <p className="text-xs text-muted-foreground">Piedra</p>
+                        <p className="text-sm font-medium">
+                          {getStoneStatusLabel(order.estatus_piedra)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Tarjeta Estatus de Montura */}
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-lg border bg-card">
+                    <div className="flex items-center gap-1.5">
+                      {order.estatus_montura === "entregado_levant" || order.estatus_montura === "entregado_oyamel" ? (
+                        <Check className="h-4 w-4 text-green-600" />
+                      ) : (
+                        <Wrench className="h-4 w-4 text-muted-foreground" />
+                      )}
+                      <div>
+                        <p className="text-xs text-muted-foreground">Montura</p>
+                        <p className="text-sm font-medium">
+                          {getMountingStatusLabel(order.estatus_montura)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 {order.stl_file && (
