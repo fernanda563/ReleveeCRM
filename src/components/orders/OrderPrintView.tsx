@@ -658,29 +658,12 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
         borderTop: `1px solid ${borderColor}`,
         pageBreakInside: 'avoid'
       }}>
+        {/* Espacio reservado para firma de Dropbox Sign */}
         <div style={{
+          height: '100px',
           maxWidth: '400px',
           margin: '0 auto'
-        }}>
-          {/* Área de firma del cliente */}
-          <div>
-            <div style={{
-              fontWeight: 700,
-              marginBottom: '8px',
-              fontSize: '11px',
-              color: '#000',
-              textTransform: 'uppercase',
-              letterSpacing: '0.02em'
-            }}>
-              Firma del Cliente
-            </div>
-            <div style={{
-              border: `1px solid ${borderColor}`,
-              height: '80px',
-              backgroundColor: 'white'
-            }}></div>
-          </div>
-        </div>
+        }}></div>
         
         {/* Footer info */}
         <div style={{ 
