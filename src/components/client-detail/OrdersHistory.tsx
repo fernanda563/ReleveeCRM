@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Edit, Loader2, ChevronDown, FileText, FileSignature, Check, Clock, X, Box, DollarSign, Settings, Link, Trash2 } from "lucide-react";
+import { Edit, Loader2, ChevronDown, FileText, FileSignature, Check, Clock, X, Box, DollarSign, Settings, Link, Trash2, Package } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,6 +15,7 @@ import { OrderPrintDialog } from "@/components/orders/OrderPrintDialog";
 import { OrderStatusDialog } from "@/components/orders/OrderStatusDialog";
 import { LinkSupplierOrderDialog } from "@/components/orders/LinkSupplierOrderDialog";
 import { DeleteOrderDialog } from "@/components/orders/DeleteOrderDialog";
+import { SupplierOrderPreviewDialog } from "@/components/orders/SupplierOrderPreviewDialog";
 import { useUserRole } from "@/hooks/useUserRole";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -41,6 +42,7 @@ interface Order {
   referencia_pago: string | null;
   fecha_entrega_esperada?: string | null;
   created_at: string;
+  internal_order_id?: string | null;
   stl_file?: {
     id: string;
     nombre: string;
@@ -62,9 +64,11 @@ export const OrdersHistory = ({ clientId }: OrdersHistoryProps) => {
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [supplierPreviewOpen, setSupplierPreviewOpen] = useState(false);
   const [selectedOrderForStatus, setSelectedOrderForStatus] = useState<Order | null>(null);
   const [selectedOrderForLink, setSelectedOrderForLink] = useState<Order | null>(null);
   const [selectedOrderForDelete, setSelectedOrderForDelete] = useState<Order | null>(null);
+  const [selectedInternalOrderId, setSelectedInternalOrderId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchOrders();
@@ -254,6 +258,23 @@ export const OrdersHistory = ({ clientId }: OrdersHistoryProps) => {
                             </a>
                           </>
                         )}
+                        {order.internal_order_id && (
+                          <>
+                            <span className="text-muted-foreground">•</span>
+                            <Badge 
+                              variant="outline" 
+                              className="text-xs cursor-pointer hover:bg-accent hover:text-accent-foreground transition-colors flex items-center gap-1"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedInternalOrderId(order.internal_order_id!);
+                                setSupplierPreviewOpen(true);
+                              }}
+                            >
+                              <Package className="h-3 w-3" />
+                              Ver Orden de Proveedor
+                            </Badge>
+                          </>
+                        )}
                       </div>
                     )}
                   </div>
@@ -363,7 +384,7 @@ export const OrdersHistory = ({ clientId }: OrdersHistoryProps) => {
                   {order.referencia_pago && (
                     <div>
                       <span className="font-medium text-foreground">Referencia:</span>
-                      <span className="ml-2 font-mono">{order.referencia_pago}</span>
+                      <span className="ml-2">{order.referencia_pago}</span>
                     </div>
                   )}
                 </div>
@@ -451,6 +472,15 @@ export const OrdersHistory = ({ clientId }: OrdersHistoryProps) => {
           onSuccess={() => {
             fetchOrders();
           }}
+        />
+      )}
+
+      {/* Supplier Order Preview Dialog */}
+      {selectedInternalOrderId && (
+        <SupplierOrderPreviewDialog
+          open={supplierPreviewOpen}
+          onOpenChange={setSupplierPreviewOpen}
+          internalOrderId={selectedInternalOrderId}
         />
       )}
     </>

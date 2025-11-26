@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Edit, Loader2, Eye, ChevronDown, FileText, FileSignature, Check, Clock, X, Box, DollarSign, Settings, Link, Trash2 } from "lucide-react";
+import { Edit, Loader2, Eye, ChevronDown, FileText, FileSignature, Check, Clock, X, Box, DollarSign, Settings, Link, Trash2, Package } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,6 +15,7 @@ import { es } from "date-fns/locale";
 import { OrderStatusDialog } from "./OrderStatusDialog";
 import { LinkSupplierOrderDialog } from "./LinkSupplierOrderDialog";
 import { DeleteOrderDialog } from "./DeleteOrderDialog";
+import { SupplierOrderPreviewDialog } from "./SupplierOrderPreviewDialog";
 import { useUserRole } from "@/hooks/useUserRole";
 
 interface OrderListProps {
@@ -31,9 +32,11 @@ const OrderList = ({ orders, loading, onEdit, onOpenPrint, onSendToSign }: Order
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [supplierPreviewOpen, setSupplierPreviewOpen] = useState(false);
   const [selectedOrderForStatus, setSelectedOrderForStatus] = useState<Order | null>(null);
   const [selectedOrderForLink, setSelectedOrderForLink] = useState<Order | null>(null);
   const [selectedOrderForDelete, setSelectedOrderForDelete] = useState<Order | null>(null);
+  const [selectedInternalOrderId, setSelectedInternalOrderId] = useState<string | null>(null);
   
   const handleGeneratePDF = (order: Order) => {
     onOpenPrint(order.id);
@@ -185,6 +188,23 @@ const OrderList = ({ orders, loading, onEdit, onOpenPrint, onSendToSign }: Order
                         </a>
                       </>
                     )}
+                    {order.internal_order_id && (
+                      <>
+                        <span className="text-muted-foreground">•</span>
+                        <Badge 
+                          variant="outline" 
+                          className="text-xs cursor-pointer hover:bg-accent hover:text-accent-foreground transition-colors flex items-center gap-1"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedInternalOrderId(order.internal_order_id!);
+                            setSupplierPreviewOpen(true);
+                          }}
+                        >
+                          <Package className="h-3 w-3" />
+                          Ver Orden de Proveedor
+                        </Badge>
+                      </>
+                    )}
                   </div>
                 )}
               </div>
@@ -301,7 +321,7 @@ const OrderList = ({ orders, loading, onEdit, onOpenPrint, onSendToSign }: Order
                 {order.referencia_pago && (
                   <p className="text-sm">
                     <span className="font-medium">Referencia:</span>{" "}
-                    <span className="font-mono">{order.referencia_pago}</span>
+                    <span>{order.referencia_pago}</span>
                   </p>
                 )}
               </div>
@@ -363,6 +383,15 @@ const OrderList = ({ orders, loading, onEdit, onOpenPrint, onSendToSign }: Order
           // Refresh will be handled by parent component
           window.location.reload();
         }}
+      />
+    )}
+
+    {/* Supplier Order Preview Dialog */}
+    {selectedInternalOrderId && (
+      <SupplierOrderPreviewDialog
+        open={supplierPreviewOpen}
+        onOpenChange={setSupplierPreviewOpen}
+        internalOrderId={selectedInternalOrderId}
       />
     )}
     </>
