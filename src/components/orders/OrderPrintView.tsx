@@ -662,7 +662,7 @@ const OrderPrintView = ({ order, companyInfo }: OrderPrintViewProps) => {
         <div style={{
           height: '100px',
           maxWidth: '400px',
-          margin: '0 auto'
+          margin: '32px auto 0 auto'
         }}></div>
         
         {/* Footer info */}

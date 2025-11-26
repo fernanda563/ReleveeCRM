@@ -167,7 +167,7 @@ Deno.serve(async (req) => {
               name: 'Firma del Cliente',
               type: 'signature',
               x: 106,
-              y: 550,
+              y: 580,
               width: 400,
               height: 80,
               required: true,
