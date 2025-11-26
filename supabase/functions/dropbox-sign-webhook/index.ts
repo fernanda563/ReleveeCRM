@@ -52,7 +52,7 @@ Deno.serve(async (req) => {
 
     const event = body.event;
     const eventType = event.event_type;
-    const signatureRequest = event.signature_request;
+    const signatureRequest = body.signature_request;
 
     if (!signatureRequest) {
       console.error('No se encontró signature_request en el evento');
