@@ -56,13 +56,13 @@ export const OrderTableView = ({ orders, onOrderClick }: OrderTableViewProps) =>
               <TableCell className="font-medium">
                 {order.clients?.nombre} {order.clients?.apellido}
               </TableCell>
-              <TableCell className="font-mono text-sm">
+              <TableCell>
                 {order.custom_id || order.id.slice(0, 8)}
               </TableCell>
               <TableCell>{capitalizeFirst(order.tipo_accesorio)}</TableCell>
               <TableCell>{formatMetal(order)}</TableCell>
               <TableCell>{formatStone(order)}</TableCell>
-              <TableCell className="font-mono text-sm text-muted-foreground">
+              <TableCell>
                 {order.internal_order?.numero_reporte || "—"}
               </TableCell>
             </TableRow>
