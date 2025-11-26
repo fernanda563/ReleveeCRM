@@ -251,7 +251,8 @@ const Orders = () => {
     const revenue = orders.reduce((sum, order) => sum + Number(order.precio_venta), 0);
     const pending = orders.filter((o) => o.estatus_pago === "anticipo_recibido").length;
     const inProd = orders.filter(
-      (o) => o.estatus_piedra !== "piedra_montada" || o.estatus_montura !== "entregado_levant"
+      (o) => o.estatus_piedra !== "piedra_montada" || 
+             (o.estatus_montura !== "entregado_oyamel" && o.estatus_montura !== "entregado_levant")
     ).length;
 
     setStats({
