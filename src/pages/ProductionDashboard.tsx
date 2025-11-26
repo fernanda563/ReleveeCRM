@@ -69,11 +69,13 @@ const ProductionDashboard = () => {
   const calculateGeneralStats = () => {
     const total = orders.length;
     const completed = orders.filter(
-      (o) => o.estatus_piedra === "piedra_montada" && o.estatus_montura === "entregado_levant"
+      (o) => o.estatus_piedra === "piedra_montada" && 
+             (o.estatus_montura === "entregado_oyamel" || o.estatus_montura === "entregado_levant")
     ).length;
     const inProgress = orders.filter(
       (o) =>
-        o.estatus_piedra !== "piedra_montada" || o.estatus_montura !== "entregado_levant"
+        o.estatus_piedra !== "piedra_montada" || 
+        (o.estatus_montura !== "entregado_oyamel" && o.estatus_montura !== "entregado_levant")
     ).length;
     const avgDays = calculateAverageDays();
 
@@ -83,7 +85,8 @@ const ProductionDashboard = () => {
   // Calcular días promedio de producción
   const calculateAverageDays = () => {
     const completedOrders = orders.filter(
-      (o) => o.estatus_piedra === "piedra_montada" && o.estatus_montura === "entregado_levant"
+      (o) => o.estatus_piedra === "piedra_montada" && 
+             (o.estatus_montura === "entregado_oyamel" || o.estatus_montura === "entregado_levant")
     );
 
     if (completedOrders.length === 0) return 0;
@@ -147,7 +150,7 @@ const ProductionDashboard = () => {
 
       if (
         order.estatus_piedra === "piedra_montada" &&
-        order.estatus_montura === "entregado_levant"
+        (order.estatus_montura === "entregado_oyamel" || order.estatus_montura === "entregado_levant")
       ) {
         monthlyStats[month].completed += 1;
       } else {

@@ -116,7 +116,8 @@ const OrderList = ({ orders, loading, onEdit, onOpenPrint, onSendToSign }: Order
   };
 
   const getProductionStatus = (order: Order) => {
-    if (order.estatus_piedra === "piedra_montada" && order.estatus_montura === "entregado_levant") {
+    if (order.estatus_piedra === "piedra_montada" && 
+        (order.estatus_montura === "entregado_oyamel" || order.estatus_montura === "entregado_levant")) {
       return (
         <Badge className="bg-foreground text-background flex items-center gap-1">
           <Check className="h-3 w-3" />

@@ -180,10 +180,12 @@ const Production = () => {
 
   const calculateStats = () => {
     const enProceso = orders.filter(
-      (o) => o.estatus_piedra !== "piedra_montada" || o.estatus_montura !== "entregado_levant"
+      (o) => o.estatus_piedra !== "piedra_montada" || 
+             (o.estatus_montura !== "entregado_oyamel" && o.estatus_montura !== "entregado_levant")
     ).length;
     const completadas = orders.filter(
-      (o) => o.estatus_piedra === "piedra_montada" && o.estatus_montura === "entregado_levant"
+      (o) => o.estatus_piedra === "piedra_montada" && 
+             (o.estatus_montura === "entregado_oyamel" || o.estatus_montura === "entregado_levant")
     ).length;
     const enEspera = orders.filter(
       (o) => o.estatus_montura === "en_espera" || o.estatus_piedra === "en_busqueda"
