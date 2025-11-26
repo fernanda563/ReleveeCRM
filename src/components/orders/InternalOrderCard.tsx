@@ -179,9 +179,21 @@ export const InternalOrderCard = ({
               <p><span className="font-medium">Quilataje:</span> {order.quilataje}ct</p>
               <p><span className="font-medium">Color:</span> {order.color}</p>
               <p><span className="font-medium">Claridad:</span> {order.claridad}</p>
-              <p><span className="font-medium">Corte:</span> {order.corte}</p>
+              <p><span className="font-medium">Corte:</span> {capitalizeFirst(order.corte || '')}</p>
               <p><span className="font-medium">Forma:</span> {formatShape(order.forma)}</p>
               <p><span className="font-medium">Certificado:</span> {order.certificado}</p>
+              {order.pulido && (
+                <p><span className="font-medium">Pulido:</span> {capitalizeFirst(order.pulido)}</p>
+              )}
+              {order.simetria && (
+                <p><span className="font-medium">Simetría:</span> {capitalizeFirst(order.simetria)}</p>
+              )}
+              {order.medidas && (
+                <p><span className="font-medium">Medidas:</span> {order.medidas}</p>
+              )}
+              {order.numero_stock && (
+                <p><span className="font-medium">Stock #:</span> {order.numero_stock}</p>
+              )}
             </div>
             {order.numero_reporte && (
               <p className="text-sm">
