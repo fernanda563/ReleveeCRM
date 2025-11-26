@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Search, Plus, DollarSign, Package, TrendingUp, Calendar as CalendarIcon, X, ShoppingBag } from "lucide-react";
+import { Search, Plus, DollarSign, Package, TrendingUp, Calendar as CalendarIcon, X, ShoppingBag, LayoutGrid, Table2 } from "lucide-react";
 import OrderDialog from "@/components/orders/OrderDialog";
 import OrderList from "@/components/orders/OrderList";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +18,8 @@ import { InternalOrderList } from "@/components/orders/InternalOrderList";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { OrderTableView } from "@/components/orders/OrderTableView";
 
 export interface Order {
   id: string;
@@ -61,6 +63,9 @@ export interface Order {
   embedded_sign_url?: string | null;
   embedded_sign_url_expires_at?: string | null;
   internal_order_id?: string | null;
+  internal_order?: {
+    numero_reporte: string | null;
+  } | null;
   created_at: string;
   clients?: {
     nombre: string;
@@ -92,6 +97,7 @@ const Orders = () => {
   const [internalSearchTerm, setInternalSearchTerm] = useState("");
   const [internalFilterTipo, setInternalFilterTipo] = useState("todos");
   const [internalFilterEstatus, setInternalFilterEstatus] = useState("todos");
+  const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
 
   // Stats
   const [stats, setStats] = useState({
@@ -174,6 +180,9 @@ const Orders = () => {
           nombre,
           tipo_accesorio,
           stl_file_url
+        ),
+        internal_order:purchase_orders_internal!orders_internal_order_id_fkey (
+          numero_reporte
         )
       `)
       .order("created_at", { ascending: false });
@@ -539,15 +548,34 @@ const Orders = () => {
           </CardContent>
         </Card>
 
-        {/* Orders List */}
-        <OrderList
-          orders={filteredOrders}
-          loading={loading}
-          onEdit={handleOrderAction}
-          onRefresh={fetchOrders}
-          onOpenPrint={handleOpenPrint}
-          onSendToSign={handleSendToSign}
-        />
+        {/* View Mode Toggle */}
+        <div className="flex justify-end mb-4">
+          <ToggleGroup type="single" value={viewMode} onValueChange={(value) => value && setViewMode(value as 'cards' | 'table')}>
+            <ToggleGroupItem value="cards" aria-label="Vista de tarjetas">
+              <LayoutGrid className="h-4 w-4" />
+            </ToggleGroupItem>
+            <ToggleGroupItem value="table" aria-label="Vista de tabla">
+              <Table2 className="h-4 w-4" />
+            </ToggleGroupItem>
+          </ToggleGroup>
+        </div>
+
+        {/* Orders List or Table */}
+        {viewMode === 'cards' ? (
+          <OrderList
+            orders={filteredOrders}
+            loading={loading}
+            onEdit={handleOrderAction}
+            onRefresh={fetchOrders}
+            onOpenPrint={handleOpenPrint}
+            onSendToSign={handleSendToSign}
+          />
+        ) : (
+          <OrderTableView
+            orders={filteredOrders}
+            onOrderClick={handleOrderAction}
+          />
+        )}
           </TabsContent>
 
           <TabsContent value="internal">
