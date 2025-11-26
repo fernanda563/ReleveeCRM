@@ -20,6 +20,7 @@ import { es } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { OrderTableView } from "@/components/orders/OrderTableView";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export interface Order {
   id: string;
@@ -74,6 +75,35 @@ export interface Order {
   };
 }
 
+const STONE_STATUS_OPTIONS = [
+  { value: "todos", label: "Todos" },
+  { value: "en_busqueda", label: "En proceso de búsqueda" },
+  { value: "piedra_comprada", label: "Piedra comprada" },
+  { value: "en_transito_po_box", label: "Piedra en tránsito a PO Box" },
+  { value: "en_po_box", label: "Piedra en PO Box" },
+  { value: "en_levant", label: "Piedra en Levant" },
+  { value: "con_disenador", label: "Piedra con diseñador" },
+  { value: "en_taller", label: "Piedra en taller" },
+  { value: "montada", label: "Piedra montada" },
+];
+
+const MOUNTING_STATUS_OPTIONS = [
+  { value: "todos", label: "Todos" },
+  { value: "en_espera", label: "En espera de iniciar" },
+  { value: "en_diseno", label: "En proceso de diseño" },
+  { value: "impresion_modelo", label: "Impresión de modelo" },
+  { value: "reimpresion_modelo", label: "Reimpresión de modelo" },
+  { value: "traslado_modelo", label: "Traslado de modelo" },
+  { value: "espera_taller", label: "En espera en taller" },
+  { value: "en_vaciado", label: "En proceso de vaciado" },
+  { value: "pieza_terminada", label: "Pieza terminada en taller" },
+  { value: "en_recoleccion", label: "En proceso de recolección" },
+  { value: "recolectado", label: "Recolectado" },
+  { value: "entregado_oyamel", label: "Entregado en Oyamel" },
+  { value: "entregado_levant", label: "Entregado en Levant" },
+  { value: "no_aplica", label: "No aplica" },
+];
+
 const Orders = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
@@ -98,6 +128,8 @@ const Orders = () => {
   const [internalFilterTipo, setInternalFilterTipo] = useState("todos");
   const [internalFilterEstatus, setInternalFilterEstatus] = useState("todos");
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
+  const [filterEstatusPiedra, setFilterEstatusPiedra] = useState<string>("todos");
+  const [filterEstatusMontura, setFilterEstatusMontura] = useState<string>("todos");
 
   // Stats
   const [stats, setStats] = useState({
@@ -157,8 +189,18 @@ const Orders = () => {
       });
     }
 
+    // Filtrar por estatus de piedra
+    if (filterEstatusPiedra !== "todos") {
+      filtered = filtered.filter((order) => order.estatus_piedra === filterEstatusPiedra);
+    }
+
+    // Filtrar por estatus de montura
+    if (filterEstatusMontura !== "todos") {
+      filtered = filtered.filter((order) => order.estatus_montura === filterEstatusMontura);
+    }
+
     setFilteredOrders(filtered);
-  }, [searchTerm, orders, fechaDesde, fechaHasta]);
+  }, [searchTerm, orders, fechaDesde, fechaHasta, filterEstatusPiedra, filterEstatusMontura]);
 
   useEffect(() => {
     calculateStats();
@@ -445,104 +487,136 @@ const Orders = () => {
 
         {/* Search and Filters */}
         <Card className="mb-6">
-          <CardContent className="pt-6">
-            <div className="space-y-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <CardContent className="pt-6 space-y-4">
+            {/* Fila 1: Búsqueda + Fechas */}
+            <div className="flex items-center gap-4">
+              <div className="relative w-1/3">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Buscar por cliente o número de orden..."
+                  placeholder="Buscar cliente u orden..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  className="pl-9"
                 />
               </div>
 
-              {/* Date Range Filter */}
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2 flex-1">
-                  <span className="text-sm text-muted-foreground whitespace-nowrap">
-                    Fecha de entrega:
-                  </span>
-                  
-                  {/* Fecha Desde */}
-                  <Popover open={isDateFromOpen} onOpenChange={setIsDateFromOpen}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "justify-start text-left font-normal",
-                          !fechaDesde && "text-muted-foreground"
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {fechaDesde ? format(fechaDesde, "PPP", { locale: es }) : "Desde"}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={fechaDesde}
-                        onSelect={(date) => {
-                          setFechaDesde(date);
-                          setIsDateFromOpen(false);
-                        }}
-                        initialFocus
-                        className="p-3 pointer-events-auto"
-                      />
-                    </PopoverContent>
-                  </Popover>
-
-                  {/* Fecha Hasta */}
-                  <Popover open={isDateToOpen} onOpenChange={setIsDateToOpen}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "justify-start text-left font-normal",
-                          !fechaHasta && "text-muted-foreground"
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {fechaHasta ? format(fechaHasta, "PPP", { locale: es }) : "Hasta"}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={fechaHasta}
-                        onSelect={(date) => {
-                          setFechaHasta(date);
-                          setIsDateToOpen(false);
-                        }}
-                        disabled={(date) => fechaDesde ? date < fechaDesde : false}
-                        initialFocus
-                        className="p-3 pointer-events-auto"
-                      />
-                    </PopoverContent>
-                  </Popover>
-
-                  {/* Botón para limpiar filtros de fecha */}
-                  {(fechaDesde || fechaHasta) && (
+              <div className="flex items-center gap-2 flex-1">
+                <span className="text-sm text-muted-foreground whitespace-nowrap">
+                  Fecha de entrega:
+                </span>
+                <Popover open={isDateFromOpen} onOpenChange={setIsDateFromOpen}>
+                  <PopoverTrigger asChild>
                     <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        setFechaDesde(undefined);
-                        setFechaHasta(undefined);
-                      }}
-                      className="h-9 px-2"
+                      variant="outline"
+                      className={cn(
+                        "justify-start text-left font-normal",
+                        !fechaDesde && "text-muted-foreground"
+                      )}
                     >
-                      <X className="h-4 w-4" />
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {fechaDesde ? format(fechaDesde, "PPP", { locale: es }) : "Desde"}
                     </Button>
-                  )}
-                </div>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={fechaDesde}
+                      onSelect={(date) => {
+                        setFechaDesde(date);
+                        setIsDateFromOpen(false);
+                      }}
+                      initialFocus
+                      className="p-3 pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
 
-                {/* Active Filters Badge */}
+                <Popover open={isDateToOpen} onOpenChange={setIsDateToOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "justify-start text-left font-normal",
+                        !fechaHasta && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {fechaHasta ? format(fechaHasta, "PPP", { locale: es }) : "Hasta"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={fechaHasta}
+                      onSelect={(date) => {
+                        setFechaHasta(date);
+                        setIsDateToOpen(false);
+                      }}
+                      disabled={(date) => fechaDesde ? date < fechaDesde : false}
+                      initialFocus
+                      className="p-3 pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+
                 {(fechaDesde || fechaHasta) && (
-                  <Badge variant="secondary" className="whitespace-nowrap">
-                    {filteredOrders.length} {filteredOrders.length === 1 ? 'resultado' : 'resultados'}
-                  </Badge>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setFechaDesde(undefined);
+                      setFechaHasta(undefined);
+                    }}
+                    className="h-9 px-2"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
                 )}
+              </div>
+            </div>
+
+            {/* Fila 2: Estatus Piedra + Estatus Montura */}
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 flex-1">
+                <span className="text-sm text-muted-foreground whitespace-nowrap">
+                  Estatus piedra:
+                </span>
+                <Select value={filterEstatusPiedra} onValueChange={setFilterEstatusPiedra}>
+                  <SelectTrigger className="w-[240px]">
+                    <SelectValue placeholder="Todos" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {STONE_STATUS_OPTIONS.map((status) => (
+                      <SelectItem key={status.value} value={status.value}>
+                        {status.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex items-center gap-2 flex-1">
+                <span className="text-sm text-muted-foreground whitespace-nowrap">
+                  Estatus montura:
+                </span>
+                <Select value={filterEstatusMontura} onValueChange={setFilterEstatusMontura}>
+                  <SelectTrigger className="w-[240px]">
+                    <SelectValue placeholder="Todos" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {MOUNTING_STATUS_OPTIONS.map((status) => (
+                      <SelectItem key={status.value} value={status.value}>
+                        {status.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="ml-auto">
+                <Badge variant="secondary" className="whitespace-nowrap">
+                  {filteredOrders.length} {filteredOrders.length === 1 ? 'orden' : 'órdenes'}
+                </Badge>
               </div>
             </div>
           </CardContent>
