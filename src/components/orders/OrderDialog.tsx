@@ -997,32 +997,55 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
                       {clientProspects.length} {clientProspects.length === 1 ? "proyecto" : "proyectos"} activo{clientProspects.length > 1 ? "s" : ""}
                     </Badge>
                   </div>
-                  <Select
-                    value={selectedProspectId}
-                    onValueChange={(value) => {
-                      setSelectedProspectId(value);
-                      if (value) {
-                        applyProspectData(value);
-                      }
-                    }}
-                    disabled={loading || isLoadingProspects}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecciona un proyecto (opcional)" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {clientProspects.map((prospect) => (
-                        <SelectItem key={prospect.id} value={prospect.id}>
-                          {generateProspectTitle(prospect)}
-                          {prospect.importe_previsto && (
-                            <span className="text-muted-foreground ml-2">
-                              ({formatCurrency(prospect.importe_previsto.toString())})
-                            </span>
-                          )}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <div className="relative">
+                    <Select
+                      value={selectedProspectId}
+                      onValueChange={(value) => {
+                        setSelectedProspectId(value);
+                        if (value) {
+                          applyProspectData(value);
+                        }
+                      }}
+                      disabled={loading || isLoadingProspects}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecciona un proyecto (opcional)" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {clientProspects.map((prospect) => (
+                          <SelectItem key={prospect.id} value={prospect.id}>
+                            {generateProspectTitle(prospect)}
+                            {prospect.importe_previsto && (
+                              <span className="text-muted-foreground ml-2">
+                                ({formatCurrency(prospect.importe_previsto.toString())})
+                              </span>
+                            )}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {selectedProspectId && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setSelectedProspectId("");
+                          // Reset form data back to defaults
+                          setTipoAccesorio("");
+                          setMetalTipo("oro");
+                          setMetalColor("");
+                          setMetalPureza("");
+                          setPiedraTipo("diamante");
+                          setNotas("");
+                          setPrecioVenta("");
+                        }}
+                        className="absolute right-8 top-1/2 -translate-y-1/2 p-1 hover:bg-muted rounded-sm transition-colors"
+                        disabled={loading || isLoadingProspects}
+                      >
+                        <X className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                      </button>
+                    )}
+                  </div>
                   <p className="text-xs text-muted-foreground">
                     Al seleccionar un proyecto, se rellenarán automáticamente los campos relacionados (metal, piedra, precio sugerido y notas).
                   </p>
