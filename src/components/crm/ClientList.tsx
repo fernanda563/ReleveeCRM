@@ -75,7 +75,7 @@ const ClientList = ({
       {clients.map((client) => (
         <Card key={client.id} className="border-border hover:shadow-md transition-shadow">
           <CardContent className="pt-6">
-            <div className="flex items-start justify-between gap-4">
+            <div className="flex items-center justify-between gap-4">
               {/* Información del Cliente */}
               <div className="flex-1 min-w-0">
                 {/* Nombre y Badges */}
