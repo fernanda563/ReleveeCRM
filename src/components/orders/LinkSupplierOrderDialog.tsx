@@ -48,6 +48,7 @@ export const LinkSupplierOrderDialog = ({
 
   useEffect(() => {
     if (open) {
+      setSelectedOrderId(""); // Reset selection when modal opens
       fetchAvailableOrders();
     }
   }, [open]);
@@ -105,13 +106,22 @@ export const LinkSupplierOrderDialog = ({
 
     setLoading(true);
     try {
-      const { error } = await supabase
+      console.log("Vinculando orden de cliente:", orderId, "con orden de proveedor:", selectedOrderId);
+      
+      const { data, error } = await supabase
         .from("orders")
         .update({ internal_order_id: selectedOrderId })
-        .eq("id", orderId);
+        .eq("id", orderId)
+        .select();
 
       if (error) throw error;
 
+      // Verify that the update actually affected a row
+      if (!data || data.length === 0) {
+        throw new Error("No se pudo actualizar la orden");
+      }
+
+      console.log("Vinculación exitosa:", data);
       toast.success("Orden vinculada correctamente");
       onSuccess();
       onOpenChange(false);
