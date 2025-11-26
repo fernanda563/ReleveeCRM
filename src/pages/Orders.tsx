@@ -489,16 +489,93 @@ const Orders = () => {
         {/* Search and Filters */}
         <Card className="mb-6">
           <CardContent className="pt-6 space-y-4">
-            {/* Fila 1: Búsqueda + Estatus Piedra + Estatus Montura */}
+            {/* Fila 1: Búsqueda completa */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por nombre del cliente, apellido o ID de orden..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+
+            {/* Fila 2: Fechas + Piedra + Montura */}
             <div className="flex items-center gap-3">
-              <div className="relative w-[280px]">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar cliente u orden..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-9"
-                />
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground whitespace-nowrap">
+                  Fecha:
+                </span>
+                <Popover open={isDateFromOpen} onOpenChange={setIsDateFromOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className={cn(
+                        "justify-start text-left font-normal w-[140px]",
+                        !fechaDesde && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {fechaDesde ? format(fechaDesde, "dd/MM/yy") : "Desde"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 bg-background z-50" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={fechaDesde}
+                      onSelect={(date) => {
+                        setFechaDesde(date);
+                        setIsDateFromOpen(false);
+                      }}
+                      initialFocus
+                      className="p-3 pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+
+                <Popover open={isDateToOpen} onOpenChange={setIsDateToOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className={cn(
+                        "justify-start text-left font-normal w-[140px]",
+                        !fechaHasta && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {fechaHasta ? format(fechaHasta, "dd/MM/yy") : "Hasta"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 bg-background z-50" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={fechaHasta}
+                      onSelect={(date) => {
+                        setFechaHasta(date);
+                        setIsDateToOpen(false);
+                      }}
+                      disabled={(date) => fechaDesde ? date < fechaDesde : false}
+                      initialFocus
+                      className="p-3 pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+
+                {(fechaDesde || fechaHasta) && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setFechaDesde(undefined);
+                      setFechaHasta(undefined);
+                    }}
+                    className="h-8 px-2"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
               </div>
 
               <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -536,83 +613,6 @@ const Orders = () => {
                   </SelectContent>
                 </Select>
               </div>
-            </div>
-
-            {/* Fila 2: Fechas */}
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground whitespace-nowrap">
-                Fecha:
-              </span>
-              <Popover open={isDateFromOpen} onOpenChange={setIsDateFromOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className={cn(
-                      "justify-start text-left font-normal w-[140px]",
-                      !fechaDesde && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {fechaDesde ? format(fechaDesde, "dd/MM/yy") : "Desde"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 bg-background z-50" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={fechaDesde}
-                    onSelect={(date) => {
-                      setFechaDesde(date);
-                      setIsDateFromOpen(false);
-                    }}
-                    initialFocus
-                    className="p-3 pointer-events-auto"
-                  />
-                </PopoverContent>
-              </Popover>
-
-              <Popover open={isDateToOpen} onOpenChange={setIsDateToOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className={cn(
-                      "justify-start text-left font-normal w-[140px]",
-                      !fechaHasta && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {fechaHasta ? format(fechaHasta, "dd/MM/yy") : "Hasta"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 bg-background z-50" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={fechaHasta}
-                    onSelect={(date) => {
-                      setFechaHasta(date);
-                      setIsDateToOpen(false);
-                    }}
-                    disabled={(date) => fechaDesde ? date < fechaDesde : false}
-                    initialFocus
-                    className="p-3 pointer-events-auto"
-                  />
-                </PopoverContent>
-              </Popover>
-
-              {(fechaDesde || fechaHasta) && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setFechaDesde(undefined);
-                    setFechaHasta(undefined);
-                  }}
-                  className="h-8 px-2"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              )}
             </div>
           </CardContent>
         </Card>
