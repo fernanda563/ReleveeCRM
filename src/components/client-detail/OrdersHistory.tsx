@@ -96,29 +96,29 @@ export const OrdersHistory = ({ clientId }: OrdersHistoryProps) => {
   };
 
   const STONE_STATUS_LABELS: Record<string, string> = {
-    en_busqueda: "En búsqueda",
-    piedra_comprada: "Comprada",
-    piedra_transito_pobox: "Tránsito PO Box",
-    piedra_pobox: "En PO Box",
-    piedra_levant: "En Levant",
-    piedra_con_disenador: "Con diseñador",
-    piedra_taller: "En taller",
-    piedra_montada: "Montada",
+    en_busqueda: "En proceso de búsqueda",
+    piedra_comprada: "Piedra comprada",
+    en_transito_po_box: "Piedra en tránsito a PO Box",
+    en_po_box: "Piedra en PO Box",
+    en_levant: "Piedra en Levant",
+    con_disenador: "Piedra con diseñador",
+    en_taller: "Piedra en taller",
+    piedra_montada: "Piedra montada",
   };
 
   const MOUNTING_STATUS_LABELS: Record<string, string> = {
-    en_espera: "En espera",
-    en_proceso_diseno: "En diseño",
-    impresion_modelo: "Impresión",
-    reimpresion_modelo: "Reimpresión",
-    traslado_modelo: "Traslado",
-    en_espera_taller: "Espera taller",
-    en_proceso_vaciado: "Vaciado",
-    pieza_terminada_taller: "Terminada taller",
-    en_proceso_recoleccion: "Recolección",
+    en_espera: "En espera de iniciar el proceso",
+    en_diseno: "En proceso de diseño",
+    impresion_modelo: "Impresión de modelo",
+    reimpresion_modelo: "Reimpresión de modelo",
+    traslado_modelo: "Traslado de modelo",
+    en_espera_taller: "En espera en taller",
+    en_vaciado: "En proceso de vaciado",
+    pieza_terminada_taller: "Pieza terminada en taller",
+    en_recoleccion: "En proceso de recolección",
     recolectado: "Recolectado",
-    entregado_oyamel: "En Oyamel",
-    entregado_levant: "En Levant",
+    entregado_oyamel: "Entregado en Oyamel",
+    entregado_levant: "Entregado en Levant",
     no_aplica: "No aplica",
   };
 
