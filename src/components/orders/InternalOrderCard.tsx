@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { InternalOrder, Supplier } from "@/types/internal-orders";
-import { Package, FileText, Image as ImageIcon, Edit, Trash2, ChevronDown, MoreVertical } from "lucide-react";
+import { Package, FileText, Image as ImageIcon, Edit, Trash2, ChevronDown, MoreVertical, User } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { useState } from "react";
@@ -20,6 +20,7 @@ interface InternalOrderCardProps {
   onDelete?: () => void;
   showActions?: boolean;
   isAdmin?: boolean;
+  onViewClientOrder?: (orderId: string) => void;
 }
 
 export const InternalOrderCard = ({
@@ -28,6 +29,7 @@ export const InternalOrderCard = ({
   onDelete,
   showActions = true,
   isAdmin = false,
+  onViewClientOrder
 }: InternalOrderCardProps) => {
   const [showGallery, setShowGallery] = useState(false);
 
@@ -97,6 +99,19 @@ export const InternalOrderCard = ({
               {order.batch_id && order.batch_count && (
                 <Badge variant="secondary">
                   Lote de {order.batch_count} diamantes
+                </Badge>
+              )}
+              {order.linked_client_order && (
+                <Badge 
+                  variant="outline" 
+                  className="text-xs cursor-pointer hover:bg-accent hover:text-accent-foreground transition-colors flex items-center gap-1"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onViewClientOrder?.(order.linked_client_order.id);
+                  }}
+                >
+                  <User className="h-3 w-3" />
+                  {order.linked_client_order.client_name}
                 </Badge>
               )}
             </div>

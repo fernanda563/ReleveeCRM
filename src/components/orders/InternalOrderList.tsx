@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useState } from "react";
 import { InternalOrderDialog } from "./InternalOrderDialog";
+import { ClientOrderPreviewDialog } from "./ClientOrderPreviewDialog";
 
 interface InternalOrderListProps {
   orders: InternalOrder[];
@@ -17,6 +18,8 @@ export const InternalOrderList = ({ orders, loading, onRefresh }: InternalOrderL
   const { isAdmin } = useUserRole();
   const [editingOrder, setEditingOrder] = useState<InternalOrder | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [clientOrderPreviewOpen, setClientOrderPreviewOpen] = useState(false);
+  const [selectedClientOrderId, setSelectedClientOrderId] = useState<string | null>(null);
 
   const handleEdit = (order: InternalOrder) => {
     // No permitir editar órdenes de lotes CSV
@@ -48,6 +51,11 @@ export const InternalOrderList = ({ orders, loading, onRefresh }: InternalOrderL
     }
   };
 
+  const handleViewClientOrder = (orderId: string) => {
+    setSelectedClientOrderId(orderId);
+    setClientOrderPreviewOpen(true);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -75,6 +83,7 @@ export const InternalOrderList = ({ orders, loading, onRefresh }: InternalOrderL
             onDelete={() => handleDelete(order.id)}
             showActions={true}
             isAdmin={isAdmin()}
+            onViewClientOrder={handleViewClientOrder}
           />
         ))}
       </div>
@@ -88,6 +97,14 @@ export const InternalOrderList = ({ orders, loading, onRefresh }: InternalOrderL
         }}
         order={editingOrder}
       />
+
+      {selectedClientOrderId && (
+        <ClientOrderPreviewDialog
+          open={clientOrderPreviewOpen}
+          onOpenChange={setClientOrderPreviewOpen}
+          orderId={selectedClientOrderId}
+        />
+      )}
     </>
   );
 };

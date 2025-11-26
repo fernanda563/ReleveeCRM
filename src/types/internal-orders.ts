@@ -87,6 +87,16 @@ export interface InternalOrder {
   created_at: string;
   updated_at: string;
   created_by?: string;
+  
+  // Información de lote
+  batch_size?: number;
+  
+  // Orden de cliente vinculada
+  linked_client_order?: {
+    id: string;
+    custom_id?: string;
+    client_name: string;
+  };
 }
 
 export interface InternalOrderFormData {
