@@ -296,40 +296,24 @@ export const OrdersHistory = ({ clientId }: OrdersHistoryProps) => {
                       )}
                     </div>
 
-                    {(order.stl_file || order.internal_order_id) && (
+                    {order.stl_file && (
                       <div className="flex items-center gap-2">
-                        {order.stl_file && (
-                          <a
-                            href={`/stl-viewer-fullscreen?url=${encodeURIComponent(order.stl_file.stl_file_url)}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                            }}
-                          >
-                            <Badge 
-                              variant="outline" 
-                              className="text-xs cursor-pointer hover:bg-accent hover:text-accent-foreground transition-colors flex items-center gap-1"
-                            >
-                              <Box className="h-3 w-3" />
-                              Ver STL
-                            </Badge>
-                          </a>
-                        )}
-                        {order.internal_order_id && (
+                        <a
+                          href={`/stl-viewer-fullscreen?url=${encodeURIComponent(order.stl_file.stl_file_url)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                          }}
+                        >
                           <Badge 
                             variant="outline" 
                             className="text-xs cursor-pointer hover:bg-accent hover:text-accent-foreground transition-colors flex items-center gap-1"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedInternalOrderId(order.internal_order_id!);
-                              setSupplierPreviewOpen(true);
-                            }}
                           >
-                            <Package className="h-3 w-3" />
-                            Ver Orden de Proveedor
+                            <Box className="h-3 w-3" />
+                            Ver STL
                           </Badge>
-                        )}
+                        </a>
                       </div>
                     )}
                   </div>
@@ -367,10 +351,20 @@ export const OrdersHistory = ({ clientId }: OrdersHistoryProps) => {
                           <Settings className="h-4 w-4 mr-2" />
                           Modificar Estatus
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleOpenLinkDialog(order)}>
-                          <Link className="h-4 w-4 mr-2" />
-                          Vincular a Orden de Proveedor
-                        </DropdownMenuItem>
+                        {order.internal_order_id ? (
+                          <DropdownMenuItem onClick={() => {
+                            setSelectedInternalOrderId(order.internal_order_id!);
+                            setSupplierPreviewOpen(true);
+                          }}>
+                            <Package className="h-4 w-4 mr-2" />
+                            Ver Orden de Proveedor
+                          </DropdownMenuItem>
+                        ) : (
+                          <DropdownMenuItem onClick={() => handleOpenLinkDialog(order)}>
+                            <Link className="h-4 w-4 mr-2" />
+                            Vincular a Orden de Proveedor
+                          </DropdownMenuItem>
+                        )}
                         {isAdmin() && (
                           <DropdownMenuItem 
                             onClick={() => handleOpenDeleteDialog(order)}
