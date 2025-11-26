@@ -78,6 +78,12 @@ export const OrderPrintDialog = ({ orderId, open, onOpenChange, autoSendToSign =
     contentRef: printRef,
   });
 
+  const handlePrintSigned = () => {
+    if (order?.signed_document_url) {
+      window.open(order.signed_document_url, '_blank');
+    }
+  };
+
   const ensureImagesLoaded = async (container: HTMLElement, timeoutMs = 6000) => {
     const imgs = Array.from(container.querySelectorAll("img"));
     if (imgs.length === 0) return;
@@ -165,6 +171,19 @@ export const OrderPrintDialog = ({ orderId, open, onOpenChange, autoSendToSign =
   };
 
   const handleDownloadPDF = async () => {
+    // Si está firmado, descargar directamente el documento firmado
+    if (order?.signature_status === 'signed' && order.signed_document_url) {
+      const link = document.createElement('a');
+      link.href = order.signed_document_url;
+      link.download = order.custom_id 
+        ? `Orden_Firmada_${order.custom_id}.pdf`
+        : `Orden_Firmada_${order.id.slice(0, 8)}.pdf`;
+      link.click();
+      toast.success("Descargando documento firmado");
+      return;
+    }
+
+    // Si no está firmado, generar PDF del preview
     if (!printRef.current || !order) return;
 
     try {
@@ -450,11 +469,15 @@ export const OrderPrintDialog = ({ orderId, open, onOpenChange, autoSendToSign =
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white" style={{ backgroundColor: '#ffffff' }}>
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
-            <span>Vista de Impresión</span>
+            <span>{order?.signature_status === 'signed' ? 'Documento Firmado' : 'Vista de Impresión'}</span>
             <div className="flex gap-2">
               {!loading && !error && (
                 <>
-                  <Button onClick={handlePrint} size="sm" variant="outline">
+                  <Button 
+                    onClick={order?.signature_status === 'signed' ? handlePrintSigned : handlePrint} 
+                    size="sm" 
+                    variant="outline"
+                  >
                     <Printer className="h-4 w-4 mr-2" />
                     Imprimir
                   </Button>
@@ -497,9 +520,19 @@ export const OrderPrintDialog = ({ orderId, open, onOpenChange, autoSendToSign =
         )}
 
         {!loading && !error && order && companyInfo && (
-          <div ref={printRef} style={{ backgroundColor: '#ffffff' }}>
-            <OrderPrintView order={order} companyInfo={companyInfo} />
-          </div>
+          order.signature_status === 'signed' && order.signed_document_url ? (
+            <div className="w-full h-[70vh]">
+              <iframe 
+                src={order.signed_document_url} 
+                className="w-full h-full border-0"
+                title="Documento Firmado"
+              />
+            </div>
+          ) : (
+            <div ref={printRef} style={{ backgroundColor: '#ffffff' }}>
+              <OrderPrintView order={order} companyInfo={companyInfo} />
+            </div>
+          )
         )}
       </DialogContent>
     </Dialog>

@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Edit, Loader2, ChevronDown, FileText, FileSignature, Check, Clock, X, Box, DollarSign, Settings, Link, Trash2, Package, Gem, Wrench } from "lucide-react";
+import { Edit, Loader2, ChevronDown, FileText, FileSignature, Check, Clock, X, Box, DollarSign, Settings, Link, Trash2, Package, Gem, Wrench, Download } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -413,8 +413,8 @@ export const OrdersHistory = ({ clientId }: OrdersHistoryProps) => {
                         )}
                         {order.signature_status === 'signed' && order.signed_document_url && (
                           <DropdownMenuItem onClick={() => window.open(order.signed_document_url!, '_blank')}>
-                            <FileSignature className="h-4 w-4 mr-2" />
-                            Ver Documento Firmado
+                            <Download className="h-4 w-4 mr-2" />
+                            Descargar documento firmado
                           </DropdownMenuItem>
                         )}
                         <DropdownMenuItem onClick={() => handleOpenStatusDialog(order)}>
