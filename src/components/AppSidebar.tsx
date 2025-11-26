@@ -150,7 +150,7 @@ export function AppSidebar() {
           
           return (
             <div key={section.label}>
-              <SidebarGroup className="py-2">
+              <SidebarGroup>
                 <SidebarGroupLabel>{section.label}</SidebarGroupLabel>
                 <SidebarGroupContent>
                   <SidebarMenu>
@@ -176,7 +176,7 @@ export function AppSidebar() {
               </SidebarGroup>
               
               {sectionIndex < menuSections.length - 1 && (
-                <Separator className="my-0" />
+                <Separator className="my-2" />
               )}
             </div>
           );
