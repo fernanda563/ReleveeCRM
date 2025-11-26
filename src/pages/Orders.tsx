@@ -10,6 +10,7 @@ import OrderList from "@/components/orders/OrderList";
 import { Badge } from "@/components/ui/badge";
 import ClientDialog from "@/components/crm/ClientDialog";
 import { OrderPrintDialog } from "@/components/orders/OrderPrintDialog";
+import { generateOrderLabelsPDF } from "@/components/orders/OrderLabelsGenerator";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -638,7 +639,19 @@ const Orders = () => {
             
             <Separator orientation="vertical" className="h-6" />
             
-            <Button variant="outline" size="sm">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={async () => {
+                try {
+                  await generateOrderLabelsPDF(filteredOrders);
+                  toast.success("PDF de etiquetas generado exitosamente");
+                } catch (error) {
+                  console.error("Error generando PDF:", error);
+                  toast.error("Error al generar el PDF de etiquetas");
+                }
+              }}
+            >
               <Printer className="h-4 w-4 mr-2" />
               Generar PDF de Impresión
             </Button>
