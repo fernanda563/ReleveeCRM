@@ -270,100 +270,72 @@ export const OrdersHistory = ({ clientId }: OrdersHistoryProps) => {
                       )}
                     </h3>
                     
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 mb-2">
-                      {/* Tarjeta Estado de Pago */}
-                      <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg border bg-card">
-                        <div className="flex items-center gap-1">
-                          {order.estatus_pago === "liquidado" ? (
-                            <Check className="h-4 w-4 text-green-600" />
-                          ) : (
-                            <DollarSign className="h-4 w-4 text-muted-foreground" />
-                          )}
-                          <div>
-                            <p className="text-xs text-muted-foreground">Pago</p>
-                            <p className="text-sm font-medium">
-                              {order.estatus_pago === "liquidado" ? "Liquidado" : "Anticipo recibido"}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {/* Tag Estado de Pago */}
+                      <Badge variant={order.estatus_pago === "liquidado" ? "default" : "secondary"} className="gap-1">
+                        {order.estatus_pago === "liquidado" ? (
+                          <Check className="h-3 w-3" />
+                        ) : (
+                          <DollarSign className="h-3 w-3" />
+                        )}
+                        {order.estatus_pago === "liquidado" ? "Liquidado" : "Anticipo recibido"}
+                      </Badge>
 
-                      {/* Tarjeta Estado de Producción */}
-                      <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg border bg-card">
-                        <div className="flex items-center gap-1">
-                          {order.estatus_piedra === "piedra_montada" && order.estatus_montura === "entregado_levant" ? (
-                            <Check className="h-4 w-4 text-green-600" />
-                          ) : (
-                            <Settings className="h-4 w-4 text-muted-foreground" />
-                          )}
-                          <div>
-                            <p className="text-xs text-muted-foreground">Producción</p>
-                            <p className="text-sm font-medium">
-                              {order.estatus_piedra === "piedra_montada" && order.estatus_montura === "entregado_levant" 
-                                ? "Completada" 
-                                : "En proceso"}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
+                      {/* Tag Estado de Producción */}
+                      <Badge variant={order.estatus_piedra === "piedra_montada" && order.estatus_montura === "entregado_levant" ? "default" : "outline"} className="gap-1">
+                        {order.estatus_piedra === "piedra_montada" && order.estatus_montura === "entregado_levant" ? (
+                          <Check className="h-3 w-3" />
+                        ) : (
+                          <Settings className="h-3 w-3" />
+                        )}
+                        {order.estatus_piedra === "piedra_montada" && order.estatus_montura === "entregado_levant" 
+                          ? "Producción completada" 
+                          : "En producción"}
+                      </Badge>
 
-                      {/* Tarjeta Estado de Firma */}
-                      <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg border bg-card">
-                        <div className="flex items-center gap-1">
-                          {order.signature_status === "signed" ? (
-                            <Check className="h-4 w-4 text-green-600" />
-                          ) : order.signature_status === "declined" ? (
-                            <X className="h-4 w-4 text-red-600" />
-                          ) : order.signature_status === "pending" || order.signature_status === "awaiting_signature" ? (
-                            <Clock className="h-4 w-4 text-muted-foreground" />
-                          ) : (
-                            <FileText className="h-4 w-4 text-muted-foreground" />
-                          )}
-                          <div>
-                            <p className="text-xs text-muted-foreground">Firma</p>
-                            <p className="text-sm font-medium">
-                              {order.signature_status === "signed" ? "Firmado" :
-                               order.signature_status === "declined" ? "Rechazado" :
-                               order.signature_status === "pending" || order.signature_status === "awaiting_signature" ? "Por enviar a firma" :
-                               "No firmado"}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
+                      {/* Tag Estado de Firma */}
+                      <Badge 
+                        variant={
+                          order.signature_status === "signed" ? "default" : 
+                          order.signature_status === "declined" ? "destructive" : 
+                          "outline"
+                        } 
+                        className="gap-1"
+                      >
+                        {order.signature_status === "signed" ? (
+                          <Check className="h-3 w-3" />
+                        ) : order.signature_status === "declined" ? (
+                          <X className="h-3 w-3" />
+                        ) : order.signature_status === "pending" || order.signature_status === "awaiting_signature" ? (
+                          <Clock className="h-3 w-3" />
+                        ) : (
+                          <FileText className="h-3 w-3" />
+                        )}
+                        {order.signature_status === "signed" ? "Firmado" :
+                         order.signature_status === "declined" ? "Rechazado" :
+                         order.signature_status === "pending" || order.signature_status === "awaiting_signature" ? "Por enviar a firma" :
+                         "No firmado"}
+                      </Badge>
 
-                      {/* Tarjeta Estatus de Piedra */}
-                      <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg border bg-card">
-                        <div className="flex items-center gap-1">
-                          {order.estatus_piedra === "piedra_montada" ? (
-                            <Check className="h-4 w-4 text-green-600" />
-                          ) : (
-                            <Gem className="h-4 w-4 text-muted-foreground" />
-                          )}
-                          <div>
-                            <p className="text-xs text-muted-foreground">Piedra</p>
-                            <p className="text-sm font-medium">
-                              {getStoneStatusLabel(order.estatus_piedra)}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
+                      {/* Tag Estatus de Piedra */}
+                      <Badge variant={order.estatus_piedra === "piedra_montada" ? "default" : "secondary"} className="gap-1">
+                        {order.estatus_piedra === "piedra_montada" ? (
+                          <Check className="h-3 w-3" />
+                        ) : (
+                          <Gem className="h-3 w-3" />
+                        )}
+                        {getStoneStatusLabel(order.estatus_piedra)}
+                      </Badge>
 
-                      {/* Tarjeta Estatus de Montura */}
-                      <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg border bg-card col-span-2 lg:col-span-4">
-                        <div className="flex items-center gap-1">
-                          {order.estatus_montura === "entregado_levant" || order.estatus_montura === "entregado_oyamel" ? (
-                            <Check className="h-4 w-4 text-green-600" />
-                          ) : (
-                            <Wrench className="h-4 w-4 text-muted-foreground" />
-                          )}
-                          <div>
-                            <p className="text-xs text-muted-foreground">Montura</p>
-                            <p className="text-sm font-medium">
-                              {getMountingStatusLabel(order.estatus_montura)}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
+                      {/* Tag Estatus de Montura */}
+                      <Badge variant={order.estatus_montura === "entregado_levant" || order.estatus_montura === "entregado_oyamel" ? "default" : "secondary"} className="gap-1">
+                        {order.estatus_montura === "entregado_levant" || order.estatus_montura === "entregado_oyamel" ? (
+                          <Check className="h-3 w-3" />
+                        ) : (
+                          <Wrench className="h-3 w-3" />
+                        )}
+                        {getMountingStatusLabel(order.estatus_montura)}
+                      </Badge>
                     </div>
 
                     {order.stl_file && (
