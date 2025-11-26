@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Edit, Loader2, Eye, ChevronDown, FileText, FileSignature, Check, Clock, X, Box, DollarSign, Settings, Link } from "lucide-react";
+import { Edit, Loader2, Eye, ChevronDown, FileText, FileSignature, Check, Clock, X, Box, DollarSign, Settings, Link, Trash2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,6 +14,8 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { OrderStatusDialog } from "./OrderStatusDialog";
 import { LinkSupplierOrderDialog } from "./LinkSupplierOrderDialog";
+import { DeleteOrderDialog } from "./DeleteOrderDialog";
+import { useUserRole } from "@/hooks/useUserRole";
 
 interface OrderListProps {
   orders: Order[];
@@ -25,10 +27,13 @@ interface OrderListProps {
 }
 
 const OrderList = ({ orders, loading, onEdit, onOpenPrint, onSendToSign }: OrderListProps) => {
+  const { isAdmin } = useUserRole();
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedOrderForStatus, setSelectedOrderForStatus] = useState<Order | null>(null);
   const [selectedOrderForLink, setSelectedOrderForLink] = useState<Order | null>(null);
+  const [selectedOrderForDelete, setSelectedOrderForDelete] = useState<Order | null>(null);
   
   const handleGeneratePDF = (order: Order) => {
     onOpenPrint(order.id);
@@ -42,6 +47,11 @@ const OrderList = ({ orders, loading, onEdit, onOpenPrint, onSendToSign }: Order
   const handleOpenLinkDialog = (order: Order) => {
     setSelectedOrderForLink(order);
     setLinkDialogOpen(true);
+  };
+
+  const handleOpenDeleteDialog = (order: Order) => {
+    setSelectedOrderForDelete(order);
+    setDeleteDialogOpen(true);
   };
 
   const capitalizeFirst = (text: string) => {
@@ -223,6 +233,15 @@ const OrderList = ({ orders, loading, onEdit, onOpenPrint, onSendToSign }: Order
                     <Eye className="h-4 w-4 mr-2" />
                     Ver Detalles
                   </DropdownMenuItem>
+                  {isAdmin() && (
+                    <DropdownMenuItem 
+                      onClick={() => handleOpenDeleteDialog(order)}
+                      className="text-destructive focus:text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Eliminar Orden
+                    </DropdownMenuItem>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -327,6 +346,19 @@ const OrderList = ({ orders, loading, onEdit, onOpenPrint, onSendToSign }: Order
         open={linkDialogOpen}
         onOpenChange={setLinkDialogOpen}
         orderId={selectedOrderForLink.id}
+        onSuccess={() => {
+          // Refresh will be handled by parent component
+          window.location.reload();
+        }}
+      />
+    )}
+
+    {/* Delete Order Dialog */}
+    {selectedOrderForDelete && (
+      <DeleteOrderDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        order={selectedOrderForDelete}
         onSuccess={() => {
           // Refresh will be handled by parent component
           window.location.reload();

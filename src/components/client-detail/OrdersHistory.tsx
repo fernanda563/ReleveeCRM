@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Edit, Loader2, ChevronDown, FileText, FileSignature, Check, Clock, X, Box, DollarSign, Settings, Link } from "lucide-react";
+import { Edit, Loader2, ChevronDown, FileText, FileSignature, Check, Clock, X, Box, DollarSign, Settings, Link, Trash2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,6 +14,8 @@ import OrderDialog from "@/components/orders/OrderDialog";
 import { OrderPrintDialog } from "@/components/orders/OrderPrintDialog";
 import { OrderStatusDialog } from "@/components/orders/OrderStatusDialog";
 import { LinkSupplierOrderDialog } from "@/components/orders/LinkSupplierOrderDialog";
+import { DeleteOrderDialog } from "@/components/orders/DeleteOrderDialog";
+import { useUserRole } from "@/hooks/useUserRole";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -52,14 +54,17 @@ interface OrdersHistoryProps {
 }
 
 export const OrdersHistory = ({ clientId }: OrdersHistoryProps) => {
+  const { isAdmin } = useUserRole();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [orderToPrint, setOrderToPrint] = useState<string | null>(null);
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedOrderForStatus, setSelectedOrderForStatus] = useState<Order | null>(null);
   const [selectedOrderForLink, setSelectedOrderForLink] = useState<Order | null>(null);
+  const [selectedOrderForDelete, setSelectedOrderForDelete] = useState<Order | null>(null);
 
   useEffect(() => {
     fetchOrders();
@@ -185,6 +190,11 @@ export const OrdersHistory = ({ clientId }: OrdersHistoryProps) => {
     setLinkDialogOpen(true);
   };
 
+  const handleOpenDeleteDialog = (order: Order) => {
+    setSelectedOrderForDelete(order);
+    setDeleteDialogOpen(true);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -285,6 +295,15 @@ export const OrdersHistory = ({ clientId }: OrdersHistoryProps) => {
                           <Link className="h-4 w-4 mr-2" />
                           Vincular a Orden de Proveedor
                         </DropdownMenuItem>
+                        {isAdmin() && (
+                          <DropdownMenuItem 
+                            onClick={() => handleOpenDeleteDialog(order)}
+                            className="text-destructive focus:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Eliminar Orden
+                          </DropdownMenuItem>
+                        )}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
@@ -417,6 +436,18 @@ export const OrdersHistory = ({ clientId }: OrdersHistoryProps) => {
           open={linkDialogOpen}
           onOpenChange={setLinkDialogOpen}
           orderId={selectedOrderForLink.id}
+          onSuccess={() => {
+            fetchOrders();
+          }}
+        />
+      )}
+
+      {/* Delete Order Dialog */}
+      {selectedOrderForDelete && (
+        <DeleteOrderDialog
+          open={deleteDialogOpen}
+          onOpenChange={setDeleteDialogOpen}
+          order={selectedOrderForDelete}
           onSuccess={() => {
             fetchOrders();
           }}
