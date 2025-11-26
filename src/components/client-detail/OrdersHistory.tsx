@@ -69,6 +69,7 @@ export const OrdersHistory = ({ clientId }: OrdersHistoryProps) => {
   const [selectedOrderForLink, setSelectedOrderForLink] = useState<Order | null>(null);
   const [selectedOrderForDelete, setSelectedOrderForDelete] = useState<Order | null>(null);
   const [selectedInternalOrderId, setSelectedInternalOrderId] = useState<string | null>(null);
+  const [selectedClientOrderId, setSelectedClientOrderId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchOrders();
@@ -304,6 +305,7 @@ export const OrdersHistory = ({ clientId }: OrdersHistoryProps) => {
                       {order.internal_order_id ? (
                         <DropdownMenuItem onClick={() => {
                           setSelectedInternalOrderId(order.internal_order_id!);
+                          setSelectedClientOrderId(order.id);
                           setSupplierPreviewOpen(true);
                         }}>
                           <Package className="h-4 w-4 mr-2" />
@@ -563,6 +565,10 @@ export const OrdersHistory = ({ clientId }: OrdersHistoryProps) => {
           open={supplierPreviewOpen}
           onOpenChange={setSupplierPreviewOpen}
           internalOrderId={selectedInternalOrderId}
+          clientOrderId={selectedClientOrderId || undefined}
+          onUnlink={() => {
+            fetchOrders();
+          }}
         />
       )}
     </>

@@ -37,6 +37,7 @@ const OrderList = ({ orders, loading, onEdit, onOpenPrint, onSendToSign }: Order
   const [selectedOrderForLink, setSelectedOrderForLink] = useState<Order | null>(null);
   const [selectedOrderForDelete, setSelectedOrderForDelete] = useState<Order | null>(null);
   const [selectedInternalOrderId, setSelectedInternalOrderId] = useState<string | null>(null);
+  const [selectedClientOrderId, setSelectedClientOrderId] = useState<string | null>(null);
   
   const handleGeneratePDF = (order: Order) => {
     onOpenPrint(order.id);
@@ -233,6 +234,7 @@ const OrderList = ({ orders, loading, onEdit, onOpenPrint, onSendToSign }: Order
                     {order.internal_order_id ? (
                       <DropdownMenuItem onClick={() => {
                         setSelectedInternalOrderId(order.internal_order_id!);
+                        setSelectedClientOrderId(order.id);
                         setSupplierPreviewOpen(true);
                       }}>
                         <Package className="h-4 w-4 mr-2" />
@@ -468,6 +470,10 @@ const OrderList = ({ orders, loading, onEdit, onOpenPrint, onSendToSign }: Order
         open={supplierPreviewOpen}
         onOpenChange={setSupplierPreviewOpen}
         internalOrderId={selectedInternalOrderId}
+        clientOrderId={selectedClientOrderId || undefined}
+        onUnlink={() => {
+          window.location.reload();
+        }}
       />
     )}
     </>
