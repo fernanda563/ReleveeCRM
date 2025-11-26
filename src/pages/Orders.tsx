@@ -489,7 +489,7 @@ const Orders = () => {
         {/* Search and Filters */}
         <Card className="mb-6">
           <CardContent className="pt-6 space-y-4">
-            {/* Fila 1: Búsqueda + Fechas */}
+            {/* Fila 1: Búsqueda + Estatus Piedra + Estatus Montura */}
             <div className="flex items-center gap-3">
               <div className="relative w-[280px]">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -501,85 +501,6 @@ const Orders = () => {
                 />
               </div>
 
-              <div className="flex items-center gap-2 flex-1 min-w-0">
-                <span className="text-sm text-muted-foreground whitespace-nowrap">
-                  Fecha:
-                </span>
-                <Popover open={isDateFromOpen} onOpenChange={setIsDateFromOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className={cn(
-                        "justify-start text-left font-normal w-[140px]",
-                        !fechaDesde && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {fechaDesde ? format(fechaDesde, "dd/MM/yy") : "Desde"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 bg-background z-50" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={fechaDesde}
-                      onSelect={(date) => {
-                        setFechaDesde(date);
-                        setIsDateFromOpen(false);
-                      }}
-                      initialFocus
-                      className="p-3 pointer-events-auto"
-                    />
-                  </PopoverContent>
-                </Popover>
-
-                <Popover open={isDateToOpen} onOpenChange={setIsDateToOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className={cn(
-                        "justify-start text-left font-normal w-[140px]",
-                        !fechaHasta && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {fechaHasta ? format(fechaHasta, "dd/MM/yy") : "Hasta"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 bg-background z-50" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={fechaHasta}
-                      onSelect={(date) => {
-                        setFechaHasta(date);
-                        setIsDateToOpen(false);
-                      }}
-                      disabled={(date) => fechaDesde ? date < fechaDesde : false}
-                      initialFocus
-                      className="p-3 pointer-events-auto"
-                    />
-                  </PopoverContent>
-                </Popover>
-
-                {(fechaDesde || fechaHasta) && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setFechaDesde(undefined);
-                      setFechaHasta(undefined);
-                    }}
-                    className="h-8 px-2"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                )}
-              </div>
-            </div>
-
-            {/* Fila 2: Estatus Piedra + Estatus Montura + Badge */}
-            <div className="flex items-center gap-3">
               <div className="flex items-center gap-2 flex-1 min-w-0">
                 <span className="text-sm text-muted-foreground whitespace-nowrap">
                   Piedra:
@@ -615,7 +536,83 @@ const Orders = () => {
                   </SelectContent>
                 </Select>
               </div>
+            </div>
 
+            {/* Fila 2: Fechas */}
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground whitespace-nowrap">
+                Fecha:
+              </span>
+              <Popover open={isDateFromOpen} onOpenChange={setIsDateFromOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className={cn(
+                      "justify-start text-left font-normal w-[140px]",
+                      !fechaDesde && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {fechaDesde ? format(fechaDesde, "dd/MM/yy") : "Desde"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 bg-background z-50" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={fechaDesde}
+                    onSelect={(date) => {
+                      setFechaDesde(date);
+                      setIsDateFromOpen(false);
+                    }}
+                    initialFocus
+                    className="p-3 pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+
+              <Popover open={isDateToOpen} onOpenChange={setIsDateToOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className={cn(
+                      "justify-start text-left font-normal w-[140px]",
+                      !fechaHasta && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {fechaHasta ? format(fechaHasta, "dd/MM/yy") : "Hasta"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 bg-background z-50" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={fechaHasta}
+                    onSelect={(date) => {
+                      setFechaHasta(date);
+                      setIsDateToOpen(false);
+                    }}
+                    disabled={(date) => fechaDesde ? date < fechaDesde : false}
+                    initialFocus
+                    className="p-3 pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+
+              {(fechaDesde || fechaHasta) && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setFechaDesde(undefined);
+                    setFechaHasta(undefined);
+                  }}
+                  className="h-8 px-2"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -623,16 +620,12 @@ const Orders = () => {
         {/* View Mode Toggle */}
         <div className="flex items-center justify-between gap-3 mb-4">
           {/* Results counter */}
-          <span className="text-sm">
-            <span className="font-bold">Resultados:</span> {filteredOrders.length}
+          <span className="text-sm text-muted-foreground">
+            {filteredOrders.length} resultados encontrados
           </span>
           
           {/* View controls */}
           <div className="flex items-center gap-3">
-            <span className="text-sm text-muted-foreground">Tipo de vista</span>
-            
-            <Separator orientation="vertical" className="h-6" />
-            
             <ToggleGroup type="single" value={viewMode} onValueChange={(value) => value && setViewMode(value as 'cards' | 'table')}>
               <ToggleGroupItem value="cards" aria-label="Vista de tarjetas">
                 <LayoutGrid className="h-4 w-4" />
