@@ -108,11 +108,20 @@ export const LinkSupplierOrderDialog = ({
     try {
       console.log("Vinculando orden de cliente:", orderId, "con orden de proveedor:", selectedOrderId);
       
+      // First, get the current stone status
+      const { data: currentOrder } = await supabase
+        .from("orders")
+        .select("estatus_piedra")
+        .eq("id", orderId)
+        .single();
+
+      console.log("Estatus de piedra antes de vincular:", currentOrder?.estatus_piedra);
+      
       const { data, error } = await supabase
         .from("orders")
         .update({ internal_order_id: selectedOrderId })
         .eq("id", orderId)
-        .select();
+        .select("estatus_piedra");
 
       if (error) throw error;
 
@@ -121,8 +130,15 @@ export const LinkSupplierOrderDialog = ({
         throw new Error("No se pudo actualizar la orden");
       }
 
-      console.log("Vinculación exitosa:", data);
-      toast.success("Orden vinculada correctamente");
+      console.log("Vinculación exitosa. Estatus de piedra actualizado a:", data[0].estatus_piedra);
+      
+      // Show specific message if stone status was automatically updated
+      if (data[0].estatus_piedra === "piedra_comprada") {
+        toast.success("Orden vinculada correctamente y estatus de piedra actualizado a 'Comprada'");
+      } else {
+        toast.success("Orden vinculada correctamente");
+      }
+      
       onSuccess();
       onOpenChange(false);
     } catch (error) {
