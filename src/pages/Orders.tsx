@@ -489,8 +489,8 @@ const Orders = () => {
         <Card className="mb-6">
           <CardContent className="pt-6 space-y-4">
             {/* Fila 1: Búsqueda + Fechas */}
-            <div className="flex items-center gap-4">
-              <div className="relative w-1/3">
+            <div className="flex items-center gap-3">
+              <div className="relative w-[280px]">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Buscar cliente u orden..."
@@ -500,24 +500,25 @@ const Orders = () => {
                 />
               </div>
 
-              <div className="flex items-center gap-2 flex-1">
+              <div className="flex items-center gap-2 flex-1 min-w-0">
                 <span className="text-sm text-muted-foreground whitespace-nowrap">
-                  Fecha de entrega:
+                  Fecha:
                 </span>
                 <Popover open={isDateFromOpen} onOpenChange={setIsDateFromOpen}>
                   <PopoverTrigger asChild>
                     <Button
                       variant="outline"
+                      size="sm"
                       className={cn(
-                        "justify-start text-left font-normal",
+                        "justify-start text-left font-normal w-[140px]",
                         !fechaDesde && "text-muted-foreground"
                       )}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {fechaDesde ? format(fechaDesde, "PPP", { locale: es }) : "Desde"}
+                      {fechaDesde ? format(fechaDesde, "dd/MM/yy") : "Desde"}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
+                  <PopoverContent className="w-auto p-0 bg-background z-50" align="start">
                     <Calendar
                       mode="single"
                       selected={fechaDesde}
@@ -535,16 +536,17 @@ const Orders = () => {
                   <PopoverTrigger asChild>
                     <Button
                       variant="outline"
+                      size="sm"
                       className={cn(
-                        "justify-start text-left font-normal",
+                        "justify-start text-left font-normal w-[140px]",
                         !fechaHasta && "text-muted-foreground"
                       )}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {fechaHasta ? format(fechaHasta, "PPP", { locale: es }) : "Hasta"}
+                      {fechaHasta ? format(fechaHasta, "dd/MM/yy") : "Hasta"}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
+                  <PopoverContent className="w-auto p-0 bg-background z-50" align="start">
                     <Calendar
                       mode="single"
                       selected={fechaHasta}
@@ -567,7 +569,7 @@ const Orders = () => {
                       setFechaDesde(undefined);
                       setFechaHasta(undefined);
                     }}
-                    className="h-9 px-2"
+                    className="h-8 px-2"
                   >
                     <X className="h-4 w-4" />
                   </Button>
@@ -575,17 +577,17 @@ const Orders = () => {
               </div>
             </div>
 
-            {/* Fila 2: Estatus Piedra + Estatus Montura */}
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2 flex-1">
+            {/* Fila 2: Estatus Piedra + Estatus Montura + Badge */}
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 flex-1 min-w-0">
                 <span className="text-sm text-muted-foreground whitespace-nowrap">
-                  Estatus piedra:
+                  Piedra:
                 </span>
                 <Select value={filterEstatusPiedra} onValueChange={setFilterEstatusPiedra}>
-                  <SelectTrigger className="w-[240px]">
+                  <SelectTrigger className="flex-1 max-w-[200px]">
                     <SelectValue placeholder="Todos" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-background z-50">
                     {STONE_STATUS_OPTIONS.map((status) => (
                       <SelectItem key={status.value} value={status.value}>
                         {status.label}
@@ -595,15 +597,15 @@ const Orders = () => {
                 </Select>
               </div>
 
-              <div className="flex items-center gap-2 flex-1">
+              <div className="flex items-center gap-2 flex-1 min-w-0">
                 <span className="text-sm text-muted-foreground whitespace-nowrap">
-                  Estatus montura:
+                  Montura:
                 </span>
                 <Select value={filterEstatusMontura} onValueChange={setFilterEstatusMontura}>
-                  <SelectTrigger className="w-[240px]">
+                  <SelectTrigger className="flex-1 max-w-[200px]">
                     <SelectValue placeholder="Todos" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-background z-50">
                     {MOUNTING_STATUS_OPTIONS.map((status) => (
                       <SelectItem key={status.value} value={status.value}>
                         {status.label}
@@ -613,11 +615,9 @@ const Orders = () => {
                 </Select>
               </div>
 
-              <div className="ml-auto">
-                <Badge variant="secondary" className="whitespace-nowrap">
-                  {filteredOrders.length} {filteredOrders.length === 1 ? 'orden' : 'órdenes'}
-                </Badge>
-              </div>
+              <Badge variant="secondary" className="whitespace-nowrap ml-auto">
+                {filteredOrders.length} {filteredOrders.length === 1 ? 'orden' : 'órdenes'}
+              </Badge>
             </div>
           </CardContent>
         </Card>
