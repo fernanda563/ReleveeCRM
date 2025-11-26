@@ -198,8 +198,8 @@ const OrderList = ({ orders, loading, onEdit, onOpenPrint, onSendToSign }: Order
                 
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 mb-2">
                   {/* Tarjeta Estado de Pago */}
-                  <div className="flex items-center gap-2 px-3 py-2 rounded-lg border bg-card">
-                    <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg border bg-card">
+                    <div className="flex items-center gap-1">
                       {order.estatus_pago === "liquidado" ? (
                         <Check className="h-4 w-4 text-green-600" />
                       ) : (
@@ -215,8 +215,8 @@ const OrderList = ({ orders, loading, onEdit, onOpenPrint, onSendToSign }: Order
                   </div>
 
                   {/* Tarjeta Estado de Producción */}
-                  <div className="flex items-center gap-2 px-3 py-2 rounded-lg border bg-card">
-                    <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg border bg-card">
+                    <div className="flex items-center gap-1">
                       {order.estatus_piedra === "piedra_montada" && order.estatus_montura === "entregado_levant" ? (
                         <Check className="h-4 w-4 text-green-600" />
                       ) : (
@@ -234,8 +234,8 @@ const OrderList = ({ orders, loading, onEdit, onOpenPrint, onSendToSign }: Order
                   </div>
 
                   {/* Tarjeta Estado de Firma */}
-                  <div className="flex items-center gap-2 px-3 py-2 rounded-lg border bg-card">
-                    <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg border bg-card">
+                    <div className="flex items-center gap-1">
                       {order.signature_status === "signed" ? (
                         <Check className="h-4 w-4 text-green-600" />
                       ) : order.signature_status === "declined" ? (
@@ -258,8 +258,8 @@ const OrderList = ({ orders, loading, onEdit, onOpenPrint, onSendToSign }: Order
                   </div>
 
                   {/* Tarjeta Estatus de Piedra */}
-                  <div className="flex items-center gap-2 px-3 py-2 rounded-lg border bg-card">
-                    <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg border bg-card">
+                    <div className="flex items-center gap-1">
                       {order.estatus_piedra === "piedra_montada" ? (
                         <Check className="h-4 w-4 text-green-600" />
                       ) : (
@@ -275,8 +275,8 @@ const OrderList = ({ orders, loading, onEdit, onOpenPrint, onSendToSign }: Order
                   </div>
 
                   {/* Tarjeta Estatus de Montura */}
-                  <div className="flex items-center gap-2 px-3 py-2 rounded-lg border bg-card col-span-2 lg:col-span-4">
-                    <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg border bg-card col-span-2 lg:col-span-4">
+                    <div className="flex items-center gap-1">
                       {order.estatus_montura === "entregado_levant" || order.estatus_montura === "entregado_oyamel" ? (
                         <Check className="h-4 w-4 text-green-600" />
                       ) : (
