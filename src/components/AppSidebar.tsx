@@ -176,7 +176,7 @@ export function AppSidebar() {
               </SidebarGroup>
               
               {sectionIndex < menuSections.length - 1 && (
-                <Separator className="my-2" />
+                <Separator className="my-0" />
               )}
             </div>
           );
