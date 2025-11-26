@@ -182,7 +182,7 @@ const CRM = () => {
             className="border-border hover:border-primary transition-colors cursor-pointer"
             onClick={() => handleClientAction()}
           >
-            <CardHeader className="flex items-center justify-center py-4">
+            <CardHeader className="flex items-center py-4">
               <CardTitle className="text-base flex items-center gap-2">
                 <div className="p-2 bg-secondary rounded-lg">
                   <Users className="h-4 w-4 text-secondary-foreground" />
@@ -196,7 +196,7 @@ const CRM = () => {
             className="border-border hover:border-secondary transition-colors cursor-pointer"
             onClick={() => handleAppointmentAction()}
           >
-            <CardHeader className="flex items-center justify-center py-4">
+            <CardHeader className="flex items-center py-4">
               <CardTitle className="text-base flex items-center gap-2">
                 <div className="p-2 bg-secondary rounded-lg">
                   <Calendar className="h-4 w-4 text-secondary-foreground" />
@@ -210,7 +210,7 @@ const CRM = () => {
             className="border-border hover:border-accent transition-colors cursor-pointer"
             onClick={() => handleProspectAction()}
           >
-            <CardHeader className="flex items-center justify-center py-4">
+            <CardHeader className="flex items-center py-4">
               <CardTitle className="text-base flex items-center gap-2">
                 <div className="p-2 bg-secondary rounded-lg">
               <Gem className="h-4 w-4 text-secondary-foreground" />
@@ -224,7 +224,7 @@ const CRM = () => {
             className="border-border hover:border-primary transition-colors cursor-pointer"
             onClick={() => handleReminderAction()}
           >
-            <CardHeader className="flex items-center justify-center py-4">
+            <CardHeader className="flex items-center py-4">
               <CardTitle className="text-base flex items-center gap-2">
                 <div className="p-2 bg-secondary rounded-lg">
                   <Bell className="h-4 w-4 text-secondary-foreground" />
