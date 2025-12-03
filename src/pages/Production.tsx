@@ -205,65 +205,73 @@ const Production = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background p-8">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="min-h-full bg-background">
+      <main className="container mx-auto px-6 py-8">
         {/* Header */}
-        <div>
-          <h1 className="text-4xl font-bold text-foreground">Seguimiento de Producción</h1>
-          <p className="text-muted-foreground mt-2">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-foreground mb-2">Seguimiento de Producción</h1>
+          <p className="text-muted-foreground">
             Monitorea el progreso de cada orden en tiempo real
           </p>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-3">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">En Proceso</CardTitle>
-              <Package className="h-4 w-4 text-muted-foreground" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <Card className="border-border">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                <Package className="h-4 w-4" />
+                En proceso
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.enProceso}</div>
-              <p className="text-xs text-muted-foreground">Órdenes en producción</p>
+              <div className="text-3xl font-bold text-foreground">{stats.enProceso}</div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">En Espera</CardTitle>
-              <Clock className="h-4 w-4 text-muted-foreground" />
+          <Card className="border-border">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                <Clock className="h-4 w-4" />
+                En espera
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.enEspera}</div>
-              <p className="text-xs text-muted-foreground">Pendientes de iniciar</p>
+              <div className="text-3xl font-bold text-foreground">{stats.enEspera}</div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Completadas</CardTitle>
-              <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
+          <Card className="border-border">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4" />
+                Completadas
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.completadas}</div>
-              <p className="text-xs text-muted-foreground">Listas para entrega</p>
+              <div className="text-3xl font-bold text-foreground">{stats.completadas}</div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Filters */}
-        <ProductionFiltersComponent filters={filters} onFiltersChange={setFilters} />
-
-        {/* Search */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-          <Input
-            placeholder="Buscar por cliente o estado..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
-        </div>
+        {/* Filters Card */}
+        <Card className="mb-6">
+          <CardContent className="pt-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold">Filtros avanzados</h3>
+            </div>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <Input
+                placeholder="Buscar por cliente o estado..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <ProductionFiltersComponent filters={filters} onFiltersChange={setFilters} />
+          </CardContent>
+        </Card>
 
         {/* Orders List */}
         <div className="space-y-4">
@@ -280,7 +288,7 @@ const Production = () => {
             ))
           )}
         </div>
-      </div>
+      </main>
     </div>
   );
 };
