@@ -292,7 +292,6 @@ export const ProductionCard = ({ order, onUpdate }: ProductionCardProps) => {
                 <Badge variant="outline">
                   {order.piedra_tipo === "diamante" ? "Diamante" : "Gema"}
                 </Badge>
-                <Badge variant="secondary">{formatCurrency(order.precio_venta)}</Badge>
               </div>
             </div>
             <div className="flex gap-2 flex-shrink-0">
