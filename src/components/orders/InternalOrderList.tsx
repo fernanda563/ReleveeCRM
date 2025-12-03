@@ -98,13 +98,14 @@ export const InternalOrderList = ({ orders, loading, onRefresh }: InternalOrderL
         order={editingOrder}
       />
 
-      {selectedClientOrderId && (
-        <ClientOrderPreviewDialog
-          open={clientOrderPreviewOpen}
-          onOpenChange={setClientOrderPreviewOpen}
-          orderId={selectedClientOrderId}
-        />
-      )}
+      <ClientOrderPreviewDialog
+        open={clientOrderPreviewOpen}
+        onOpenChange={(open) => {
+          setClientOrderPreviewOpen(open);
+          if (!open) setSelectedClientOrderId(null);
+        }}
+        orderId={selectedClientOrderId || ""}
+      />
     </>
   );
 };

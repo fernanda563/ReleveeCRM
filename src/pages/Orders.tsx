@@ -294,7 +294,7 @@ const Orders = () => {
       // Add batch_count to each order
       const ordersWithBatchCount = (data || []).map(order => ({
         ...order,
-        batch_size: order.batch_id ? batchCounts.get(order.batch_id) : undefined
+        batch_count: order.batch_id ? batchCounts.get(order.batch_id) : undefined
       }));
 
       // Get linked client orders

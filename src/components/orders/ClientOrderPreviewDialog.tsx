@@ -55,10 +55,17 @@ export const ClientOrderPreviewDialog = ({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (open && orderId) {
+    if (open && orderId && orderId !== "") {
       fetchOrder();
     }
   }, [open, orderId]);
+
+  useEffect(() => {
+    if (!open) {
+      setOrder(null);
+      setLoading(true);
+    }
+  }, [open]);
 
   const fetchOrder = async () => {
     try {
