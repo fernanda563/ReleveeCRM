@@ -328,10 +328,10 @@ export const WorkOrderDialog = ({
             {/* Orden de compra vinculada */}
             <div className="space-y-2">
               <Label>Orden de compra vinculada (opcional)</Label>
-              <Select
-                value={formData.order_id}
+            <Select
+                value={formData.order_id || "none"}
                 onValueChange={(value) =>
-                  setFormData({ ...formData, order_id: value })
+                  setFormData({ ...formData, order_id: value === "none" ? "" : value })
                 }
                 disabled={!formData.client_id}
               >
@@ -339,7 +339,7 @@ export const WorkOrderDialog = ({
                   <SelectValue placeholder="Sin vincular" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Sin vincular</SelectItem>
+                  <SelectItem value="none">Sin vincular</SelectItem>
                   {filteredOrders.map((order) => (
                     <SelectItem key={order.id} value={order.id}>
                       {order.custom_id || order.id.slice(0, 8)}
@@ -355,17 +355,17 @@ export const WorkOrderDialog = ({
             {/* Taller externo */}
             <div className="space-y-2">
               <Label>Taller externo (opcional)</Label>
-              <Select
-                value={formData.taller_id}
+            <Select
+                value={formData.taller_id || "none"}
                 onValueChange={(value) =>
-                  setFormData({ ...formData, taller_id: value })
+                  setFormData({ ...formData, taller_id: value === "none" ? "" : value })
                 }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Seleccionar taller" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Sin asignar</SelectItem>
+                  <SelectItem value="none">Sin asignar</SelectItem>
                   {suppliers.map((supplier) => (
                     <SelectItem key={supplier.id} value={supplier.id}>
                       {supplier.nombre_empresa}
