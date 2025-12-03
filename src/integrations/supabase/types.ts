@@ -838,6 +838,176 @@ export type Database = {
           },
         ]
       }
+      work_concepts: {
+        Row: {
+          activo: boolean
+          area: Database["public"]["Enums"]["work_area"]
+          costo_base: number
+          created_at: string
+          descripcion: string | null
+          es_precio_variable: boolean
+          id: string
+          nombre: string
+          precio_venta_base: number
+          unidad_medida: string
+          updated_at: string
+        }
+        Insert: {
+          activo?: boolean
+          area: Database["public"]["Enums"]["work_area"]
+          costo_base?: number
+          created_at?: string
+          descripcion?: string | null
+          es_precio_variable?: boolean
+          id?: string
+          nombre: string
+          precio_venta_base?: number
+          unidad_medida?: string
+          updated_at?: string
+        }
+        Update: {
+          activo?: boolean
+          area?: Database["public"]["Enums"]["work_area"]
+          costo_base?: number
+          created_at?: string
+          descripcion?: string | null
+          es_precio_variable?: boolean
+          id?: string
+          nombre?: string
+          precio_venta_base?: number
+          unidad_medida?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      work_order_items: {
+        Row: {
+          cantidad: number
+          costo_unitario: number
+          created_at: string
+          id: string
+          notas: string | null
+          precio_unitario: number
+          work_concept_id: string
+          work_order_id: string
+        }
+        Insert: {
+          cantidad?: number
+          costo_unitario?: number
+          created_at?: string
+          id?: string
+          notas?: string | null
+          precio_unitario?: number
+          work_concept_id: string
+          work_order_id: string
+        }
+        Update: {
+          cantidad?: number
+          costo_unitario?: number
+          created_at?: string
+          id?: string
+          notas?: string | null
+          precio_unitario?: number
+          work_concept_id?: string
+          work_order_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_order_items_work_concept_id_fkey"
+            columns: ["work_concept_id"]
+            isOneToOne: false
+            referencedRelation: "work_concepts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_order_items_work_order_id_fkey"
+            columns: ["work_order_id"]
+            isOneToOne: false
+            referencedRelation: "work_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      work_orders: {
+        Row: {
+          client_id: string
+          created_at: string
+          created_by: string | null
+          descripcion: string | null
+          estado: Database["public"]["Enums"]["work_order_status"]
+          fecha_entrega_esperada: string | null
+          fecha_solicitud: string
+          id: string
+          notas: string | null
+          order_id: string | null
+          taller_id: string | null
+          total_costo: number
+          total_precio: number
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          created_by?: string | null
+          descripcion?: string | null
+          estado?: Database["public"]["Enums"]["work_order_status"]
+          fecha_entrega_esperada?: string | null
+          fecha_solicitud?: string
+          id?: string
+          notas?: string | null
+          order_id?: string | null
+          taller_id?: string | null
+          total_costo?: number
+          total_precio?: number
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          created_by?: string | null
+          descripcion?: string | null
+          estado?: Database["public"]["Enums"]["work_order_status"]
+          fecha_entrega_esperada?: string | null
+          fecha_solicitud?: string
+          id?: string
+          notas?: string | null
+          order_id?: string | null
+          taller_id?: string | null
+          total_costo?: number
+          total_precio?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_orders_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_orders_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_orders_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_orders_taller_id_fkey"
+            columns: ["taller_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -889,6 +1059,8 @@ export type Database = {
         | "cadena"
         | "componente"
         | "otro"
+      work_area: "diseño" | "taller"
+      work_order_status: "pendiente" | "en_proceso" | "completado" | "cancelado"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1042,6 +1214,8 @@ export const Constants = {
         "componente",
         "otro",
       ],
+      work_area: ["diseño", "taller"],
+      work_order_status: ["pendiente", "en_proceso", "completado", "cancelado"],
     },
   },
 } as const

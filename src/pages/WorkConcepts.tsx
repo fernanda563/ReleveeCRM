@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -10,108 +11,99 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  ClipboardList,
+  Layers,
   Plus,
   Search,
-  Clock,
-  CheckCircle,
-  XCircle,
+  Palette,
+  Wrench,
+  DollarSign,
   Loader2,
-  AlertCircle,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { WorkOrder, WORK_ORDER_STATUS_LABELS, WorkOrderStatus } from "@/types/work-concepts";
-import { WorkOrderCard } from "@/components/work-orders/WorkOrderCard";
-import { WorkOrderDialog } from "@/components/work-orders/WorkOrderDialog";
+import { WorkConcept, WorkArea, WORK_AREA_LABELS } from "@/types/work-concepts";
+import { WorkConceptDialog } from "@/components/work-concepts/WorkConceptDialog";
+import { WorkConceptCard } from "@/components/work-concepts/WorkConceptCard";
 
-const WorkOrders = () => {
-  const [workOrders, setWorkOrders] = useState<WorkOrder[]>([]);
+const WorkConcepts = () => {
+  const [concepts, setConcepts] = useState<WorkConcept[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [areaFilter, setAreaFilter] = useState<string>("all");
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingOrder, setEditingOrder] = useState<WorkOrder | null>(null);
+  const [editingConcept, setEditingConcept] = useState<WorkConcept | null>(null);
 
   useEffect(() => {
-    fetchWorkOrders();
+    fetchConcepts();
   }, []);
 
-  const fetchWorkOrders = async () => {
+  const fetchConcepts = async () => {
     try {
       const { data, error } = await supabase
-        .from("work_orders")
-        .select(`
-          *,
-          client:clients(id, nombre, apellido),
-          taller:suppliers(id, nombre_empresa),
-          order:orders(id, custom_id)
-        `)
-        .order("created_at", { ascending: false });
+        .from("work_concepts")
+        .select("*")
+        .order("area", { ascending: true })
+        .order("nombre", { ascending: true });
 
       if (error) throw error;
-      setWorkOrders((data as WorkOrder[]) || []);
+      setConcepts((data as WorkConcept[]) || []);
     } catch (error) {
-      console.error("Error fetching work orders:", error);
-      toast.error("Error al cargar las órdenes de trabajo");
+      console.error("Error fetching concepts:", error);
+      toast.error("Error al cargar los conceptos");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleEdit = (order: WorkOrder) => {
-    setEditingOrder(order);
+  const handleEdit = (concept: WorkConcept) => {
+    setEditingConcept(concept);
     setDialogOpen(true);
   };
 
-  const handleNewOrder = () => {
-    setEditingOrder(null);
+  const handleNewConcept = () => {
+    setEditingConcept(null);
     setDialogOpen(true);
   };
 
   const handleDialogClose = () => {
     setDialogOpen(false);
-    setEditingOrder(null);
+    setEditingConcept(null);
   };
 
   const handleSaved = () => {
-    fetchWorkOrders();
+    fetchConcepts();
     handleDialogClose();
   };
 
-  const filteredOrders = workOrders.filter((order) => {
-    const clientName = order.client
-      ? `${order.client.nombre} ${order.client.apellido}`.toLowerCase()
-      : "";
+  const filteredConcepts = concepts.filter((concept) => {
     const matchesSearch =
-      clientName.includes(searchTerm.toLowerCase()) ||
-      (order.descripcion?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
-    const matchesStatus = statusFilter === "all" || order.estado === statusFilter;
-    return matchesSearch && matchesStatus;
+      concept.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (concept.descripcion?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
+    const matchesArea = areaFilter === "all" || concept.area === areaFilter;
+    return matchesSearch && matchesArea;
   });
 
-  const pendingCount = workOrders.filter((o) => o.estado === "pendiente").length;
-  const inProgressCount = workOrders.filter((o) => o.estado === "en_proceso").length;
-  const completedCount = workOrders.filter((o) => o.estado === "completado").length;
+  const designConcepts = concepts.filter((c) => c.area === "diseño" && c.activo);
+  const workshopConcepts = concepts.filter((c) => c.area === "taller" && c.activo);
 
   const stats = [
     {
-      title: "Pendientes",
-      value: pendingCount,
-      icon: Clock,
-      color: "text-yellow-500",
+      title: "Total Conceptos",
+      value: concepts.filter((c) => c.activo).length,
+      icon: Layers,
+      color: "text-primary",
     },
     {
-      title: "En proceso",
-      value: inProgressCount,
-      icon: AlertCircle,
+      title: "Conceptos de Diseño",
+      value: designConcepts.length,
+      icon: Palette,
       color: "text-blue-500",
     },
     {
-      title: "Completadas",
-      value: completedCount,
-      icon: CheckCircle,
-      color: "text-green-500",
+      title: "Conceptos de Taller",
+      value: workshopConcepts.length,
+      icon: Wrench,
+      color: "text-orange-500",
     },
   ];
 
@@ -122,18 +114,18 @@ const WorkOrders = () => {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-3">
-              <ClipboardList className="h-8 w-8 text-primary" />
+              <Layers className="h-8 w-8 text-primary" />
               <h1 className="text-3xl font-bold text-foreground">
-                Órdenes de Trabajo
+                Gestión de Conceptos
               </h1>
             </div>
-            <Button onClick={handleNewOrder}>
+            <Button onClick={handleNewConcept}>
               <Plus className="h-4 w-4 mr-2" />
-              Nueva Orden de Trabajo
+              Nuevo Concepto
             </Button>
           </div>
           <p className="text-muted-foreground">
-            Gestión de órdenes de trabajo para diseño y taller
+            Administra los conceptos de trabajo para diseño y taller
           </p>
         </div>
 
@@ -164,23 +156,20 @@ const WorkOrders = () => {
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Buscar por cliente o descripción..."
+                  placeholder="Buscar por nombre o descripción..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
                 />
               </div>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <Select value={areaFilter} onValueChange={setAreaFilter}>
                 <SelectTrigger className="w-full md:w-48">
-                  <SelectValue placeholder="Filtrar por estado" />
+                  <SelectValue placeholder="Filtrar por área" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todos los estados</SelectItem>
-                  {Object.entries(WORK_ORDER_STATUS_LABELS).map(([value, label]) => (
-                    <SelectItem key={value} value={value}>
-                      {label}
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="all">Todas las áreas</SelectItem>
+                  <SelectItem value="diseño">Diseño</SelectItem>
+                  <SelectItem value="taller">Taller</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -189,43 +178,43 @@ const WorkOrders = () => {
 
         {/* Results count */}
         <p className="text-sm text-muted-foreground mb-4">
-          {filteredOrders.length} orden(es) de trabajo encontrada(s)
+          {filteredConcepts.length} concepto(s) encontrado(s)
         </p>
 
-        {/* Orders List */}
+        {/* Concepts List */}
         {loading ? (
           <div className="flex justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
-        ) : filteredOrders.length === 0 ? (
+        ) : filteredConcepts.length === 0 ? (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12">
-              <ClipboardList className="h-12 w-12 text-muted-foreground mb-4" />
+              <Layers className="h-12 w-12 text-muted-foreground mb-4" />
               <p className="text-muted-foreground text-center">
-                No se encontraron órdenes de trabajo.
+                No se encontraron conceptos.
                 <br />
-                {workOrders.length === 0 && "Comienza creando tu primera orden de trabajo."}
+                {concepts.length === 0 && "Comienza creando tu primer concepto de trabajo."}
               </p>
             </CardContent>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {filteredOrders.map((order) => (
-              <WorkOrderCard
-                key={order.id}
-                workOrder={order}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredConcepts.map((concept) => (
+              <WorkConceptCard
+                key={concept.id}
+                concept={concept}
                 onEdit={handleEdit}
-                onRefresh={fetchWorkOrders}
+                onRefresh={fetchConcepts}
               />
             ))}
           </div>
         )}
 
         {/* Dialog */}
-        <WorkOrderDialog
+        <WorkConceptDialog
           open={dialogOpen}
           onOpenChange={setDialogOpen}
-          workOrder={editingOrder}
+          concept={editingConcept}
           onSaved={handleSaved}
         />
       </main>
@@ -233,4 +222,4 @@ const WorkOrders = () => {
   );
 };
 
-export default WorkOrders;
+export default WorkConcepts;

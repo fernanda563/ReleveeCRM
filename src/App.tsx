@@ -10,6 +10,7 @@ import ClientDetail from "./pages/ClientDetail";
 import Projects from "./pages/Projects";
 import Orders from "./pages/Orders";
 import WorkOrders from "./pages/WorkOrders";
+import WorkConcepts from "./pages/WorkConcepts";
 import Production from "./pages/Production";
 import DesignProcess from "./pages/DesignProcess";
 import WorkshopProcess from "./pages/WorkshopProcess";
@@ -46,6 +47,7 @@ const App = () => (
         <Route path="/production/dashboard" element={<ProductionDashboard />} />
         <Route path="/users" element={<Users />} />
         <Route path="/suppliers" element={<Suppliers />} />
+        <Route path="/work-concepts" element={<WorkConcepts />} />
         <Route path="/stl-collection" element={<STLCollection />} />
         <Route path="/audit-log" element={<AuditLog />} />
         <Route path="/calendar-admin" element={<CalendarAdmin />} />
