@@ -7,8 +7,6 @@ import {
   User, 
   ChevronDown, 
   ChevronUp, 
-  ChevronLeft, 
-  ChevronRight,
   Search,
   ShoppingCart,
   Truck,
@@ -140,22 +138,91 @@ interface ProductionCardProps {
   onUpdate: () => void;
 }
 
-const getStepInfo = (
+type StepInfo = {
+  label: string;
+  icon: LucideIcon;
+  isCurrent: boolean;
+} | null;
+
+const getThreeSteps = (
   currentStatus: string, 
   statuses: string[], 
-  labels: Record<string, string>
+  labels: Record<string, string>,
+  icons: Record<string, LucideIcon>
 ) => {
   const currentIndex = statuses.indexOf(currentStatus);
   const safeIndex = currentIndex === -1 ? 0 : currentIndex;
+  const totalSteps = statuses.length;
+  
+  let leftStep: StepInfo, centerStep: StepInfo, rightStep: StepInfo;
+  
+  if (safeIndex === 0) {
+    // Primer paso: actual a la izquierda
+    leftStep = { label: labels[statuses[0]], icon: icons[statuses[0]], isCurrent: true };
+    centerStep = statuses[1] ? { label: labels[statuses[1]], icon: icons[statuses[1]], isCurrent: false } : null;
+    rightStep = statuses[2] ? { label: labels[statuses[2]], icon: icons[statuses[2]], isCurrent: false } : null;
+  } else if (safeIndex === totalSteps - 1) {
+    // Último paso: actual a la derecha
+    leftStep = statuses[safeIndex - 2] ? { label: labels[statuses[safeIndex - 2]], icon: icons[statuses[safeIndex - 2]], isCurrent: false } : null;
+    centerStep = { label: labels[statuses[safeIndex - 1]], icon: icons[statuses[safeIndex - 1]], isCurrent: false };
+    rightStep = { label: labels[statuses[safeIndex]], icon: icons[statuses[safeIndex]], isCurrent: true };
+  } else {
+    // Paso intermedio: actual al centro
+    leftStep = { label: labels[statuses[safeIndex - 1]], icon: icons[statuses[safeIndex - 1]], isCurrent: false };
+    centerStep = { label: labels[statuses[safeIndex]], icon: icons[statuses[safeIndex]], isCurrent: true };
+    rightStep = { label: labels[statuses[safeIndex + 1]], icon: icons[statuses[safeIndex + 1]], isCurrent: false };
+  }
   
   return {
-    previous: safeIndex > 0 ? labels[statuses[safeIndex - 1]] : null,
-    current: labels[currentStatus] || labels[statuses[0]],
-    next: safeIndex < statuses.length - 1 ? labels[statuses[safeIndex + 1]] : null,
+    leftStep,
+    centerStep,
+    rightStep,
     currentIndex: safeIndex,
-    totalSteps: statuses.length
+    totalSteps
   };
 };
+
+const StepRow = ({ 
+  leftStep, 
+  centerStep, 
+  rightStep 
+}: { 
+  leftStep: StepInfo;
+  centerStep: StepInfo;
+  rightStep: StepInfo;
+}) => (
+  <div className="flex justify-between items-center text-xs mt-2 gap-1">
+    {/* Paso izquierdo */}
+    <div className={`flex items-center gap-1 flex-1 min-w-0 ${leftStep?.isCurrent ? 'text-primary font-medium' : 'text-muted-foreground/60'}`}>
+      {leftStep && (
+        <>
+          <leftStep.icon className="h-3 w-3 flex-shrink-0" />
+          <span className="truncate">{leftStep.label}</span>
+        </>
+      )}
+    </div>
+    
+    {/* Paso central */}
+    <div className={`flex items-center gap-1 flex-1 justify-center min-w-0 ${centerStep?.isCurrent ? 'text-primary font-medium' : 'text-muted-foreground/60'}`}>
+      {centerStep && (
+        <>
+          <centerStep.icon className="h-3 w-3 flex-shrink-0" />
+          <span className="truncate">{centerStep.label}</span>
+        </>
+      )}
+    </div>
+    
+    {/* Paso derecho */}
+    <div className={`flex items-center gap-1 flex-1 justify-end min-w-0 ${rightStep?.isCurrent ? 'text-primary font-medium' : 'text-muted-foreground/60'}`}>
+      {rightStep && (
+        <>
+          <span className="truncate text-right">{rightStep.label}</span>
+          <rightStep.icon className="h-3 w-3 flex-shrink-0" />
+        </>
+      )}
+    </div>
+  </div>
+);
 
 export const ProductionCard = ({ order, onUpdate }: ProductionCardProps) => {
   const [expanded, setExpanded] = useState(false);
@@ -189,20 +256,19 @@ export const ProductionCard = ({ order, onUpdate }: ProductionCardProps) => {
     MOUNTING_STATUSES.filter((s) => s !== "no_aplica")
   );
 
-  const stoneStepInfo = getStepInfo(
+  const stoneSteps = getThreeSteps(
     order.estatus_piedra || "en_busqueda",
     STONE_STATUSES,
-    STONE_STATUS_LABELS
+    STONE_STATUS_LABELS,
+    STONE_STATUS_ICONS
   );
 
-  const mountingStepInfo = getStepInfo(
+  const mountingSteps = getThreeSteps(
     order.estatus_montura || "en_espera",
     MOUNTING_STATUSES.filter((s) => s !== "no_aplica"),
-    MOUNTING_STATUS_LABELS
+    MOUNTING_STATUS_LABELS,
+    MOUNTING_STATUS_ICONS
   );
-
-  const StoneIcon = STONE_STATUS_ICONS[order.estatus_piedra || "en_busqueda"] || Search;
-  const MountingIcon = MOUNTING_STATUS_ICONS[order.estatus_montura || "en_espera"] || Clock;
 
   return (
     <>
@@ -251,61 +317,35 @@ export const ProductionCard = ({ order, onUpdate }: ProductionCardProps) => {
           {/* Progress Indicators */}
           <div className="space-y-4 mt-4">
             {/* Stone Progress */}
-            <div className="space-y-2">
+            <div className="space-y-1">
               <div className="flex justify-between items-center text-xs">
                 <span className="text-muted-foreground">Progreso Piedra</span>
                 <span className="font-medium">
-                  {stoneStepInfo.currentIndex + 1}/{stoneStepInfo.totalSteps} · {Math.round(stoneProgress)}%
+                  {stoneSteps.currentIndex + 1}/{stoneSteps.totalSteps} · {Math.round(stoneProgress)}%
                 </span>
               </div>
               <Progress value={stoneProgress} className="h-2" />
-              <div className="space-y-1 text-xs mt-2">
-                {stoneStepInfo.previous && (
-                  <div className="flex items-center gap-1.5 text-muted-foreground/60">
-                    <ChevronLeft className="h-3 w-3" />
-                    <span>{stoneStepInfo.previous}</span>
-                  </div>
-                )}
-                <div className="flex items-center gap-1.5 text-primary font-medium">
-                  <StoneIcon className="h-3.5 w-3.5" />
-                  <span>{stoneStepInfo.current}</span>
-                </div>
-                {stoneStepInfo.next && (
-                  <div className="flex items-center gap-1.5 text-muted-foreground/60">
-                    <ChevronRight className="h-3 w-3" />
-                    <span>{stoneStepInfo.next}</span>
-                  </div>
-                )}
-              </div>
+              <StepRow 
+                leftStep={stoneSteps.leftStep}
+                centerStep={stoneSteps.centerStep}
+                rightStep={stoneSteps.rightStep}
+              />
             </div>
 
             {/* Mounting Progress */}
-            <div className="space-y-2">
+            <div className="space-y-1">
               <div className="flex justify-between items-center text-xs">
                 <span className="text-muted-foreground">Progreso Montura</span>
                 <span className="font-medium">
-                  {mountingStepInfo.currentIndex + 1}/{mountingStepInfo.totalSteps} · {Math.round(mountingProgress)}%
+                  {mountingSteps.currentIndex + 1}/{mountingSteps.totalSteps} · {Math.round(mountingProgress)}%
                 </span>
               </div>
               <Progress value={mountingProgress} className="h-2" />
-              <div className="space-y-1 text-xs mt-2">
-                {mountingStepInfo.previous && (
-                  <div className="flex items-center gap-1.5 text-muted-foreground/60">
-                    <ChevronLeft className="h-3 w-3" />
-                    <span>{mountingStepInfo.previous}</span>
-                  </div>
-                )}
-                <div className="flex items-center gap-1.5 text-primary font-medium">
-                  <MountingIcon className="h-3.5 w-3.5" />
-                  <span>{mountingStepInfo.current}</span>
-                </div>
-                {mountingStepInfo.next && (
-                  <div className="flex items-center gap-1.5 text-muted-foreground/60">
-                    <ChevronRight className="h-3 w-3" />
-                    <span>{mountingStepInfo.next}</span>
-                  </div>
-                )}
-              </div>
+              <StepRow 
+                leftStep={mountingSteps.leftStep}
+                centerStep={mountingSteps.centerStep}
+                rightStep={mountingSteps.rightStep}
+              />
             </div>
           </div>
         </CardHeader>
