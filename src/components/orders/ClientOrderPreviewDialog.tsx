@@ -75,7 +75,7 @@ export const ClientOrderPreviewDialog = ({
         .select(`
           *,
           clients(nombre, apellido),
-          stl_files(nombre, stl_file_url)
+          stl_files!orders_stl_file_id_fkey(nombre, stl_file_url)
         `)
         .eq("id", orderId)
         .maybeSingle();
