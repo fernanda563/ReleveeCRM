@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import OrderPrintView from "@/components/orders/OrderPrintView";
-import { Loader2, Printer, Download, Send } from "lucide-react";
+import { Loader2, Printer, Download, Send, FileCheck, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -521,12 +521,29 @@ export const OrderPrintDialog = ({ orderId, open, onOpenChange, autoSendToSign =
 
         {!loading && !error && order && companyInfo && (
           order.signature_status === 'signed' && order.signed_document_url ? (
-            <div className="w-full h-[70vh]">
-              <iframe 
-                src={order.signed_document_url} 
-                className="w-full h-full border-0"
-                title="Documento Firmado"
-              />
+            <div className="flex flex-col items-center justify-center py-12 space-y-6">
+              <div className="flex items-center justify-center w-20 h-20 rounded-full bg-green-100">
+                <FileCheck className="h-10 w-10 text-green-600" />
+              </div>
+              <div className="text-center space-y-2">
+                <h3 className="text-xl font-semibold text-foreground">Documento Firmado</h3>
+                <p className="text-muted-foreground">
+                  El cliente ha firmado este documento exitosamente.
+                </p>
+              </div>
+              <div className="flex gap-3">
+                <Button 
+                  variant="outline" 
+                  onClick={() => window.open(order.signed_document_url, '_blank')}
+                >
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  Ver documento
+                </Button>
+                <Button onClick={handleDownloadPDF}>
+                  <Download className="h-4 w-4 mr-2" />
+                  Descargar PDF
+                </Button>
+              </div>
             </div>
           ) : (
             <div ref={printRef} style={{ backgroundColor: '#ffffff' }}>
