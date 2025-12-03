@@ -10,18 +10,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  ClipboardList,
   Plus,
   Search,
   Clock,
   CheckCircle,
-  XCircle,
   Loader2,
   AlertCircle,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { WorkOrder, WORK_ORDER_STATUS_LABELS, WorkOrderStatus } from "@/types/work-concepts";
+import { WorkOrder, WORK_ORDER_STATUS_LABELS } from "@/types/work-concepts";
 import { WorkOrderCard } from "@/components/work-orders/WorkOrderCard";
 import { WorkOrderDialog } from "@/components/work-orders/WorkOrderDialog";
 
@@ -95,24 +93,9 @@ const WorkOrders = () => {
   const completedCount = workOrders.filter((o) => o.estado === "completado").length;
 
   const stats = [
-    {
-      title: "Pendientes",
-      value: pendingCount,
-      icon: Clock,
-      color: "text-yellow-500",
-    },
-    {
-      title: "En proceso",
-      value: inProgressCount,
-      icon: AlertCircle,
-      color: "text-blue-500",
-    },
-    {
-      title: "Completadas",
-      value: completedCount,
-      icon: CheckCircle,
-      color: "text-green-500",
-    },
+    { title: "Pendientes", value: pendingCount, icon: Clock },
+    { title: "En proceso", value: inProgressCount, icon: AlertCircle },
+    { title: "Completadas", value: completedCount, icon: CheckCircle },
   ];
 
   return (
@@ -121,12 +104,9 @@ const WorkOrders = () => {
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-3">
-              <ClipboardList className="h-8 w-8 text-primary" />
-              <h1 className="text-3xl font-bold text-foreground">
-                Órdenes de Trabajo
-              </h1>
-            </div>
+            <h1 className="text-3xl font-bold text-foreground">
+              Órdenes de Trabajo
+            </h1>
             <Button onClick={handleNewOrder}>
               <Plus className="h-4 w-4 mr-2" />
               Nueva Orden de Trabajo
@@ -140,15 +120,15 @@ const WorkOrders = () => {
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           {stats.map((stat) => (
-            <Card key={stat.title}>
-              <CardContent className="flex items-center gap-4 p-6">
-                <div className={`p-3 rounded-lg bg-muted ${stat.color}`}>
-                  <stat.icon className="h-6 w-6" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">{stat.title}</p>
-                  <p className="text-3xl font-bold">{stat.value}</p>
-                </div>
+            <Card key={stat.title} className="border-border">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                  <stat.icon className="h-4 w-4" />
+                  {stat.title}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-foreground">{stat.value}</div>
               </CardContent>
             </Card>
           ))}
@@ -156,10 +136,10 @@ const WorkOrders = () => {
 
         {/* Filters */}
         <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="text-lg">Filtros</CardTitle>
-          </CardHeader>
-          <CardContent>
+          <CardContent className="pt-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold">Filtros avanzados</h3>
+            </div>
             <div className="flex flex-col md:flex-row gap-4">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -200,7 +180,7 @@ const WorkOrders = () => {
         ) : filteredOrders.length === 0 ? (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12">
-              <ClipboardList className="h-12 w-12 text-muted-foreground mb-4" />
+              <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
               <p className="text-muted-foreground text-center">
                 No se encontraron órdenes de trabajo.
                 <br />
