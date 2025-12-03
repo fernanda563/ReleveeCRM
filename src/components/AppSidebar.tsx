@@ -56,13 +56,13 @@ const menuSections = [
       { title: "Gestión de Clientes", url: "/crm", icon: Users, adminOnly: false },
       { title: "Proyectos", url: "/projects", icon: Gem, adminOnly: false },
       { title: "Órdenes de Compra", url: "/orders", icon: ShoppingCart, adminOnly: false },
-      { title: "Órdenes de Trabajo", url: "/work-orders", icon: ClipboardList, adminOnly: false },
     ],
   },
   {
     label: "Proceso de Producción",
     items: [
       { title: "Seguimiento de Producción", url: "/production", icon: Box, adminOnly: false },
+      { title: "Órdenes de Trabajo", url: "/work-orders", icon: ClipboardList, adminOnly: false },
       { title: "Proceso de Diseño", url: "/design-process", icon: Pencil, adminOnly: false },
       { title: "Proceso de Taller", url: "/workshop-process", icon: Wrench, adminOnly: false },
     ],
