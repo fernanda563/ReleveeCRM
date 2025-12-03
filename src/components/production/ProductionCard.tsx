@@ -19,6 +19,17 @@ const STONE_STATUSES = [
   "piedra_montada",
 ];
 
+const STONE_STATUS_LABELS: Record<string, string> = {
+  "en_busqueda": "En proceso de búsqueda",
+  "piedra_comprada": "Piedra comprada",
+  "piedra_transito_pobox": "En tránsito a PO Box",
+  "piedra_pobox": "En PO Box",
+  "piedra_levant": "En Levant",
+  "piedra_con_disenador": "Con diseñador",
+  "piedra_en_taller": "En taller",
+  "piedra_montada": "Piedra montada",
+};
+
 const MOUNTING_STATUSES = [
   "en_espera",
   "proceso_diseno",
@@ -34,6 +45,22 @@ const MOUNTING_STATUSES = [
   "entregado_levant",
   "no_aplica",
 ];
+
+const MOUNTING_STATUS_LABELS: Record<string, string> = {
+  "en_espera": "En espera de iniciar",
+  "proceso_diseno": "En proceso de diseño",
+  "impresion_modelo": "Impresión de modelo",
+  "reimpresion_modelo": "Reimpresión de modelo",
+  "traslado_modelo": "Traslado de modelo",
+  "espera_taller": "En espera en taller",
+  "proceso_vaciado": "En proceso de vaciado",
+  "pieza_terminada_taller": "Pieza terminada en taller",
+  "proceso_recoleccion": "En proceso de recolección",
+  "recolectado": "Recolectado",
+  "entregado_oyamel": "Entregado en Oyamel",
+  "entregado_levant": "Entregado en Levant",
+  "no_aplica": "No aplica",
+};
 
 interface ProductionOrder {
   id: string;
@@ -144,6 +171,12 @@ export const ProductionCard = ({ order, onUpdate }: ProductionCardProps) => {
                 <span className="font-medium">{Math.round(stoneProgress)}%</span>
               </div>
               <Progress value={stoneProgress} className="h-2" />
+              <div className="flex items-center gap-1.5 text-xs mt-1">
+                <span className="text-primary">📍</span>
+                <span className="text-muted-foreground font-medium">
+                  {STONE_STATUS_LABELS[order.estatus_piedra || "en_busqueda"]}
+                </span>
+              </div>
             </div>
             <div className="space-y-1">
               <div className="flex justify-between items-center text-xs">
@@ -151,6 +184,12 @@ export const ProductionCard = ({ order, onUpdate }: ProductionCardProps) => {
                 <span className="font-medium">{Math.round(mountingProgress)}%</span>
               </div>
               <Progress value={mountingProgress} className="h-2" />
+              <div className="flex items-center gap-1.5 text-xs mt-1">
+                <span className="text-primary">📍</span>
+                <span className="text-muted-foreground font-medium">
+                  {MOUNTING_STATUS_LABELS[order.estatus_montura || "en_espera"]}
+                </span>
+              </div>
             </div>
           </div>
         </CardHeader>
