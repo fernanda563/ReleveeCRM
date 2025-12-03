@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -16,7 +15,6 @@ import {
   Search,
   Palette,
   Wrench,
-  DollarSign,
   Loader2,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -91,19 +89,16 @@ const WorkConcepts = () => {
       title: "Total Conceptos",
       value: concepts.filter((c) => c.activo).length,
       icon: Layers,
-      color: "text-primary",
     },
     {
       title: "Conceptos de Diseño",
       value: designConcepts.length,
       icon: Palette,
-      color: "text-blue-500",
     },
     {
       title: "Conceptos de Taller",
       value: workshopConcepts.length,
       icon: Wrench,
-      color: "text-orange-500",
     },
   ];
 
@@ -113,12 +108,9 @@ const WorkConcepts = () => {
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-3">
-              <Layers className="h-8 w-8 text-primary" />
-              <h1 className="text-3xl font-bold text-foreground">
-                Gestión de Conceptos
-              </h1>
-            </div>
+            <h1 className="text-3xl font-bold text-foreground">
+              Gestión de Conceptos
+            </h1>
             <Button onClick={handleNewConcept}>
               <Plus className="h-4 w-4 mr-2" />
               Nuevo Concepto
@@ -132,15 +124,15 @@ const WorkConcepts = () => {
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           {stats.map((stat) => (
-            <Card key={stat.title}>
-              <CardContent className="flex items-center gap-4 p-6">
-                <div className={`p-3 rounded-lg bg-muted ${stat.color}`}>
-                  <stat.icon className="h-6 w-6" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">{stat.title}</p>
-                  <p className="text-3xl font-bold">{stat.value}</p>
-                </div>
+            <Card key={stat.title} className="border-border">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                  <stat.icon className="h-4 w-4" />
+                  {stat.title}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-foreground">{stat.value}</div>
               </CardContent>
             </Card>
           ))}
@@ -148,10 +140,10 @@ const WorkConcepts = () => {
 
         {/* Filters */}
         <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="text-lg">Filtros</CardTitle>
-          </CardHeader>
-          <CardContent>
+          <CardContent className="pt-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold">Filtros avanzados</h3>
+            </div>
             <div className="flex flex-col md:flex-row gap-4">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
