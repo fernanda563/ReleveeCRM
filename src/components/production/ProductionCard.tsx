@@ -276,8 +276,13 @@ export const ProductionCard = ({ order, onUpdate }: ProductionCardProps) => {
         <CardHeader>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex-1 min-w-0">
-              <CardTitle className="text-lg truncate">
-                {order.clients.nombre} {order.clients.apellido}
+              <CardTitle className="text-lg">
+                <span className="truncate">{order.clients.nombre} {order.clients.apellido}</span>
+                {order.custom_id && (
+                  <span className="ml-2 text-sm font-normal text-muted-foreground">
+                    {order.custom_id}
+                  </span>
+                )}
               </CardTitle>
               <div className="flex gap-2 mt-2 flex-wrap">
                 <Badge variant="outline">
