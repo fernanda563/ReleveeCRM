@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -14,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
@@ -26,6 +28,12 @@ interface ProspectStatusDialogProps {
   onSaved: () => void;
 }
 
+const PROJECT_STATUS = [
+  { value: "activo", label: "Activo" },
+  { value: "en_pausa", label: "En pausa" },
+  { value: "inactivo", label: "Inactivo" },
+];
+
 export const ProspectStatusDialog = ({
   prospect,
   open,
@@ -34,6 +42,12 @@ export const ProspectStatusDialog = ({
 }: ProspectStatusDialogProps) => {
   const [selectedStatus, setSelectedStatus] = useState(prospect?.estado || "activo");
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (prospect) {
+      setSelectedStatus(prospect.estado || "activo");
+    }
+  }, [prospect]);
 
   const handleSave = async () => {
     if (!prospect) return;
@@ -58,13 +72,6 @@ export const ProspectStatusDialog = ({
     }
   };
 
-  // Update selected status when prospect changes
-  useState(() => {
-    if (prospect) {
-      setSelectedStatus(prospect.estado);
-    }
-  });
-
   if (!prospect) return null;
 
   const isConverted = prospect.estado === "convertido";
@@ -81,60 +88,41 @@ export const ProspectStatusDialog = ({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6 py-4">
+        <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium">Estatus del proyecto</label>
+            <Label htmlFor="status-select">Estatus del proyecto</Label>
             <Select
               value={selectedStatus}
               onValueChange={setSelectedStatus}
               disabled={isConverted}
             >
-              <SelectTrigger className="w-full">
+              <SelectTrigger id="status-select" className="w-full">
                 <SelectValue placeholder="Seleccionar estatus" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="activo">
-                  <div className="py-1">
-                    <p className="font-medium">Activo</p>
-                    <p className="text-sm text-muted-foreground">
-                      El proyecto está en seguimiento activo
-                    </p>
-                  </div>
-                </SelectItem>
-                <SelectItem value="en_pausa">
-                  <div className="py-1">
-                    <p className="font-medium">En Pausa</p>
-                    <p className="text-sm text-muted-foreground">
-                      El proyecto está temporalmente pausado
-                    </p>
-                  </div>
-                </SelectItem>
-                <SelectItem value="inactivo">
-                  <div className="py-1">
-                    <p className="font-medium">Inactivo</p>
-                    <p className="text-sm text-muted-foreground">
-                      El proyecto no se continuará
-                    </p>
-                  </div>
-                </SelectItem>
+                {PROJECT_STATUS.map((status) => (
+                  <SelectItem key={status.value} value={status.value}>
+                    {status.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
-
-          <div className="flex justify-end gap-3 pt-4">
-            <Button
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={saving}
-            >
-              Cancelar
-            </Button>
-            <Button onClick={handleSave} disabled={saving || isConverted}>
-              {saving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-              Guardar
-            </Button>
-          </div>
         </div>
+
+        <DialogFooter>
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={saving}
+          >
+            Cancelar
+          </Button>
+          <Button onClick={handleSave} disabled={saving || isConverted}>
+            {saving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+            Guardar
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
