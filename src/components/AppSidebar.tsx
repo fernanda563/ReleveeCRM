@@ -20,6 +20,7 @@ import {
   Building2,
   Pencil,
   Wrench,
+  Factory,
   Layers,
 } from "lucide-react";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -85,6 +86,7 @@ const menuSections = [
     label: "Administración",
     items: [
       { title: "Gestión de Conceptos", url: "/work-concepts", icon: Layers, adminOnly: true },
+      { title: "Gestión de Talleres", url: "/workshops", icon: Factory, adminOnly: true },
       { title: "Gestión de Usuarios", url: "/users", icon: Shield, adminOnly: true },
       { title: "Gestión de Proveedores", url: "/suppliers", icon: Building2, adminOnly: true },
     ],

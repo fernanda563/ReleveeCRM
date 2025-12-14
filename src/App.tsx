@@ -17,6 +17,7 @@ import WorkshopProcess from "./pages/WorkshopProcess";
 import ProductionDashboard from "./pages/ProductionDashboard";
 import Users from "./pages/Users";
 import Suppliers from "./pages/Suppliers";
+import Workshops from "./pages/Workshops";
 import AuditLog from "./pages/AuditLog";
 import STLCollection from "./pages/STLCollection";
 import STLViewerFullscreen from "./pages/STLViewerFullscreen";
@@ -47,6 +48,7 @@ const App = () => (
         <Route path="/production/dashboard" element={<ProductionDashboard />} />
         <Route path="/users" element={<Users />} />
         <Route path="/suppliers" element={<Suppliers />} />
+        <Route path="/workshops" element={<Workshops />} />
         <Route path="/work-concepts" element={<WorkConcepts />} />
         <Route path="/stl-collection" element={<STLCollection />} />
         <Route path="/audit-log" element={<AuditLog />} />

@@ -944,6 +944,7 @@ export type Database = {
           total_costo: number
           total_precio: number
           updated_at: string
+          workshop_id: string | null
         }
         Insert: {
           client_id: string
@@ -960,6 +961,7 @@ export type Database = {
           total_costo?: number
           total_precio?: number
           updated_at?: string
+          workshop_id?: string | null
         }
         Update: {
           client_id?: string
@@ -976,6 +978,7 @@ export type Database = {
           total_costo?: number
           total_precio?: number
           updated_at?: string
+          workshop_id?: string | null
         }
         Relationships: [
           {
@@ -1006,7 +1009,113 @@ export type Database = {
             referencedRelation: "suppliers"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "work_orders_workshop_id_fkey"
+            columns: ["workshop_id"]
+            isOneToOne: false
+            referencedRelation: "workshops"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      workshop_processes: {
+        Row: {
+          activo: boolean | null
+          costo_acordado: number
+          created_at: string | null
+          id: string
+          notas: string | null
+          tiempo_estimado_dias: number | null
+          work_concept_id: string
+          workshop_id: string
+        }
+        Insert: {
+          activo?: boolean | null
+          costo_acordado?: number
+          created_at?: string | null
+          id?: string
+          notas?: string | null
+          tiempo_estimado_dias?: number | null
+          work_concept_id: string
+          workshop_id: string
+        }
+        Update: {
+          activo?: boolean | null
+          costo_acordado?: number
+          created_at?: string | null
+          id?: string
+          notas?: string | null
+          tiempo_estimado_dias?: number | null
+          work_concept_id?: string
+          workshop_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workshop_processes_work_concept_id_fkey"
+            columns: ["work_concept_id"]
+            isOneToOne: false
+            referencedRelation: "work_concepts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workshop_processes_workshop_id_fkey"
+            columns: ["workshop_id"]
+            isOneToOne: false
+            referencedRelation: "workshops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workshops: {
+        Row: {
+          activo: boolean | null
+          created_at: string | null
+          direccion: string | null
+          email: string | null
+          id: string
+          nombre: string
+          notas: string | null
+          responsable_nombre: string
+          responsable_telefono: string | null
+          responsable_telefono_codigo_pais: string | null
+          ubicacion_ciudad: string | null
+          ubicacion_estado: string | null
+          ubicacion_pais: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          activo?: boolean | null
+          created_at?: string | null
+          direccion?: string | null
+          email?: string | null
+          id?: string
+          nombre: string
+          notas?: string | null
+          responsable_nombre: string
+          responsable_telefono?: string | null
+          responsable_telefono_codigo_pais?: string | null
+          ubicacion_ciudad?: string | null
+          ubicacion_estado?: string | null
+          ubicacion_pais?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          activo?: boolean | null
+          created_at?: string | null
+          direccion?: string | null
+          email?: string | null
+          id?: string
+          nombre?: string
+          notas?: string | null
+          responsable_nombre?: string
+          responsable_telefono?: string | null
+          responsable_telefono_codigo_pais?: string | null
+          ubicacion_ciudad?: string | null
+          ubicacion_estado?: string | null
+          ubicacion_pais?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
       }
     }
     Views: {
