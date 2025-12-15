@@ -156,6 +156,105 @@ export type Database = {
         }
         Relationships: []
       }
+      designer_processes: {
+        Row: {
+          activo: boolean | null
+          costo_acordado: number
+          created_at: string | null
+          designer_id: string
+          id: string
+          notas: string | null
+          tiempo_estimado_dias: number | null
+          work_concept_id: string
+        }
+        Insert: {
+          activo?: boolean | null
+          costo_acordado?: number
+          created_at?: string | null
+          designer_id: string
+          id?: string
+          notas?: string | null
+          tiempo_estimado_dias?: number | null
+          work_concept_id: string
+        }
+        Update: {
+          activo?: boolean | null
+          costo_acordado?: number
+          created_at?: string | null
+          designer_id?: string
+          id?: string
+          notas?: string | null
+          tiempo_estimado_dias?: number | null
+          work_concept_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "designer_processes_designer_id_fkey"
+            columns: ["designer_id"]
+            isOneToOne: false
+            referencedRelation: "designers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "designer_processes_work_concept_id_fkey"
+            columns: ["work_concept_id"]
+            isOneToOne: false
+            referencedRelation: "work_concepts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      designers: {
+        Row: {
+          activo: boolean | null
+          created_at: string | null
+          email: string | null
+          especialidad: string | null
+          id: string
+          nombre: string
+          notas: string | null
+          portafolio_url: string | null
+          telefono: string | null
+          telefono_codigo_pais: string | null
+          ubicacion_ciudad: string | null
+          ubicacion_estado: string | null
+          ubicacion_pais: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          activo?: boolean | null
+          created_at?: string | null
+          email?: string | null
+          especialidad?: string | null
+          id?: string
+          nombre: string
+          notas?: string | null
+          portafolio_url?: string | null
+          telefono?: string | null
+          telefono_codigo_pais?: string | null
+          ubicacion_ciudad?: string | null
+          ubicacion_estado?: string | null
+          ubicacion_pais?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          activo?: boolean | null
+          created_at?: string | null
+          email?: string | null
+          especialidad?: string | null
+          id?: string
+          nombre?: string
+          notas?: string | null
+          portafolio_url?: string | null
+          telefono?: string | null
+          telefono_codigo_pais?: string | null
+          ubicacion_ciudad?: string | null
+          ubicacion_estado?: string | null
+          ubicacion_pais?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       google_calendar_connections: {
         Row: {
           access_token: string
@@ -934,6 +1033,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           descripcion: string | null
+          designer_id: string | null
           estado: Database["public"]["Enums"]["work_order_status"]
           fecha_entrega_esperada: string | null
           fecha_solicitud: string
@@ -951,6 +1051,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           descripcion?: string | null
+          designer_id?: string | null
           estado?: Database["public"]["Enums"]["work_order_status"]
           fecha_entrega_esperada?: string | null
           fecha_solicitud?: string
@@ -968,6 +1069,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           descripcion?: string | null
+          designer_id?: string | null
           estado?: Database["public"]["Enums"]["work_order_status"]
           fecha_entrega_esperada?: string | null
           fecha_solicitud?: string
@@ -993,6 +1095,13 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_orders_designer_id_fkey"
+            columns: ["designer_id"]
+            isOneToOne: false
+            referencedRelation: "designers"
             referencedColumns: ["id"]
           },
           {

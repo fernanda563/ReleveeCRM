@@ -22,6 +22,7 @@ import {
   Wrench,
   Factory,
   Layers,
+  Palette,
 } from "lucide-react";
 import { useUserRole } from "@/hooks/useUserRole";
 import {
@@ -87,6 +88,7 @@ const menuSections = [
     items: [
       { title: "Gestión de Conceptos", url: "/work-concepts", icon: Layers, adminOnly: true },
       { title: "Gestión de Talleres", url: "/workshops", icon: Factory, adminOnly: true },
+      { title: "Gestión de Diseñadores", url: "/designers", icon: Palette, adminOnly: true },
       { title: "Gestión de Usuarios", url: "/users", icon: Shield, adminOnly: true },
       { title: "Gestión de Proveedores", url: "/suppliers", icon: Building2, adminOnly: true },
     ],
