@@ -82,9 +82,9 @@ export const WORK_ORDER_STATUS_LABELS: Record<WorkOrderStatus, string> = {
 };
 
 export const UNIT_MEASURES = [
-  { value: 'unidad', label: 'Unidad' },
-  { value: 'por_piedra', label: 'Por piedra' },
-  { value: 'por_hora', label: 'Por hora' },
-  { value: 'por_gramo', label: 'Por gramo' },
-  { value: 'servicio', label: 'Servicio' },
+  { value: 'unidad', label: 'Unidades' },
+  { value: 'por_piedra', label: 'Piedras' },
+  { value: 'por_hora', label: 'Horas' },
+  { value: 'por_gramo', label: 'Gramos' },
+  { value: 'servicio', label: 'Servicios' },
 ];
