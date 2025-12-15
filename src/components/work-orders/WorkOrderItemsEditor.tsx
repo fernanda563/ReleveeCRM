@@ -74,9 +74,13 @@ export const WorkOrderItemsEditor = ({
     onItemsChange(newItems);
   };
 
-  const handleQuantityChange = (index: number, cantidad: number) => {
+  const handleQuantityChange = (index: number, cantidad: number, allowDecimals: boolean) => {
     const newItems = [...items];
-    newItems[index] = { ...newItems[index], cantidad: Math.max(1, cantidad) };
+    const minValue = allowDecimals ? 0.01 : 1;
+    const finalValue = allowDecimals 
+      ? Math.max(minValue, Math.round(cantidad * 100) / 100)
+      : Math.max(1, Math.floor(cantidad));
+    newItems[index] = { ...newItems[index], cantidad: finalValue };
     onItemsChange(newItems);
   };
 
@@ -146,20 +150,29 @@ export const WorkOrderItemsEditor = ({
                       </div>
 
                       <div className="grid grid-cols-3 gap-3 text-sm">
-                        {/* Cantidad */}
+                      {/* Cantidad */}
                         <div className="space-y-1">
-                          <Label className="text-xs">
-                            {UNIT_MEASURES.find(u => u.value === concept?.unidad_medida)?.label || "Cantidad"}
-                          </Label>
-                          <Input
-                            type="number"
-                            min="1"
-                            value={item.cantidad}
-                            onChange={(e) =>
-                              handleQuantityChange(index, parseInt(e.target.value) || 1)
-                            }
-                            className="h-8"
-                          />
+                          {(() => {
+                            const unitConfig = UNIT_MEASURES.find(u => u.value === concept?.unidad_medida);
+                            const allowDecimals = unitConfig?.allowDecimals ?? false;
+                            return (
+                              <>
+                                <Label className="text-xs">
+                                  {unitConfig?.label || "Cantidad"}
+                                </Label>
+                                <Input
+                                  type="number"
+                                  min={allowDecimals ? "0.01" : "1"}
+                                  step={allowDecimals ? "0.01" : "1"}
+                                  value={item.cantidad}
+                                  onChange={(e) =>
+                                    handleQuantityChange(index, parseFloat(e.target.value) || (allowDecimals ? 0.01 : 1), allowDecimals)
+                                  }
+                                  className="h-8"
+                                />
+                              </>
+                            );
+                          })()}
                         </div>
 
                         {/* Costo unitario (read-only) */}
