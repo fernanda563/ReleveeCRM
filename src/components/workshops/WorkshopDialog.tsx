@@ -18,6 +18,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { PhoneInput } from "@/components/ui/phone-input";
@@ -35,12 +44,26 @@ import {
 import { COUNTRIES } from "@/lib/countries";
 import { COUNTRY_PHONE_CODES } from "@/lib/country-phone-codes";
 import { Workshop } from "@/types/workshops";
+import { Loader2 } from "lucide-react";
 
 interface WorkshopDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   workshop: Workshop | null;
   onSuccess: () => void;
+}
+
+interface WorkConcept {
+  id: string;
+  nombre: string;
+  costo_base: number;
+  unidad_medida: string;
+}
+
+interface ProcessFormData {
+  enabled: boolean;
+  costo_acordado: number;
+  tiempo_estimado_dias: number | null;
 }
 
 export const WorkshopDialog = ({
@@ -52,6 +75,10 @@ export const WorkshopDialog = ({
   const { isAdmin } = useUserRole();
   const [loading, setLoading] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [workConcepts, setWorkConcepts] = useState<WorkConcept[]>([]);
+  const [processesData, setProcessesData] = useState<Record<string, ProcessFormData>>({});
+  const [loadingConcepts, setLoadingConcepts] = useState(false);
+  
   const [formData, setFormData] = useState({
     nombre: "",
     responsable_nombre: "",
@@ -65,6 +92,56 @@ export const WorkshopDialog = ({
     notas: "",
     activo: true,
   });
+
+  const fetchWorkConcepts = async (workshopId?: string) => {
+    setLoadingConcepts(true);
+    try {
+      // Obtener conceptos de tipo "taller"
+      const { data: concepts, error: conceptsError } = await supabase
+        .from("work_concepts")
+        .select("id, nombre, costo_base, unidad_medida")
+        .eq("area", "taller")
+        .eq("activo", true)
+        .order("nombre");
+
+      if (conceptsError) throw conceptsError;
+      setWorkConcepts(concepts || []);
+
+      // Si estamos editando, cargar procesos existentes
+      let existingProcesses: any[] = [];
+      if (workshopId) {
+        const { data: processes, error: processesError } = await supabase
+          .from("workshop_processes")
+          .select("*")
+          .eq("workshop_id", workshopId);
+        
+        if (processesError) throw processesError;
+        existingProcesses = processes || [];
+      }
+
+      // Inicializar datos del formulario
+      const initialData: Record<string, ProcessFormData> = {};
+      (concepts || []).forEach((concept) => {
+        const existing = existingProcesses.find((p) => p.work_concept_id === concept.id);
+        initialData[concept.id] = {
+          enabled: !!existing,
+          costo_acordado: existing?.costo_acordado ?? concept.costo_base,
+          tiempo_estimado_dias: existing?.tiempo_estimado_dias ?? null,
+        };
+      });
+      setProcessesData(initialData);
+    } catch (error) {
+      console.error("Error fetching work concepts:", error);
+    } finally {
+      setLoadingConcepts(false);
+    }
+  };
+
+  useEffect(() => {
+    if (open) {
+      fetchWorkConcepts(workshop?.id);
+    }
+  }, [open, workshop?.id]);
 
   useEffect(() => {
     if (workshop) {
@@ -128,6 +205,16 @@ export const WorkshopDialog = ({
     });
   };
 
+  const updateProcess = (conceptId: string, field: keyof ProcessFormData, value: any) => {
+    setProcessesData((prev) => ({
+      ...prev,
+      [conceptId]: {
+        ...prev[conceptId],
+        [field]: value,
+      },
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -151,6 +238,8 @@ export const WorkshopDialog = ({
         activo: formData.activo,
       };
 
+      let workshopId = workshop?.id;
+
       if (workshop) {
         const { error } = await supabase
           .from("workshops")
@@ -158,16 +247,48 @@ export const WorkshopDialog = ({
           .eq("id", workshop.id);
 
         if (error) throw error;
-        toast.success("Taller actualizado exitosamente");
       } else {
-        const { error } = await supabase
+        const { data: newWorkshop, error } = await supabase
           .from("workshops")
-          .insert([workshopData]);
+          .insert([workshopData])
+          .select()
+          .single();
 
         if (error) throw error;
-        toast.success("Taller creado exitosamente");
+        workshopId = newWorkshop.id;
       }
 
+      // Guardar procesos
+      if (workshopId) {
+        const enabledProcesses = Object.entries(processesData)
+          .filter(([_, data]) => data.enabled)
+          .map(([conceptId, data]) => ({
+            workshop_id: workshopId,
+            work_concept_id: conceptId,
+            costo_acordado: data.costo_acordado,
+            tiempo_estimado_dias: data.tiempo_estimado_dias,
+            activo: true,
+          }));
+
+        // Eliminar procesos anteriores
+        const { error: deleteError } = await supabase
+          .from("workshop_processes")
+          .delete()
+          .eq("workshop_id", workshopId);
+
+        if (deleteError) throw deleteError;
+
+        // Insertar nuevos procesos
+        if (enabledProcesses.length > 0) {
+          const { error: insertError } = await supabase
+            .from("workshop_processes")
+            .insert(enabledProcesses);
+
+          if (insertError) throw insertError;
+        }
+      }
+
+      toast.success(workshop ? "Taller actualizado exitosamente" : "Taller creado exitosamente");
       onSuccess();
       onOpenChange(false);
     } catch (error: any) {
@@ -331,6 +452,105 @@ export const WorkshopDialog = ({
                   />
                 </div>
               </div>
+            </div>
+
+            {/* Procesos del Taller */}
+            <div className="space-y-4">
+              <h3 className="text-sm font-semibold text-foreground">
+                Procesos del Taller
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Selecciona los procesos que realiza este taller y define los costos acordados.
+              </p>
+
+              {loadingConcepts ? (
+                <div className="flex justify-center py-4">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </div>
+              ) : workConcepts.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4 border rounded-lg">
+                  No hay conceptos de trabajo de tipo "taller" registrados.
+                </p>
+              ) : (
+                <div className="border rounded-lg overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[50px]"></TableHead>
+                        <TableHead>Proceso</TableHead>
+                        <TableHead className="w-[150px]">Costo Acordado</TableHead>
+                        <TableHead className="w-[120px]">Tiempo (días)</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {workConcepts.map((concept) => {
+                        const data = processesData[concept.id];
+                        if (!data) return null;
+
+                        return (
+                          <TableRow key={concept.id}>
+                            <TableCell>
+                              <Checkbox
+                                checked={data.enabled}
+                                onCheckedChange={(checked) =>
+                                  updateProcess(concept.id, "enabled", !!checked)
+                                }
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <div>
+                                <span className="font-medium">{concept.nombre}</span>
+                                <span className="text-xs text-muted-foreground ml-2">
+                                  (Base: ${concept.costo_base}/{concept.unidad_medida})
+                                </span>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="relative">
+                                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
+                                  $
+                                </span>
+                                <Input
+                                  type="number"
+                                  min="0"
+                                  step="0.01"
+                                  value={data.costo_acordado}
+                                  onChange={(e) =>
+                                    updateProcess(
+                                      concept.id,
+                                      "costo_acordado",
+                                      parseFloat(e.target.value) || 0
+                                    )
+                                  }
+                                  className="pl-6 h-8"
+                                  disabled={!data.enabled}
+                                />
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Input
+                                type="number"
+                                min="0"
+                                value={data.tiempo_estimado_dias ?? ""}
+                                onChange={(e) =>
+                                  updateProcess(
+                                    concept.id,
+                                    "tiempo_estimado_dias",
+                                    e.target.value ? parseInt(e.target.value) : null
+                                  )
+                                }
+                                className="h-8"
+                                placeholder="—"
+                                disabled={!data.enabled}
+                              />
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
             </div>
 
             {/* Información Adicional */}
