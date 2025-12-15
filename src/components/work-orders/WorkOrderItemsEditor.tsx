@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Trash2, Pencil, Check, X } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { WorkConcept, WORK_AREA_LABELS } from "@/types/work-concepts";
 
 interface WorkOrderItemData {
@@ -35,8 +35,6 @@ export const WorkOrderItemsEditor = ({
 }: WorkOrderItemsEditorProps) => {
   const [concepts, setConcepts] = useState<WorkConcept[]>([]);
   const [selectedConceptId, setSelectedConceptId] = useState<string>("");
-  const [editingIndex, setEditingIndex] = useState<number | null>(null);
-  const [editingPrice, setEditingPrice] = useState<string>("");
 
   useEffect(() => {
     fetchConcepts();
@@ -82,29 +80,6 @@ export const WorkOrderItemsEditor = ({
     onItemsChange(newItems);
   };
 
-  const handleStartEditPrice = (index: number) => {
-    setEditingIndex(index);
-    setEditingPrice(items[index].precio_unitario.toString());
-  };
-
-  const handleSavePrice = () => {
-    if (editingIndex === null) return;
-
-    const newPrice = parseFloat(editingPrice);
-    if (isNaN(newPrice) || newPrice < 0) return;
-
-    const newItems = [...items];
-    newItems[editingIndex] = { ...newItems[editingIndex], precio_unitario: newPrice };
-    onItemsChange(newItems);
-    setEditingIndex(null);
-    setEditingPrice("");
-  };
-
-  const handleCancelEdit = () => {
-    setEditingIndex(null);
-    setEditingPrice("");
-  };
-
   const getConceptDetails = (conceptId: string) => {
     return concepts.find((c) => c.id === conceptId);
   };
@@ -125,7 +100,7 @@ export const WorkOrderItemsEditor = ({
                     [{WORK_AREA_LABELS[concept.area]}]
                   </span>
                   {concept.nombre} - $
-                  {concept.precio_venta_base.toLocaleString("es-MX")}
+                  {concept.costo_base.toLocaleString("es-MX")}
                 </span>
               </SelectItem>
             ))}
@@ -149,8 +124,7 @@ export const WorkOrderItemsEditor = ({
         <div className="space-y-3">
           {items.map((item, index) => {
             const concept = getConceptDetails(item.work_concept_id);
-            const subtotalCosto = item.cantidad * item.costo_unitario;
-            const subtotalPrecio = item.cantidad * item.precio_unitario;
+            const subtotal = item.cantidad * item.costo_unitario;
 
             return (
               <Card key={index}>
@@ -171,7 +145,7 @@ export const WorkOrderItemsEditor = ({
                         </Button>
                       </div>
 
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                      <div className="grid grid-cols-3 gap-3 text-sm">
                         {/* Cantidad */}
                         <div className="space-y-1">
                           <Label className="text-xs">Cantidad</Label>
@@ -188,59 +162,17 @@ export const WorkOrderItemsEditor = ({
 
                         {/* Costo unitario (read-only) */}
                         <div className="space-y-1">
-                          <Label className="text-xs">Costo unit.</Label>
+                          <Label className="text-xs">Costo unitario</Label>
                           <div className="h-8 px-3 flex items-center bg-muted rounded-md text-sm">
                             ${item.costo_unitario.toLocaleString("es-MX")}
                           </div>
-                        </div>
-
-                        {/* Precio unitario (editable) */}
-                        <div className="space-y-1">
-                          <Label className="text-xs">Precio unit.</Label>
-                          {editingIndex === index ? (
-                            <div className="flex items-center gap-1">
-                              <Input
-                                type="number"
-                                min="0"
-                                step="0.01"
-                                value={editingPrice}
-                                onChange={(e) => setEditingPrice(e.target.value)}
-                                className="h-8"
-                                autoFocus
-                              />
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8"
-                                onClick={handleSavePrice}
-                              >
-                                <Check className="h-4 w-4 text-green-600" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8"
-                                onClick={handleCancelEdit}
-                              >
-                                <X className="h-4 w-4 text-red-600" />
-                              </Button>
-                            </div>
-                          ) : (
-                            <div
-                              className="h-8 px-3 flex items-center justify-between bg-muted rounded-md text-sm cursor-pointer hover:bg-muted/80"
-                              onClick={() => handleStartEditPrice(index)}
-                            >
-                              ${item.precio_unitario.toLocaleString("es-MX")}
-                              <Pencil className="h-3 w-3 text-muted-foreground" />
-                            </div>
-                          )}
                         </div>
 
                         {/* Subtotal */}
                         <div className="space-y-1">
                           <Label className="text-xs">Subtotal</Label>
                           <div className="h-8 px-3 flex items-center bg-primary/10 rounded-md text-sm font-medium">
-                            ${subtotalPrecio.toLocaleString("es-MX")}
+                            ${subtotal.toLocaleString("es-MX")}
                           </div>
                         </div>
                       </div>

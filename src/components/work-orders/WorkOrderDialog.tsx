@@ -213,11 +213,7 @@ export const WorkOrderDialog = ({
       (sum, item) => sum + item.cantidad * item.costo_unitario,
       0
     );
-    const totalPrecio = items.reduce(
-      (sum, item) => sum + item.cantidad * item.precio_unitario,
-      0
-    );
-    return { totalCosto, totalPrecio };
+    return { totalCosto };
   };
 
   const handleAssignmentTypeChange = (value: AssignmentType) => {
@@ -244,7 +240,7 @@ export const WorkOrderDialog = ({
     setSaving(true);
 
     try {
-      const { totalCosto, totalPrecio } = calculateTotals();
+      const { totalCosto } = calculateTotals();
 
       const orderData = {
         client_id: formData.client_id,
@@ -259,7 +255,7 @@ export const WorkOrderDialog = ({
           : null,
         notas: formData.notas.trim() || null,
         total_costo: totalCosto,
-        total_precio: totalPrecio,
+        total_precio: totalCosto, // Keep same as cost for backwards compatibility
       };
 
       let workOrderId = workOrder?.id;
@@ -326,8 +322,7 @@ export const WorkOrderDialog = ({
     ? orders.filter((o) => o.client_id === formData.client_id)
     : [];
 
-  const { totalCosto, totalPrecio } = calculateTotals();
-  const margin = totalPrecio - totalCosto;
+  const { totalCosto } = calculateTotals();
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -552,31 +547,11 @@ export const WorkOrderDialog = ({
 
             {/* Totals */}
             {items.length > 0 && (
-              <div className="mt-6 p-4 bg-muted rounded-lg space-y-2">
+              <div className="mt-6 p-4 bg-muted rounded-lg">
                 <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">
-                    Total Costo:
-                  </span>
-                  <span className="font-medium">
+                  <span className="font-medium">Total a pagar:</span>
+                  <span className="font-semibold text-lg">
                     ${totalCosto.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">
-                    Total Precio:
-                  </span>
-                  <span className="font-medium">
-                    ${totalPrecio.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
-                  </span>
-                </div>
-                <div className="flex justify-between border-t pt-2">
-                  <span className="text-sm font-medium">Margen:</span>
-                  <span
-                    className={`font-semibold ${
-                      margin >= 0 ? "text-green-600" : "text-red-600"
-                    }`}
-                  >
-                    ${margin.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
                   </span>
                 </div>
               </div>

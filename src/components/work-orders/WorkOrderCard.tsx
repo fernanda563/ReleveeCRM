@@ -68,8 +68,6 @@ export const WorkOrderCard = ({
     }
   };
 
-  const margin = workOrder.total_precio - workOrder.total_costo;
-
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -157,25 +155,13 @@ export const WorkOrderCard = ({
           )}
         </div>
 
-        {/* Financials */}
-        <div className="grid grid-cols-3 gap-3 pt-2 border-t">
-          <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">Costo</p>
-            <p className="text-sm font-medium">
+        {/* Total a pagar */}
+        <div className="pt-2 border-t">
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-muted-foreground">Total a pagar:</span>
+            <span className="text-lg font-semibold">
               ${workOrder.total_costo.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
-            </p>
-          </div>
-          <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">Precio</p>
-            <p className="text-sm font-medium">
-              ${workOrder.total_precio.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
-            </p>
-          </div>
-          <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">Margen</p>
-            <p className={`text-sm font-medium ${margin >= 0 ? "text-green-600" : "text-red-600"}`}>
-              ${margin.toLocaleString("es-MX", { minimumFractionDigits: 2 })}
-            </p>
+            </span>
           </div>
         </div>
       </CardContent>
