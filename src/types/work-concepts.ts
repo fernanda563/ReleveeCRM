@@ -20,6 +20,8 @@ export interface WorkOrder {
   order_id: string | null;
   client_id: string;
   taller_id: string | null;
+  workshop_id: string | null;
+  designer_id: string | null;
   descripcion: string | null;
   estado: WorkOrderStatus;
   fecha_solicitud: string;
@@ -39,6 +41,14 @@ export interface WorkOrder {
   taller?: {
     id: string;
     nombre_empresa: string;
+  };
+  workshop?: {
+    id: string;
+    nombre: string;
+  };
+  designer?: {
+    id: string;
+    nombre: string;
   };
   order?: {
     id: string;

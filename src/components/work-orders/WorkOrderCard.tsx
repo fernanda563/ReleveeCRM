@@ -13,7 +13,8 @@ import {
   Pencil,
   Trash2,
   User,
-  Building2,
+  Factory,
+  Palette,
   Calendar,
   DollarSign,
   Link2,
@@ -125,11 +126,17 @@ export const WorkOrderCard = ({
           )}
         </div>
 
-        {/* Workshop info */}
-        {workOrder.taller && (
+        {/* Workshop or Designer info */}
+        {workOrder.workshop && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Building2 className="h-4 w-4" />
-            <span>{workOrder.taller.nombre_empresa}</span>
+            <Factory className="h-4 w-4" />
+            <span>Taller: {workOrder.workshop.nombre}</span>
+          </div>
+        )}
+        {workOrder.designer && (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Palette className="h-4 w-4" />
+            <span>Diseñador: {workOrder.designer.nombre}</span>
           </div>
         )}
 

@@ -8,7 +8,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -18,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
@@ -46,9 +46,14 @@ interface Client {
   apellido: string;
 }
 
-interface Supplier {
+interface Workshop {
   id: string;
-  nombre_empresa: string;
+  nombre: string;
+}
+
+interface Designer {
+  id: string;
+  nombre: string;
 }
 
 interface Order {
@@ -67,6 +72,8 @@ interface WorkOrderItemData {
   concept_name?: string;
 }
 
+type AssignmentType = 'taller' | 'diseñador' | 'ninguno';
+
 export const WorkOrderDialog = ({
   open,
   onOpenChange,
@@ -76,14 +83,17 @@ export const WorkOrderDialog = ({
   const [step, setStep] = useState(1);
   const [saving, setSaving] = useState(false);
   const [clients, setClients] = useState<Client[]>([]);
-  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const [workshops, setWorkshops] = useState<Workshop[]>([]);
+  const [designers, setDesigners] = useState<Designer[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [items, setItems] = useState<WorkOrderItemData[]>([]);
+  const [assignmentType, setAssignmentType] = useState<AssignmentType>('ninguno');
 
   const [formData, setFormData] = useState({
     client_id: "",
     order_id: "",
-    taller_id: "",
+    workshop_id: "",
+    designer_id: "",
     descripcion: "",
     estado: "pendiente" as WorkOrderStatus,
     fecha_entrega_esperada: null as Date | null,
@@ -93,7 +103,8 @@ export const WorkOrderDialog = ({
   useEffect(() => {
     if (open) {
       fetchClients();
-      fetchSuppliers();
+      fetchWorkshops();
+      fetchDesigners();
       fetchOrders();
       if (workOrder) {
         loadWorkOrderData();
@@ -107,7 +118,8 @@ export const WorkOrderDialog = ({
     setFormData({
       client_id: "",
       order_id: "",
-      taller_id: "",
+      workshop_id: "",
+      designer_id: "",
       descripcion: "",
       estado: "pendiente",
       fecha_entrega_esperada: null,
@@ -115,15 +127,26 @@ export const WorkOrderDialog = ({
     });
     setItems([]);
     setStep(1);
+    setAssignmentType('ninguno');
   };
 
   const loadWorkOrderData = async () => {
     if (!workOrder) return;
 
+    // Determine assignment type based on existing data
+    if (workOrder.workshop_id) {
+      setAssignmentType('taller');
+    } else if (workOrder.designer_id) {
+      setAssignmentType('diseñador');
+    } else {
+      setAssignmentType('ninguno');
+    }
+
     setFormData({
       client_id: workOrder.client_id,
       order_id: workOrder.order_id || "",
-      taller_id: workOrder.taller_id || "",
+      workshop_id: workOrder.workshop_id || "",
+      designer_id: workOrder.designer_id || "",
       descripcion: workOrder.descripcion || "",
       estado: workOrder.estado,
       fecha_entrega_esperada: workOrder.fecha_entrega_esperada
@@ -161,13 +184,22 @@ export const WorkOrderDialog = ({
     setClients(data || []);
   };
 
-  const fetchSuppliers = async () => {
+  const fetchWorkshops = async () => {
     const { data } = await supabase
-      .from("suppliers")
-      .select("id, nombre_empresa")
+      .from("workshops")
+      .select("id, nombre")
       .eq("activo", true)
-      .order("nombre_empresa");
-    setSuppliers(data || []);
+      .order("nombre");
+    setWorkshops(data || []);
+  };
+
+  const fetchDesigners = async () => {
+    const { data } = await supabase
+      .from("designers")
+      .select("id, nombre")
+      .eq("activo", true)
+      .order("nombre");
+    setDesigners(data || []);
   };
 
   const fetchOrders = async () => {
@@ -190,6 +222,16 @@ export const WorkOrderDialog = ({
     return { totalCosto, totalPrecio };
   };
 
+  const handleAssignmentTypeChange = (value: AssignmentType) => {
+    setAssignmentType(value);
+    // Clear previous selections when changing type
+    setFormData({
+      ...formData,
+      workshop_id: "",
+      designer_id: "",
+    });
+  };
+
   const handleSave = async () => {
     if (!formData.client_id) {
       toast.error("Selecciona un cliente");
@@ -209,7 +251,9 @@ export const WorkOrderDialog = ({
       const orderData = {
         client_id: formData.client_id,
         order_id: formData.order_id || null,
-        taller_id: formData.taller_id || null,
+        workshop_id: assignmentType === 'taller' ? (formData.workshop_id || null) : null,
+        designer_id: assignmentType === 'diseñador' ? (formData.designer_id || null) : null,
+        taller_id: null, // Deprecate legacy field
         descripcion: formData.descripcion.trim() || null,
         estado: formData.estado,
         fecha_entrega_esperada: formData.fecha_entrega_esperada
@@ -352,28 +396,78 @@ export const WorkOrderDialog = ({
               </p>
             </div>
 
-            {/* Taller externo */}
-            <div className="space-y-2">
-              <Label>Taller externo (opcional)</Label>
-            <Select
-                value={formData.taller_id || "none"}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, taller_id: value === "none" ? "" : value })
-                }
+            {/* Assignment Type Radio Buttons */}
+            <div className="space-y-3">
+              <Label>Asignar a</Label>
+              <RadioGroup 
+                value={assignmentType} 
+                onValueChange={(value) => handleAssignmentTypeChange(value as AssignmentType)}
+                className="flex flex-col space-y-2"
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar taller" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">Sin asignar</SelectItem>
-                  {suppliers.map((supplier) => (
-                    <SelectItem key={supplier.id} value={supplier.id}>
-                      {supplier.nombre_empresa}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="ninguno" id="ninguno" />
+                  <Label htmlFor="ninguno" className="font-normal cursor-pointer">Sin asignar</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="taller" id="taller" />
+                  <Label htmlFor="taller" className="font-normal cursor-pointer">Taller externo</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="diseñador" id="diseñador" />
+                  <Label htmlFor="diseñador" className="font-normal cursor-pointer">Diseñador externo</Label>
+                </div>
+              </RadioGroup>
             </div>
+
+            {/* Conditional Workshop Dropdown */}
+            {assignmentType === 'taller' && (
+              <div className="space-y-2">
+                <Label>Taller</Label>
+                <Select
+                  value={formData.workshop_id || "none"}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, workshop_id: value === "none" ? "" : value })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar taller" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Sin asignar</SelectItem>
+                    {workshops.map((workshop) => (
+                      <SelectItem key={workshop.id} value={workshop.id}>
+                        {workshop.nombre}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            {/* Conditional Designer Dropdown */}
+            {assignmentType === 'diseñador' && (
+              <div className="space-y-2">
+                <Label>Diseñador</Label>
+                <Select
+                  value={formData.designer_id || "none"}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, designer_id: value === "none" ? "" : value })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar diseñador" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Sin asignar</SelectItem>
+                    {designers.map((designer) => (
+                      <SelectItem key={designer.id} value={designer.id}>
+                        {designer.nombre}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
             {/* Estado (solo en edición) */}
             {workOrder && (
@@ -498,38 +592,28 @@ export const WorkOrderDialog = ({
           </div>
         )}
 
-        <DialogFooter className="flex-col sm:flex-row gap-2">
+        <DialogFooter className="flex gap-2">
           {step === 2 && (
-            <Button
-              variant="outline"
-              onClick={() => setStep(1)}
-              disabled={saving}
-              className="sm:mr-auto"
-            >
+            <Button variant="outline" onClick={() => setStep(1)}>
               <ChevronLeft className="h-4 w-4 mr-1" />
               Anterior
             </Button>
           )}
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            disabled={saving}
-          >
-            Cancelar
-          </Button>
           {step === 1 ? (
-            <Button
-              onClick={() => setStep(2)}
-              disabled={!formData.client_id}
-            >
+            <Button onClick={() => setStep(2)}>
               Siguiente
               <ChevronRight className="h-4 w-4 ml-1" />
             </Button>
           ) : (
-            <Button onClick={handleSave} disabled={saving || items.length === 0}>
-              {saving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-              {workOrder ? "Guardar cambios" : "Crear orden"}
-            </Button>
+            <>
+              <Button variant="outline" onClick={() => onOpenChange(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={handleSave} disabled={saving}>
+                {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                {workOrder ? "Guardar cambios" : "Crear orden"}
+              </Button>
+            </>
           )}
         </DialogFooter>
       </DialogContent>

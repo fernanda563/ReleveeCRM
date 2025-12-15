@@ -42,7 +42,8 @@ const WorkOrders = () => {
         .select(`
           *,
           client:clients(id, nombre, apellido),
-          taller:suppliers(id, nombre_empresa),
+          workshop:workshops(id, nombre),
+          designer:designers(id, nombre),
           order:orders(id, custom_id)
         `)
         .order("created_at", { ascending: false });
