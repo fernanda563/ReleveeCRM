@@ -10,7 +10,7 @@ import { Designer, DesignerProcess } from "@/types/designers";
 import { DesignerDialog } from "@/components/designers/DesignerDialog";
 import { DesignerProcessesDialog } from "@/components/designers/DesignerProcessesDialog";
 import { DesignerAccountStatement } from "@/components/designers/DesignerAccountStatement";
-import { Plus, Search, MoreHorizontal, Pencil, ListChecks, FileText, Users, UserCheck, Briefcase, Mail, Phone, MapPin, ExternalLink } from "lucide-react";
+import { Plus, Search, MoreHorizontal, Pencil, ListChecks, FileText, Users, UserCheck, Briefcase, Mail, Phone, MapPin, ExternalLink, Loader2 } from "lucide-react";
 
 export default function Designers() {
   const [designers, setDesigners] = useState<Designer[]>([]);
@@ -44,7 +44,6 @@ export default function Designers() {
       if (error) throw error;
       setDesigners(data || []);
 
-      // Fetch processes for each designer
       const { data: processes, error: processesError } = await supabase
         .from("designer_processes")
         .select(`
@@ -63,7 +62,6 @@ export default function Designers() {
       });
       setDesignerProcesses(processesMap);
 
-      // Fetch work order counts
       const { data: workOrders, error: workOrdersError } = await supabase
         .from("work_orders")
         .select("designer_id")
@@ -115,98 +113,113 @@ export default function Designers() {
     setStatementOpen(true);
   };
 
+  const stats = [
+    {
+      title: "Total de Diseñadores",
+      value: totalDesigners,
+      icon: Users,
+    },
+    {
+      title: "Diseñadores Activos",
+      value: activeDesigners,
+      icon: UserCheck,
+    },
+    {
+      title: "Órdenes de Trabajo",
+      value: totalWorkOrders,
+      icon: Briefcase,
+    },
+  ];
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-full bg-background">
-      <div className="container mx-auto p-6 space-y-6">
+      <main className="container mx-auto px-6 py-8">
         {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold">Gestión de Diseñadores</h1>
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-2">
+            <h1 className="text-3xl font-bold text-foreground">Gestión de Diseñadores</h1>
+            <Button onClick={handleNewDesigner}>
+              <Plus className="h-4 w-4 mr-2" />
+              Nuevo Diseñador
+            </Button>
+          </div>
           <p className="text-muted-foreground">
             Administra los diseñadores externos, sus procesos y estados de cuenta
           </p>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                <Users className="h-4 w-4" />
-                Total de Diseñadores
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold">{totalDesigners}</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                <UserCheck className="h-4 w-4" />
-                Diseñadores Activos
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold">{activeDesigners}</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                <Briefcase className="h-4 w-4" />
-                Órdenes de Trabajo
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold">{totalWorkOrders}</p>
-            </CardContent>
-          </Card>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          {stats.map((stat) => (
+            <Card key={stat.title} className="border-border">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                  <stat.icon className="h-4 w-4" />
+                  {stat.title}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-foreground">{stat.value}</div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
-        {/* Search and Actions */}
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar por nombre, especialidad o email..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              <Button onClick={handleNewDesigner}>
-                <Plus className="h-4 w-4 mr-2" />
-                Nuevo Diseñador
-              </Button>
+        {/* Filters */}
+        <Card className="mb-6">
+          <CardContent className="pt-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold">Filtros avanzados</h3>
+            </div>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por nombre, especialidad o email..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
             </div>
           </CardContent>
         </Card>
 
+        {/* Results count */}
+        <p className="text-sm text-muted-foreground mb-4">
+          {filteredDesigners.length} diseñador(es) encontrado(s)
+        </p>
+
         {/* Designers List */}
-        {loading ? (
-          <div className="text-center py-12 text-muted-foreground">Cargando diseñadores...</div>
-        ) : filteredDesigners.length === 0 ? (
-          <div className="text-center py-12 text-muted-foreground">
-            {searchTerm ? "No se encontraron diseñadores" : "No hay diseñadores registrados"}
-          </div>
+        {filteredDesigners.length === 0 ? (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              <Users className="h-12 w-12 text-muted-foreground mb-4" />
+              <p className="text-muted-foreground text-center">
+                {searchTerm ? "No se encontraron diseñadores" : "No hay diseñadores registrados"}
+              </p>
+            </CardContent>
+          </Card>
         ) : (
-          <div className="grid gap-4">
+          <div className="space-y-4">
             {filteredDesigners.map((designer) => {
               const processes = designerProcesses[designer.id] || [];
               const orderCount = workOrderCounts[designer.id] || 0;
 
               return (
-                <Card key={designer.id}>
+                <Card key={designer.id} className="hover:shadow-md transition-shadow">
                   <CardContent className="pt-6">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1 space-y-3">
                         {/* Header */}
                         <div className="flex items-center gap-3">
-                          <h3 className="text-lg font-semibold">{designer.nombre}</h3>
+                          <h3 className="text-xl font-semibold">{designer.nombre}</h3>
                           <Badge variant={designer.activo ? "default" : "secondary"}>
                             {designer.activo ? "Activo" : "Inactivo"}
                           </Badge>
@@ -272,8 +285,8 @@ export default function Designers() {
                       {/* Actions */}
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="h-4 w-4" />
+                          <Button variant="outline" size="sm">
+                            Acciones
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
@@ -323,7 +336,7 @@ export default function Designers() {
             designer={statementDesigner}
           />
         )}
-      </div>
+      </main>
     </div>
   );
 }

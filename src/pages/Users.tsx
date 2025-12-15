@@ -133,90 +133,92 @@ const Users = () => {
     return null;
   }
 
+  const stats = [
+    {
+      title: "Total Usuarios",
+      value: profiles.length,
+      icon: UsersIcon,
+    },
+    {
+      title: "Diseñadores",
+      value: profiles.filter((p) => p.user_roles.some((r) => r.role === "disenador")).length,
+      icon: Shield,
+    },
+    {
+      title: "Joyeros",
+      value: profiles.filter((p) => p.user_roles.some((r) => r.role === "joyero")).length,
+      icon: Shield,
+    },
+  ];
+
   return (
-    <div className="min-h-screen bg-background p-8">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="min-h-full bg-background">
+      <main className="container mx-auto px-6 py-8">
         {/* Header */}
-        <div>
-          <h1 className="text-4xl font-bold text-foreground">Gestión de Usuarios</h1>
-          <p className="text-muted-foreground mt-2">
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-2">
+            <h1 className="text-3xl font-bold text-foreground">Gestión de Usuarios</h1>
+            <Button onClick={() => setUserDialogOpen(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Nuevo Usuario
+            </Button>
+          </div>
+          <p className="text-muted-foreground">
             Administra los usuarios del sistema y sus roles
           </p>
         </div>
 
-        {/* Stats */}
-        <div className="grid gap-4 md:grid-cols-3">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Usuarios</CardTitle>
-              <UsersIcon className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{profiles.length}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Diseñadores</CardTitle>
-              <Shield className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {profiles.filter((p) =>
-                  p.user_roles.some((r) => r.role === "disenador")
-                ).length}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Joyeros</CardTitle>
-              <Shield className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {profiles.filter((p) =>
-                  p.user_roles.some((r) => r.role === "joyero")
-                ).length}
-              </div>
-            </CardContent>
-          </Card>
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          {stats.map((stat) => (
+            <Card key={stat.title} className="border-border">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                  <stat.icon className="h-4 w-4" />
+                  {stat.title}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-foreground">{stat.value}</div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
-        {/* Search and Actions */}
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar por nombre o email..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              <Button onClick={() => setUserDialogOpen(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Nuevo Usuario
-              </Button>
+        {/* Filters */}
+        <Card className="mb-6">
+          <CardContent className="pt-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold">Filtros avanzados</h3>
+            </div>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por nombre o email..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
             </div>
           </CardContent>
         </Card>
 
+        {/* Results count */}
+        <p className="text-sm text-muted-foreground mb-4">
+          {filteredProfiles.length} usuario(s) encontrado(s)
+        </p>
+
         {/* Users List */}
-        <div className="space-y-4">
-          {filteredProfiles.length === 0 ? (
-            <Card>
-              <CardContent className="py-12 text-center">
-                <UsersIcon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground">No se encontraron usuarios</p>
-              </CardContent>
-            </Card>
-          ) : (
-            filteredProfiles.map((profile) => (
+        {filteredProfiles.length === 0 ? (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              <UsersIcon className="h-12 w-12 text-muted-foreground mb-4" />
+              <p className="text-muted-foreground text-center">No se encontraron usuarios</p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-4">
+            {filteredProfiles.map((profile) => (
               <Card key={profile.id} className="hover:shadow-md transition-shadow">
                 <CardContent className="pt-6">
                   <div className="flex items-start justify-between">
@@ -259,10 +261,10 @@ const Users = () => {
                   </div>
                 </CardContent>
               </Card>
-            ))
-          )}
-        </div>
-      </div>
+            ))}
+          </div>
+        )}
+      </main>
 
       <UserDialog
         open={userDialogOpen}

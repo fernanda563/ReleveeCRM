@@ -74,7 +74,6 @@ const Suppliers = () => {
         throw error;
       }
       
-      // Cast tipos_productos from Json to string[]
       const suppliersWithTypes = (data || []).map(supplier => ({
         ...supplier,
         tipos_productos: (supplier.tipos_productos as string[]) || []
@@ -84,7 +83,6 @@ const Suppliers = () => {
       setFilteredSuppliers(suppliersWithTypes as Supplier[]);
     } catch (error: any) {
       console.error("Error fetching suppliers:", error);
-      // Solo mostrar toast si hay un error real, no si la tabla está vacía
       if (error?.message && !error?.message.includes("Failed to fetch")) {
         toast.error("Error al cargar los proveedores");
       }
@@ -132,83 +130,96 @@ const Suppliers = () => {
 
   const topCountry = getTopCountry();
 
+  const stats = [
+    {
+      title: "Total Proveedores",
+      value: suppliers.length,
+      icon: Building2,
+    },
+    {
+      title: "Proveedores Activos",
+      value: getActiveSuppliers(),
+      icon: Building2,
+    },
+    {
+      title: "País Principal",
+      value: topCountry.country,
+      subtitle: `${topCountry.count} proveedores`,
+      icon: Globe,
+    },
+  ];
+
   return (
-    <div className="min-h-screen bg-background p-8">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="min-h-full bg-background">
+      <main className="container mx-auto px-6 py-8">
         {/* Header */}
-        <div>
-          <h1 className="text-4xl font-bold text-foreground">Gestión de Proveedores</h1>
-          <p className="text-muted-foreground mt-2">
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-2">
+            <h1 className="text-3xl font-bold text-foreground">Gestión de Proveedores</h1>
+            <Button onClick={handleCreate}>
+              <Plus className="h-4 w-4 mr-2" />
+              Nuevo Proveedor
+            </Button>
+          </div>
+          <p className="text-muted-foreground">
             Administra el directorio de proveedores de la joyería
           </p>
         </div>
 
-        {/* Stats */}
-        <div className="grid gap-4 md:grid-cols-3">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Proveedores</CardTitle>
-              <Building2 className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{suppliers.length}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Proveedores Activos</CardTitle>
-              <Building2 className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{getActiveSuppliers()}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">País Principal</CardTitle>
-              <Globe className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{topCountry.country}</div>
-              <p className="text-xs text-muted-foreground">{topCountry.count} proveedores</p>
-            </CardContent>
-          </Card>
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          {stats.map((stat) => (
+            <Card key={stat.title} className="border-border">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                  <stat.icon className="h-4 w-4" />
+                  {stat.title}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-foreground">{stat.value}</div>
+                {stat.subtitle && (
+                  <p className="text-xs text-muted-foreground">{stat.subtitle}</p>
+                )}
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
-        {/* Search and Actions */}
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar por empresa, contacto o email..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              <Button onClick={handleCreate}>
-                <Plus className="h-4 w-4 mr-2" />
-                Nuevo Proveedor
-              </Button>
+        {/* Filters */}
+        <Card className="mb-6">
+          <CardContent className="pt-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold">Filtros avanzados</h3>
+            </div>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por empresa, contacto o email..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
             </div>
           </CardContent>
         </Card>
 
+        {/* Results count */}
+        <p className="text-sm text-muted-foreground mb-4">
+          {filteredSuppliers.length} proveedor(es) encontrado(s)
+        </p>
+
         {/* Suppliers List */}
-        <div className="space-y-4">
-          {filteredSuppliers.length === 0 ? (
-            <Card>
-              <CardContent className="py-12 text-center">
-                <Building2 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground">No se encontraron proveedores</p>
-              </CardContent>
-            </Card>
-          ) : (
-            filteredSuppliers.map((supplier) => (
+        {filteredSuppliers.length === 0 ? (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              <Building2 className="h-12 w-12 text-muted-foreground mb-4" />
+              <p className="text-muted-foreground text-center">No se encontraron proveedores</p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-4">
+            {filteredSuppliers.map((supplier) => (
               <Card key={supplier.id} className="hover:shadow-md transition-shadow">
                 <CardContent className="pt-6">
                   <div className="flex items-start justify-between">
@@ -244,7 +255,6 @@ const Suppliers = () => {
                         )}
                       </div>
 
-                      {/* Badges de tipos de productos */}
                       {supplier.tipos_productos && supplier.tipos_productos.length > 0 && (
                         <div className="mt-3 flex flex-wrap gap-1">
                           {supplier.tipos_productos.map((tipo) => {
@@ -268,10 +278,10 @@ const Suppliers = () => {
                   </div>
                 </CardContent>
               </Card>
-            ))
-          )}
-        </div>
-      </div>
+            ))}
+          </div>
+        )}
+      </main>
 
       <SupplierDialog
         open={dialogOpen}

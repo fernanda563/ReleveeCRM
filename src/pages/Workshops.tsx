@@ -81,7 +81,6 @@ const Workshops = () => {
     try {
       setLoading(true);
       
-      // Fetch workshops with their processes
       const { data: workshopsData, error: workshopsError } = await supabase
         .from("workshops")
         .select(`
@@ -98,7 +97,6 @@ const Workshops = () => {
 
       if (workshopsError) throw workshopsError;
 
-      // Fetch work order counts per workshop
       const { data: orderCounts, error: countsError } = await supabase
         .from("work_orders")
         .select("workshop_id")
@@ -106,7 +104,6 @@ const Workshops = () => {
 
       if (countsError) throw countsError;
 
-      // Count orders per workshop
       const countMap: Record<string, number> = {};
       (orderCounts || []).forEach((order) => {
         if (order.workshop_id) {
@@ -180,82 +177,92 @@ const Workshops = () => {
     return null;
   }
 
+  const stats = [
+    {
+      title: "Total Talleres",
+      value: workshops.length,
+      icon: Factory,
+    },
+    {
+      title: "Talleres Activos",
+      value: getActiveWorkshops(),
+      icon: Factory,
+    },
+    {
+      title: "Órdenes de Trabajo",
+      value: getTotalActiveOrders(),
+      icon: ClipboardList,
+    },
+  ];
+
   return (
-    <main className="min-h-full bg-background p-8">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="min-h-full bg-background">
+      <main className="container mx-auto px-6 py-8">
         {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Gestión de Talleres</h1>
-          <p className="text-muted-foreground mt-2">
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-2">
+            <h1 className="text-3xl font-bold text-foreground">Gestión de Talleres</h1>
+            <Button onClick={handleCreate}>
+              <Plus className="h-4 w-4 mr-2" />
+              Nuevo Taller
+            </Button>
+          </div>
+          <p className="text-muted-foreground">
             Administra los talleres externos y sus procesos de fabricación
           </p>
         </div>
 
-        {/* Stats */}
-        <div className="grid gap-4 md:grid-cols-3">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Talleres</CardTitle>
-              <Factory className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{workshops.length}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Talleres Activos</CardTitle>
-              <Factory className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{getActiveWorkshops()}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Órdenes de Trabajo</CardTitle>
-              <ClipboardList className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{getTotalActiveOrders()}</div>
-            </CardContent>
-          </Card>
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          {stats.map((stat) => (
+            <Card key={stat.title} className="border-border">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                  <stat.icon className="h-4 w-4" />
+                  {stat.title}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-foreground">{stat.value}</div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
-        {/* Search and Actions */}
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar por nombre, responsable o ciudad..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              <Button onClick={handleCreate}>
-                <Plus className="h-4 w-4 mr-2" />
-                Nuevo Taller
-              </Button>
+        {/* Filters */}
+        <Card className="mb-6">
+          <CardContent className="pt-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold">Filtros avanzados</h3>
+            </div>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por nombre, responsable o ciudad..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
             </div>
           </CardContent>
         </Card>
 
+        {/* Results count */}
+        <p className="text-sm text-muted-foreground mb-4">
+          {filteredWorkshops.length} taller(es) encontrado(s)
+        </p>
+
         {/* Workshops List */}
-        <div className="space-y-4">
-          {filteredWorkshops.length === 0 ? (
-            <Card>
-              <CardContent className="py-12 text-center">
-                <Factory className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground">No se encontraron talleres</p>
-              </CardContent>
-            </Card>
-          ) : (
-            filteredWorkshops.map((workshop) => (
+        {filteredWorkshops.length === 0 ? (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              <Factory className="h-12 w-12 text-muted-foreground mb-4" />
+              <p className="text-muted-foreground text-center">No se encontraron talleres</p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-4">
+            {filteredWorkshops.map((workshop) => (
               <Card key={workshop.id} className="hover:shadow-md transition-shadow">
                 <CardContent className="pt-6">
                   <div className="flex items-start justify-between">
@@ -295,7 +302,6 @@ const Workshops = () => {
                         </p>
                       </div>
 
-                      {/* Process badges */}
                       {workshop.workshop_processes.length > 0 && (
                         <div className="mt-3 flex flex-wrap gap-1">
                           <span className="text-xs text-muted-foreground mr-2">
@@ -329,10 +335,10 @@ const Workshops = () => {
                   </div>
                 </CardContent>
               </Card>
-            ))
-          )}
-        </div>
-      </div>
+            ))}
+          </div>
+        )}
+      </main>
 
       <WorkshopDialog
         open={dialogOpen}
@@ -353,7 +359,7 @@ const Workshops = () => {
         onOpenChange={setAccountDialogOpen}
         workshop={selectedWorkshop}
       />
-    </main>
+    </div>
   );
 };
 
