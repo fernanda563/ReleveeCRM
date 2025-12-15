@@ -148,7 +148,9 @@ export const WorkOrderItemsEditor = ({
                       <div className="grid grid-cols-3 gap-3 text-sm">
                         {/* Cantidad */}
                         <div className="space-y-1">
-                          <Label className="text-xs">Cantidad</Label>
+                          <Label className="text-xs capitalize">
+                            {concept?.unidad_medida || "Cantidad"}
+                          </Label>
                           <Input
                             type="number"
                             min="1"
