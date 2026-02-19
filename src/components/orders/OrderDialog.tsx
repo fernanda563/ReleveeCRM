@@ -94,7 +94,8 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
   
   // Reference images
   const [referenceImages, setReferenceImages] = useState<File[]>([]);
-  const [uploadedImageUrls, setUploadedImageUrls] = useState<string[]>([]);
+  const [referenceImageNotes, setReferenceImageNotes] = useState<string[]>([]);
+  const [uploadedImages, setUploadedImages] = useState<{ url: string; nota: string }[]>([]);
   const [isDragging, setIsDragging] = useState(false);
 
   // Metal data
@@ -148,8 +149,9 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
         setEstatusPago("anticipo_recibido");
         setPaymentReceipts([]);
         setReferenceImages([]);
+        setReferenceImageNotes([]);
         setUploadedReceiptUrls([]);
-        setUploadedImageUrls([]);
+        setUploadedImages([]);
         setSelectedSTLFileId("");
         setClientProspects([]);
         setSelectedProspectId("");
@@ -194,9 +196,11 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
         
         // Load existing reference images if editing
         if (order.imagenes_referencia && Array.isArray(order.imagenes_referencia)) {
-          setUploadedImageUrls(order.imagenes_referencia as string[]);
+          const imgs = order.imagenes_referencia as any[];
+          // Support both legacy string[] format and new {url, nota}[] format
+          setUploadedImages(imgs.map(img => typeof img === 'string' ? { url: img, nota: '' } : img));
         } else {
-          setUploadedImageUrls([]);
+          setUploadedImages([]);
         }
         
         // NO cargar proyectos al editar una orden
@@ -258,7 +262,8 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
     setPaymentReceipts([]);
     setUploadedReceiptUrls([]);
     setReferenceImages([]);
-    setUploadedImageUrls([]);
+    setReferenceImageNotes([]);
+    setUploadedImages([]);
     setClientProspects([]);
     setSelectedProspectId("");
     setSelectedSTLFileId("none");
@@ -434,10 +439,23 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
 
   const removeImage = (index: number) => {
     setReferenceImages(prev => prev.filter((_, i) => i !== index));
+    setReferenceImageNotes(prev => prev.filter((_, i) => i !== index));
   };
 
   const removeUploadedImage = (index: number) => {
-    setUploadedImageUrls(prev => prev.filter((_, i) => i !== index));
+    setUploadedImages(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const updateUploadedImageNota = (index: number, nota: string) => {
+    setUploadedImages(prev => prev.map((img, i) => i === index ? { ...img, nota } : img));
+  };
+
+  const updateNewImageNota = (index: number, nota: string) => {
+    setReferenceImageNotes(prev => {
+      const next = [...prev];
+      next[index] = nota;
+      return next;
+    });
   };
 
   const removeUploadedReceipt = (index: number) => {
@@ -500,9 +518,11 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
   };
 
   const uploadReferenceImages = async (orderId: string) => {
-    const uploadedUrls: string[] = [];
+    const uploadedObjects: { url: string; nota: string }[] = [];
     
-    for (const file of referenceImages) {
+    for (let i = 0; i < referenceImages.length; i++) {
+      const file = referenceImages[i];
+      const nota = referenceImageNotes[i] || '';
       const fileExt = file.name.split('.').pop();
       const fileName = `${orderId}_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
       const filePath = `${orderId}/${fileName}`;
@@ -517,10 +537,10 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
         .from('reference-images')
         .getPublicUrl(filePath);
 
-      uploadedUrls.push(data.publicUrl);
+      uploadedObjects.push({ url: data.publicUrl, nota });
     }
     
-    return uploadedUrls;
+    return uploadedObjects;
   };
 
   const canGoNext = (): boolean => {
@@ -782,7 +802,7 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
 
     try {
       let receiptUrls = uploadedReceiptUrls;
-      let imageUrls = uploadedImageUrls;
+      let imageObjects = uploadedImages;
       
       // Upload receipts if this is a new order with files
       if (paymentReceipts.length > 0) {
@@ -796,8 +816,8 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
       if (referenceImages.length > 0) {
         setUploading(true);
         const tempOrderId = order?.id || crypto.randomUUID();
-        const newImageUrls = await uploadReferenceImages(tempOrderId);
-        imageUrls = [...uploadedImageUrls, ...newImageUrls];
+        const newImageObjects = await uploadReferenceImages(tempOrderId);
+        imageObjects = [...uploadedImages, ...newImageObjects];
         setUploading(false);
       }
 
@@ -816,7 +836,7 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
         piedra_tipo: piedraTipo,
         notas: notas || null,
         comprobantes_pago: receiptUrls,
-        imagenes_referencia: imageUrls,
+        imagenes_referencia: imageObjects,
         fecha_entrega_esperada: fechaEntregaEsperada ? format(fechaEntregaEsperada, 'yyyy-MM-dd') : null,
         stl_file_id: selectedSTLFileId && selectedSTLFileId !== "none" ? selectedSTLFileId : null,
       };
@@ -1692,30 +1712,42 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
                     </div>
                   </div>
 
-                  {/* Uploaded Images Preview */}
+                  {/* New Images Preview */}
                   {referenceImages.length > 0 && (
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                       <p className="text-sm font-medium">Imágenes nuevas ({referenceImages.length})</p>
-                      <div className="grid grid-cols-4 gap-3">
+                      <div className="space-y-3">
                         {referenceImages.map((file, index) => (
-                          <div key={index} className="relative group">
-                            <div className="aspect-square rounded-lg border border-border overflow-hidden bg-muted">
-                              <img
-                                src={URL.createObjectURL(file)}
-                                alt={`Referencia ${index + 1}`}
-                                className="w-full h-full object-cover"
-                              />
+                          <div key={index} className="border border-border rounded-lg p-3 space-y-2">
+                            <div className="flex items-start gap-3">
+                              <div className="w-20 h-20 flex-shrink-0 rounded-md border border-border overflow-hidden bg-muted">
+                                <img
+                                  src={URL.createObjectURL(file)}
+                                  alt={`Referencia ${index + 1}`}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center justify-between mb-2">
+                                  <p className="text-xs text-muted-foreground truncate">{file.name}</p>
+                                  <button
+                                    type="button"
+                                    onClick={() => removeImage(index)}
+                                    className="w-6 h-6 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center flex-shrink-0 ml-2"
+                                  >
+                                    <X className="h-3 w-3" />
+                                  </button>
+                                </div>
+                                <Textarea
+                                  value={referenceImageNotes[index] || ''}
+                                  onChange={(e) => updateNewImageNota(index, e.target.value)}
+                                  placeholder="Nota para esta imagen (ej: estilo del engarce, tipo de detalle, referencia de diseño...)"
+                                  rows={2}
+                                  className="text-sm"
+                                  disabled={loading}
+                                />
+                              </div>
                             </div>
-                            <button
-                              type="button"
-                              onClick={() => removeImage(index)}
-                              className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                            >
-                              <X className="h-4 w-4" />
-                            </button>
-                            <p className="text-xs text-muted-foreground mt-1 truncate">
-                              {file.name}
-                            </p>
                           </div>
                         ))}
                       </div>
@@ -1723,33 +1755,57 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
                   )}
 
                   {/* Existing Uploaded Images */}
-                  {uploadedImageUrls.length > 0 && (
-                    <div className="space-y-2">
-                      <p className="text-sm font-medium">Imágenes guardadas ({uploadedImageUrls.length})</p>
-                      {uploadedImageUrls.map((url, index) => (
-                        <div key={index} className="flex items-center justify-between p-2 bg-accent/5 border border-accent/20 rounded">
-                          <div className="flex items-center gap-2 flex-1 min-w-0">
-                            <ImageIcon className="h-4 w-4 text-accent flex-shrink-0" />
-                            <a 
-                              href={url} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="text-sm text-accent hover:underline truncate"
-                            >
-                              Ver imagen de referencia {index + 1}
-                            </a>
+                  {uploadedImages.length > 0 && (
+                    <div className="space-y-3">
+                      <p className="text-sm font-medium">Imágenes guardadas ({uploadedImages.length})</p>
+                      <div className="space-y-3">
+                        {uploadedImages.map((img, index) => (
+                          <div key={index} className="border border-border rounded-lg p-3 space-y-2">
+                            <div className="flex items-start gap-3">
+                              <div className="w-20 h-20 flex-shrink-0 rounded-md border border-border overflow-hidden bg-muted">
+                                <img
+                                  src={img.url}
+                                  alt={`Referencia guardada ${index + 1}`}
+                                  className="w-full h-full object-cover"
+                                  onError={(e) => {
+                                    (e.target as HTMLImageElement).style.display = 'none';
+                                  }}
+                                />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center justify-between mb-2">
+                                  <a
+                                    href={img.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-xs text-accent hover:underline truncate"
+                                  >
+                                    Ver imagen {index + 1}
+                                  </a>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => removeUploadedImage(index)}
+                                    disabled={loading || uploading}
+                                    className="h-6 w-6 p-0 flex-shrink-0 ml-2"
+                                  >
+                                    <X className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                                <Textarea
+                                  value={img.nota}
+                                  onChange={(e) => updateUploadedImageNota(index, e.target.value)}
+                                  placeholder="Nota para esta imagen (ej: estilo del engarce, tipo de detalle, referencia de diseño...)"
+                                  rows={2}
+                                  className="text-sm"
+                                  disabled={loading}
+                                />
+                              </div>
+                            </div>
                           </div>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => removeUploadedImage(index)}
-                            disabled={loading || uploading}
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
