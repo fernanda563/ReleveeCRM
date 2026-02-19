@@ -64,11 +64,6 @@ const menuSections = [
     items: [
       { title: "Seguimiento de Producción", url: "/production", icon: Box, adminOnly: false },
       { title: "Órdenes de Trabajo", url: "/work-orders", icon: ClipboardList, adminOnly: false },
-    ],
-  },
-  {
-    label: "Reportes",
-    items: [
       { title: "Estadísticas de Producción", url: "/production/dashboard", icon: BarChart3, adminOnly: false },
     ],
   },
