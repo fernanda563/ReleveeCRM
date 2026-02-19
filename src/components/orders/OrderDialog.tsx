@@ -94,8 +94,12 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
   
   // Reference images
   const [referenceImages, setReferenceImages] = useState<File[]>([]);
-  const [referenceImageNotes, setReferenceImageNotes] = useState<string[]>([]);
-  const [uploadedImages, setUploadedImages] = useState<{ url: string; nota: string }[]>([]);
+  // notas per new image (before upload): array of string[]
+  const [referenceImageNotes, setReferenceImageNotes] = useState<string[][]>([]);
+  const [uploadedImages, setUploadedImages] = useState<{ url: string; notas: string[] }[]>([]);
+  // tracking inline-edit state per note: { imageIdx, noteIdx }
+  const [editingNote, setEditingNote] = useState<{ imgKey: string; noteIdx: number; value: string } | null>(null);
+  const [newNoteInputs, setNewNoteInputs] = useState<Record<string, string>>({});
   const [isDragging, setIsDragging] = useState(false);
 
   // Metal data
@@ -197,8 +201,13 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
         // Load existing reference images if editing
         if (order.imagenes_referencia && Array.isArray(order.imagenes_referencia)) {
           const imgs = order.imagenes_referencia as any[];
-          // Support both legacy string[] format and new {url, nota}[] format
-          setUploadedImages(imgs.map(img => typeof img === 'string' ? { url: img, nota: '' } : img));
+          // Support legacy string[], old {url, nota}, and new {url, notas[]} formats
+          setUploadedImages(imgs.map(img => {
+            if (typeof img === 'string') return { url: img, notas: [] };
+            if (img.notas && Array.isArray(img.notas)) return img;
+            // migrate old {url, nota} to new format
+            return { url: img.url, notas: img.nota ? [img.nota] : [] };
+          }));
         } else {
           setUploadedImages([]);
         }
@@ -446,14 +455,14 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
     setUploadedImages(prev => prev.filter((_, i) => i !== index));
   };
 
-  const updateUploadedImageNota = (index: number, nota: string) => {
-    setUploadedImages(prev => prev.map((img, i) => i === index ? { ...img, nota } : img));
+  const updateUploadedImageNotas = (index: number, notas: string[]) => {
+    setUploadedImages(prev => prev.map((img, i) => i === index ? { ...img, notas } : img));
   };
 
-  const updateNewImageNota = (index: number, nota: string) => {
+  const updateNewImageNotas = (index: number, notas: string[]) => {
     setReferenceImageNotes(prev => {
       const next = [...prev];
-      next[index] = nota;
+      next[index] = notas;
       return next;
     });
   };
@@ -518,11 +527,11 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
   };
 
   const uploadReferenceImages = async (orderId: string) => {
-    const uploadedObjects: { url: string; nota: string }[] = [];
+    const uploadedObjects: { url: string; notas: string[] }[] = [];
     
     for (let i = 0; i < referenceImages.length; i++) {
       const file = referenceImages[i];
-      const nota = referenceImageNotes[i] || '';
+      const notas = referenceImageNotes[i] || [];
       const fileExt = file.name.split('.').pop();
       const fileName = `${orderId}_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
       const filePath = `${orderId}/${fileName}`;
@@ -537,7 +546,7 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
         .from('reference-images')
         .getPublicUrl(filePath);
 
-      uploadedObjects.push({ url: data.publicUrl, nota });
+      uploadedObjects.push({ url: data.publicUrl, notas });
     }
     
     return uploadedObjects;
@@ -1717,39 +1726,122 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
                     <div className="space-y-3">
                       <p className="text-sm font-medium">Imágenes nuevas ({referenceImages.length})</p>
                       <div className="space-y-3">
-                        {referenceImages.map((file, index) => (
-                          <div key={index} className="border border-border rounded-lg p-3 space-y-2">
-                            <div className="flex items-start gap-3">
-                              <div className="w-20 h-20 flex-shrink-0 rounded-md border border-border overflow-hidden bg-muted">
-                                <img
-                                  src={URL.createObjectURL(file)}
-                                  alt={`Referencia ${index + 1}`}
-                                  className="w-full h-full object-cover"
-                                />
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center justify-between mb-2">
-                                  <p className="text-xs text-muted-foreground truncate">{file.name}</p>
-                                  <button
-                                    type="button"
-                                    onClick={() => removeImage(index)}
-                                    className="w-6 h-6 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center flex-shrink-0 ml-2"
-                                  >
-                                    <X className="h-3 w-3" />
-                                  </button>
+                        {referenceImages.map((file, imgIdx) => {
+                          const imgKey = `new-${imgIdx}`;
+                          const notes: string[] = referenceImageNotes[imgIdx] || [];
+                          const inputVal = newNoteInputs[imgKey] || '';
+                          return (
+                            <div key={imgIdx} className="border border-border rounded-lg p-3 space-y-3">
+                              <div className="flex items-start gap-3">
+                                <div className="w-20 h-20 flex-shrink-0 rounded-md border border-border overflow-hidden bg-muted">
+                                  <img
+                                    src={URL.createObjectURL(file)}
+                                    alt={`Referencia ${imgIdx + 1}`}
+                                    className="w-full h-full object-cover"
+                                  />
                                 </div>
-                                <Textarea
-                                  value={referenceImageNotes[index] || ''}
-                                  onChange={(e) => updateNewImageNota(index, e.target.value)}
-                                  placeholder="Nota para esta imagen (ej: estilo del engarce, tipo de detalle, referencia de diseño...)"
-                                  rows={2}
-                                  className="text-sm"
-                                  disabled={loading}
-                                />
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center justify-between mb-2">
+                                    <p className="text-xs text-muted-foreground truncate">{file.name}</p>
+                                    <button
+                                      type="button"
+                                      onClick={() => removeImage(imgIdx)}
+                                      className="w-6 h-6 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center flex-shrink-0 ml-2"
+                                    >
+                                      <X className="h-3 w-3" />
+                                    </button>
+                                  </div>
+                                  {/* Notes chips */}
+                                  {notes.length > 0 && (
+                                    <div className="flex flex-wrap gap-1.5 mb-2">
+                                      {notes.map((note, noteIdx) => {
+                                        const isEditing = editingNote?.imgKey === imgKey && editingNote?.noteIdx === noteIdx;
+                                        return isEditing ? (
+                                          <div key={noteIdx} className="flex items-center gap-1">
+                                            <input
+                                              autoFocus
+                                              className="text-xs border border-border rounded-full px-2 py-0.5 bg-background focus:outline-none focus:ring-1 focus:ring-ring min-w-[80px] max-w-[200px]"
+                                              value={editingNote.value}
+                                              onChange={(e) => setEditingNote({ ...editingNote, value: e.target.value })}
+                                              onKeyDown={(e) => {
+                                                if (e.key === 'Enter') {
+                                                  e.preventDefault();
+                                                  const updated = [...notes];
+                                                  updated[noteIdx] = editingNote.value.trim() || note;
+                                                  if (!editingNote.value.trim()) updated.splice(noteIdx, 1);
+                                                  updateNewImageNotas(imgIdx, updated);
+                                                  setEditingNote(null);
+                                                } else if (e.key === 'Escape') {
+                                                  setEditingNote(null);
+                                                }
+                                              }}
+                                              onBlur={() => {
+                                                const updated = [...notes];
+                                                const trimmed = editingNote.value.trim();
+                                                if (!trimmed) { updated.splice(noteIdx, 1); }
+                                                else { updated[noteIdx] = trimmed; }
+                                                updateNewImageNotas(imgIdx, updated);
+                                                setEditingNote(null);
+                                              }}
+                                            />
+                                          </div>
+                                        ) : (
+                                          <span
+                                            key={noteIdx}
+                                            className="inline-flex items-center gap-1 text-xs bg-muted border border-border rounded-full px-2 py-0.5 group cursor-pointer hover:bg-accent/10"
+                                            onClick={() => setEditingNote({ imgKey, noteIdx, value: note })}
+                                          >
+                                            {note}
+                                            <button
+                                              type="button"
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                updateNewImageNotas(imgIdx, notes.filter((_, ni) => ni !== noteIdx));
+                                              }}
+                                              className="text-muted-foreground hover:text-destructive ml-0.5"
+                                            >
+                                              <X className="h-2.5 w-2.5" />
+                                            </button>
+                                          </span>
+                                        );
+                                      })}
+                                    </div>
+                                  )}
+                                  {/* Add note input */}
+                                  <div className="flex gap-1.5">
+                                    <input
+                                      className="flex-1 text-xs border border-border rounded-md px-2 py-1 bg-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                                      placeholder="Agregar nota y presionar Enter..."
+                                      value={inputVal}
+                                      onChange={(e) => setNewNoteInputs(p => ({ ...p, [imgKey]: e.target.value }))}
+                                      onKeyDown={(e) => {
+                                        if (e.key === 'Enter' && inputVal.trim()) {
+                                          e.preventDefault();
+                                          updateNewImageNotas(imgIdx, [...notes, inputVal.trim()]);
+                                          setNewNoteInputs(p => ({ ...p, [imgKey]: '' }));
+                                        }
+                                      }}
+                                      disabled={loading}
+                                    />
+                                    <button
+                                      type="button"
+                                      disabled={!inputVal.trim() || loading}
+                                      onClick={() => {
+                                        if (inputVal.trim()) {
+                                          updateNewImageNotas(imgIdx, [...notes, inputVal.trim()]);
+                                          setNewNoteInputs(p => ({ ...p, [imgKey]: '' }));
+                                        }
+                                      }}
+                                      className="text-xs px-2 py-1 rounded-md bg-accent text-accent-foreground disabled:opacity-40"
+                                    >
+                                      <Plus className="h-3 w-3" />
+                                    </button>
+                                  </div>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
                   )}
@@ -1759,52 +1851,134 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
                     <div className="space-y-3">
                       <p className="text-sm font-medium">Imágenes guardadas ({uploadedImages.length})</p>
                       <div className="space-y-3">
-                        {uploadedImages.map((img, index) => (
-                          <div key={index} className="border border-border rounded-lg p-3 space-y-2">
-                            <div className="flex items-start gap-3">
-                              <div className="w-20 h-20 flex-shrink-0 rounded-md border border-border overflow-hidden bg-muted">
-                                <img
-                                  src={img.url}
-                                  alt={`Referencia guardada ${index + 1}`}
-                                  className="w-full h-full object-cover"
-                                  onError={(e) => {
-                                    (e.target as HTMLImageElement).style.display = 'none';
-                                  }}
-                                />
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center justify-between mb-2">
-                                  <a
-                                    href={img.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-xs text-accent hover:underline truncate"
-                                  >
-                                    Ver imagen {index + 1}
-                                  </a>
-                                  <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => removeUploadedImage(index)}
-                                    disabled={loading || uploading}
-                                    className="h-6 w-6 p-0 flex-shrink-0 ml-2"
-                                  >
-                                    <X className="h-3 w-3" />
-                                  </Button>
+                        {uploadedImages.map((img, imgIdx) => {
+                          const imgKey = `saved-${imgIdx}`;
+                          const notes: string[] = img.notas || [];
+                          const inputVal = newNoteInputs[imgKey] || '';
+                          return (
+                            <div key={imgIdx} className="border border-border rounded-lg p-3 space-y-3">
+                              <div className="flex items-start gap-3">
+                                <div className="w-20 h-20 flex-shrink-0 rounded-md border border-border overflow-hidden bg-muted">
+                                  <img
+                                    src={img.url}
+                                    alt={`Referencia guardada ${imgIdx + 1}`}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                                  />
                                 </div>
-                                <Textarea
-                                  value={img.nota}
-                                  onChange={(e) => updateUploadedImageNota(index, e.target.value)}
-                                  placeholder="Nota para esta imagen (ej: estilo del engarce, tipo de detalle, referencia de diseño...)"
-                                  rows={2}
-                                  className="text-sm"
-                                  disabled={loading}
-                                />
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center justify-between mb-2">
+                                    <a
+                                      href={img.url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-xs text-accent hover:underline truncate"
+                                    >
+                                      Ver imagen {imgIdx + 1}
+                                    </a>
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => removeUploadedImage(imgIdx)}
+                                      disabled={loading || uploading}
+                                      className="h-6 w-6 p-0 flex-shrink-0 ml-2"
+                                    >
+                                      <X className="h-3 w-3" />
+                                    </Button>
+                                  </div>
+                                  {/* Notes chips */}
+                                  {notes.length > 0 && (
+                                    <div className="flex flex-wrap gap-1.5 mb-2">
+                                      {notes.map((note, noteIdx) => {
+                                        const isEditing = editingNote?.imgKey === imgKey && editingNote?.noteIdx === noteIdx;
+                                        return isEditing ? (
+                                          <div key={noteIdx} className="flex items-center gap-1">
+                                            <input
+                                              autoFocus
+                                              className="text-xs border border-border rounded-full px-2 py-0.5 bg-background focus:outline-none focus:ring-1 focus:ring-ring min-w-[80px] max-w-[200px]"
+                                              value={editingNote.value}
+                                              onChange={(e) => setEditingNote({ ...editingNote, value: e.target.value })}
+                                              onKeyDown={(e) => {
+                                                if (e.key === 'Enter') {
+                                                  e.preventDefault();
+                                                  const updated = [...notes];
+                                                  const trimmed = editingNote.value.trim();
+                                                  if (!trimmed) { updated.splice(noteIdx, 1); }
+                                                  else { updated[noteIdx] = trimmed; }
+                                                  updateUploadedImageNotas(imgIdx, updated);
+                                                  setEditingNote(null);
+                                                } else if (e.key === 'Escape') {
+                                                  setEditingNote(null);
+                                                }
+                                              }}
+                                              onBlur={() => {
+                                                const updated = [...notes];
+                                                const trimmed = editingNote.value.trim();
+                                                if (!trimmed) { updated.splice(noteIdx, 1); }
+                                                else { updated[noteIdx] = trimmed; }
+                                                updateUploadedImageNotas(imgIdx, updated);
+                                                setEditingNote(null);
+                                              }}
+                                            />
+                                          </div>
+                                        ) : (
+                                          <span
+                                            key={noteIdx}
+                                            className="inline-flex items-center gap-1 text-xs bg-muted border border-border rounded-full px-2 py-0.5 group cursor-pointer hover:bg-accent/10"
+                                            onClick={() => setEditingNote({ imgKey, noteIdx, value: note })}
+                                          >
+                                            {note}
+                                            <button
+                                              type="button"
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                updateUploadedImageNotas(imgIdx, notes.filter((_, ni) => ni !== noteIdx));
+                                              }}
+                                              className="text-muted-foreground hover:text-destructive ml-0.5"
+                                            >
+                                              <X className="h-2.5 w-2.5" />
+                                            </button>
+                                          </span>
+                                        );
+                                      })}
+                                    </div>
+                                  )}
+                                  {/* Add note input */}
+                                  <div className="flex gap-1.5">
+                                    <input
+                                      className="flex-1 text-xs border border-border rounded-md px-2 py-1 bg-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                                      placeholder="Agregar nota y presionar Enter..."
+                                      value={inputVal}
+                                      onChange={(e) => setNewNoteInputs(p => ({ ...p, [imgKey]: e.target.value }))}
+                                      onKeyDown={(e) => {
+                                        if (e.key === 'Enter' && inputVal.trim()) {
+                                          e.preventDefault();
+                                          updateUploadedImageNotas(imgIdx, [...notes, inputVal.trim()]);
+                                          setNewNoteInputs(p => ({ ...p, [imgKey]: '' }));
+                                        }
+                                      }}
+                                      disabled={loading}
+                                    />
+                                    <button
+                                      type="button"
+                                      disabled={!inputVal.trim() || loading}
+                                      onClick={() => {
+                                        if (inputVal.trim()) {
+                                          updateUploadedImageNotas(imgIdx, [...notes, inputVal.trim()]);
+                                          setNewNoteInputs(p => ({ ...p, [imgKey]: '' }));
+                                        }
+                                      }}
+                                      className="text-xs px-2 py-1 rounded-md bg-accent text-accent-foreground disabled:opacity-40"
+                                    >
+                                      <Plus className="h-3 w-3" />
+                                    </button>
+                                  </div>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
                   )}
