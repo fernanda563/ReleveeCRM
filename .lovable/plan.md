@@ -1,46 +1,33 @@
 
-## Fix: Responsive Padding and Spacing in Steps 2 and 3 of the New Order Modal
+## Fix: Padding derecho del modal en mobile
 
-### Problem Analysis
+### Diagnóstico
 
-After inspecting the code in `src/components/orders/OrderDialog.tsx`, two classes of problems were found:
+En la imagen se observa que los campos (dropdowns, inputs) en el paso 3 del modal están cortados por el lado derecho. La raíz del problema es la combinación de dos factores:
 
-**Problem 1 — Missing inner padding on mobile**
+**Factor 1 — El botón de cierre (X) ocupa espacio visual**
+El `DialogContent` base (en `src/components/ui/dialog.tsx`) posiciona el botón X con `right-4 top-4` de forma absoluta. En desktop esto no interfiere porque hay margen. En mobile con `w-full mx-0 p-4`, el contenido del modal llega hasta el borde, y el padding derecho de `16px` (p-4) deja los campos prácticamente encima del botón X.
 
-The `DialogContent` uses `mx-0 rounded-none` on mobile (full-width modal), but the form and its step containers have no horizontal padding. On a 390px screen, the content runs edge-to-edge with no breathing room. The `<form>` and each step `<div className="space-y-4">` need explicit `px-1` or `px-0` on mobile (the `DialogContent` itself already has `p-6` from the shadcn default, but that needs to be verified and normalized for mobile).
+**Factor 2 — Tailwind Merge y el padding base**
+El `DialogContent` base tiene `p-6` hardcoded. Al pasar `sm:p-6 p-4` en `className`, Tailwind Merge lo sobreescribe correctamente — pero el valor `p-4` aplica el mismo padding a los cuatro lados, incluyendo la derecha donde está el X.
 
-**Problem 2 — Broken indentation structure in Steps 2 and 3**
+**Solución**
+En mobile se necesita un padding derecho mayor que el izquierdo para compensar el botón X. Esto se logra reemplazando la clase padding en `DialogContent` del modal de órdenes:
 
-The previous responsive refactor changed grid classes but inadvertently left the inner `<div className="space-y-2">` for the first field in each step at a misaligned indentation level relative to its parent `<div className="space-y-4">`. This means:
+- Cambiar `sm:p-6 p-4` por `sm:p-6 pt-4 pb-4 pl-4 pr-10`
 
-- In **Step 2**: The "Tipo de Metal" field's `<Label>` and `<Select>` are children of a `<div className="space-y-2">` but that div is not properly closed before the conditional gold fields grid — causing visual spacing inconsistency.
-- In **Step 3**: Same pattern — the "Tipo de Piedra" field hangs outside its natural `space-y-4` flow.
+Esto da 16px arriba/abajo/izquierda y 40px a la derecha en mobile — espacio suficiente para que el botón X no tape los campos. En desktop (`sm:p-6`) se mantiene el padding uniforme.
 
-**Problem 3 — DialogContent padding on mobile**
+### Cambio técnico
 
-The `DialogContent` has Tailwind class `p-6` by default (from the shadcn component). On mobile with `mx-0 rounded-none`, this p-6 gives 24px of padding on each side, which should be fine. However, the issue may be that the `max-h-[90vh] overflow-y-auto` clips content on short screens combined with the stepper taking up vertical space. The stepper on mobile needs compact spacing.
+**Archivo: `src/components/orders/OrderDialog.tsx` — línea 931**
 
-### Technical Changes in `src/components/orders/OrderDialog.tsx`
+```
+// ANTES
+className="w-full max-w-4xl max-h-[90vh] overflow-y-auto sm:mx-4 mx-0 sm:rounded-lg rounded-none sm:w-auto sm:p-6 p-4"
 
-**1. DialogContent — normalize padding for mobile (line 931)**
-Add `sm:p-6 p-4` override to reduce the default padding slightly on narrow screens, giving fields more horizontal space.
+// DESPUÉS
+className="w-full max-w-4xl max-h-[90vh] overflow-y-auto sm:mx-4 mx-0 sm:rounded-lg rounded-none sm:w-auto sm:p-6 pt-4 pb-4 pl-4 pr-10"
+```
 
-**2. Step 2 block — fix structure (lines 1436–1492)**
-
-The first `<div className="space-y-2">` wrapping the "Tipo de Metal" field is indented incorrectly and its closing `</div>` is misplaced. Restructure so that:
-- The outer `<div className="space-y-4">` contains properly indented children
-- Each field group (`space-y-2`) is a direct, consistently indented child
-
-**3. Step 3 block — fix structure (lines 1494–1675)**
-
-Same fix as Step 2: the "Tipo de Piedra" `<div className="space-y-2">` needs proper indentation and its closing tag placed correctly so the diamond specs block and the observations block are siblings at the same level inside `space-y-4`.
-
-**4. Navigation buttons — add mobile spacing (around line 2010)**
-The footer buttons row needs `mt-4 pt-4` to ensure it doesn't crowd the last form field on mobile.
-
-**5. Stepper (mobile) — tighten spacing (line 992)**
-Change `mb-6` to `mb-4` on the mobile stepper container to reclaim vertical space.
-
-### Summary of Files Changed
-
-- **`src/components/orders/OrderDialog.tsx`**: Fix DialogContent padding, restructure Steps 2 and 3 inner divs for correct indentation and spacing, tighten mobile stepper margin.
+Este es el único cambio necesario — un ajuste de una sola línea que soluciona el margen derecho sin afectar ningún otro paso ni comportamiento del modal.
