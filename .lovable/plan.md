@@ -1,112 +1,114 @@
 
-## Diagnóstico Definitivo: Por qué los `!important` de Tailwind no funcionan
+## Estandarización del tamaño del modal — Nueva Orden de Compra
 
-Después de leer el código de `dialog.tsx` línea 39 en detalle, encontré la causa exacta del problema:
+### Causa raíz identificada
 
-El componente base `DialogContent` en `src/components/ui/dialog.tsx` aplica sus clases así:
+El modal cambia de tamaño entre pasos porque su altura es completamente dinámica — crece o se encoge según el contenido del paso activo:
 
-```
-className={cn(
-  "... p-6 ...",  // clases base con p-6
-  className,       // clases del usuario al final
-)}
-```
+- **Paso 1** (Cliente, Pagos, Accesorio, Fecha): ~12 campos → modal muy alto
+- **Paso 2** (Metal): solo 1–3 selects → modal muy pequeño
+- **Paso 3** (Piedra): varía según selección (diamante = 7 campos, gema = 1 textarea)
+- **Paso 4** (Imágenes): zona de drag-drop fija + lista dinámica
+- **Paso 5** (Archivos 3D + Notas): contenido moderado
 
-La función `cn()` usa `tailwind-merge` internamente. Tailwind Merge es inteligente: sabe que `p-6` (shorthand) y `pt-4 pr-12 pb-4 pl-4` (individuales) son conflictivos, y **el que va último gana**. Como `className` del usuario va al final, en teoría debería ganar.
+El `DialogContent` actual tiene `max-h-[90vh] overflow-y-auto` pero **ninguna altura mínima**. Esto hace que el modal se redimensione a cada paso.
 
-**Entonces ¿por qué no funciona?** Porque el intento anterior mezcló `sm:!p-6` con `!pt-4 !pb-4 !pl-4 !pr-12`. El modificador `!` de Tailwind convierte cada clase en `!important`, pero `sm:!p-6` **también se convierte en `!important` en pantallas `sm:`**, y en mobile el valor resultante queda controlado por la resolución de merge de `p-6` base vs `!pt-4` etc. El resultado es impredecible porque `tailwind-merge` v2 trata el prefijo `!` de forma especial.
+### Solución
 
-**El verdadero problema**: La clase `p-6` del `DialogContent` base en `dialog.tsx` no tiene breakpoints — se aplica siempre, incluyendo mobile. Y el intento de sobreescribirla con clases individuales `!pt-4 !pr-12` tiene conflictos porque `p-6` expande internamente a `pt-6 pr-6 pb-6 pl-6`, y merge tiene que resolver 4 conflictos simultáneamente.
+Establecer una altura fija en el `DialogContent` en lugar de una altura máxima flexible. El enfoque correcto es:
 
----
+1. Cambiar de `max-h-[90vh] overflow-y-auto` a `h-[90vh]` — el modal siempre ocupa el 90% de la pantalla, sin importar el paso.
+2. Hacer que el `<form>` interno use `flex flex-col flex-1 overflow-hidden` para que ocupe el espacio restante.
+3. Envolver el contenido de cada paso en un `div` con `flex-1 overflow-y-auto` — así el scroll ocurre solo dentro del área de contenido, no en todo el modal.
+4. El footer de navegación (botones Anterior/Siguiente/Cancelar) se fija siempre al fondo del modal.
 
-## Solución Definitiva: Enfoque desde la raíz
+Este patrón es el estándar para modales multi-paso: **header fijo + contenido scrollable + footer fijo**.
 
-En lugar de seguir luchando contra `tailwind-merge` desde el exterior, la solución correcta es **modificar el componente base `DialogContent` en `dialog.tsx`** para:
+### Cambios técnicos
 
-1. Quitar el `p-6` hardcodeado de las clases base (o condicionarlo a `sm:`)
-2. Poner `p-4 sm:p-6` como base, lo que da padding simétrico correcto en ambas pantallas
-3. También mover el botón X a `right-2 sm:right-4` para que en mobile no invada el contenido
+**Archivo: `src/components/orders/OrderDialog.tsx`**
 
-Y luego en `OrderDialog.tsx`, simplificar el `DialogContent` para que no necesite ningún override de padding (el base ya estará bien).
-
-Adicionalmente, en `OrderDialog.tsx` hay **dos bugs extra** a corregir:
-- El botón `⚡ Skip` de desarrollo sigue en el código (líneas 2043-2052) — se elimina
-- El stepper mobile en `px-2 pr-8` tiene una combinación rota: `px-2` establece `pl-2 pr-2`, luego `pr-8` sobreescribe solo la derecha — esto funciona, pero la asimetría visual (2px izq, 32px der) hace que el texto "Piedra"/"Imágenes" quede muy separado del borde derecho cuando debería estar justamente antes del botón X
-
----
-
-## Cambios técnicos
-
-### Archivo 1: `src/components/ui/dialog.tsx`
-
-**Cambio en línea 39** — quitar `p-6` de las clases base y reemplazar por `p-4 sm:p-6`:
-
-```
-// ANTES (línea 39):
-"fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg ..."
-
-// DESPUÉS:
-"fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-4 sm:p-6 shadow-lg ..."
-```
-
-**Cambio en línea 45** — mover el botón X responsive:
+**Cambio 1 — `DialogContent` (línea 931)**
 
 ```
 // ANTES:
-<DialogPrimitive.Close className="absolute right-4 top-4 ...">
+className="w-full max-w-4xl max-h-[90vh] overflow-y-auto mx-0 sm:mx-4 rounded-none sm:rounded-lg sm:w-auto pr-10 sm:pr-6"
 
 // DESPUÉS:
-<DialogPrimitive.Close className="absolute right-3 top-3 sm:right-4 sm:top-4 ...">
+className="w-full max-w-4xl h-[90vh] flex flex-col mx-0 sm:mx-4 rounded-none sm:rounded-lg sm:w-auto pr-10 sm:pr-6 overflow-hidden"
 ```
 
-Esto hace que el botón X en mobile esté a 12px del borde (no 16px), dejando más espacio visual para el contenido.
+- `h-[90vh]` en lugar de `max-h-[90vh]`: altura **fija** al 90% de la pantalla
+- `flex flex-col`: permite que los hijos se distribuyan verticalmente
+- `overflow-hidden`: el scroll se delega al contenido interno
 
-### Archivo 2: `src/components/orders/OrderDialog.tsx`
-
-**Cambio 1 — `DialogContent` (línea 931)** — limpiar completamente los overrides de padding (ya no son necesarios porque `dialog.tsx` los maneja correctamente):
+**Cambio 2 — `<form>` (línea 1022)**
 
 ```
 // ANTES:
-className="w-full max-w-4xl max-h-[90vh] overflow-y-auto sm:mx-4 mx-0 sm:rounded-lg rounded-none sm:w-auto sm:!p-6 !pt-4 !pb-4 !pl-4 !pr-12"
+<form onSubmit={handleSubmit}>
 
 // DESPUÉS:
-className="w-full max-w-4xl max-h-[90vh] overflow-y-auto mx-0 sm:mx-4 rounded-none sm:rounded-lg w-full sm:w-auto pr-10 sm:pr-6"
+<form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden min-h-0">
 ```
 
-El `pr-10` (40px) en mobile es el padding derecho ampliado — suficiente para el botón X que queda a 12px del borde + tamaño del ícono 16px = 28px total, con 12px de holgura adicional.
+- `flex flex-col flex-1`: el form ocupa todo el espacio vertical disponible
+- `overflow-hidden min-h-0`: necesario para que el scroll interno funcione correctamente en flex
 
-**Cambio 2 — Stepper mobile (línea 992)** — corregir el padding para que sea simétrico con espacio para el X:
+**Cambio 3 — Contenedor de cada paso (wrapper interior al `<form>`)**
+
+Envolver los bloques de cada paso (`{currentStep === 1 && ...}`, etc.) y el footer dentro de una estructura:
+
+```jsx
+{/* Área de contenido scrollable */}
+<div className="flex-1 overflow-y-auto min-h-0 py-4">
+  {/* Step 1 */}
+  {currentStep === 1 && ( <div className="space-y-4">...</div> )}
+  {/* Step 2 */}
+  {currentStep === 2 && ( <div className="space-y-4">...</div> )}
+  {/* ... pasos 3, 4, 5 ... */}
+</div>
+
+{/* Footer fijo */}
+<div className="flex justify-between gap-3 pt-4 border-t flex-wrap gap-y-2 flex-shrink-0">
+  ...botones...
+</div>
+```
+
+El `flex-shrink-0` en el footer garantiza que nunca se comprima. El `overflow-y-auto` en el contenido permite scroll solo cuando el paso tiene muchos campos (como el paso 1).
+
+**Cambio 4 — Stepper desktop y mobile**
+
+El stepper (visual de círculos + línea en desktop, barra de progreso en mobile) también debe tener `flex-shrink-0` para que no se encoja:
 
 ```
-// ANTES:
-<div className="flex sm:hidden flex-col gap-2 mb-4 px-2 pr-8">
+// Stepper desktop (línea 942):
+<div className="hidden sm:flex ... flex-shrink-0">
 
-// DESPUÉS:
-<div className="flex sm:hidden flex-col gap-2 mb-4">
+// Stepper mobile (línea 985):
+<div className="flex sm:hidden ... flex-shrink-0">
 ```
 
-El stepper NO necesita padding propio porque el `DialogContent` ya tiene `pr-10` — el padding del contenedor padre ya da el espacio.
+### Estructura final del modal
 
-**Cambio 3 — Eliminar botón ⚡ Skip (líneas 2041-2061)** — eliminar el bloque del botón de desarrollo que ya no se necesita:
-
+```text
+DialogContent [h-[90vh] flex flex-col overflow-hidden]
+  ├── DialogHeader          [flex-shrink-0]  ← título siempre visible
+  ├── Stepper desktop/mobile [flex-shrink-0] ← progreso siempre visible
+  ├── form [flex flex-col flex-1 overflow-hidden]
+  │   ├── Área de contenido [flex-1 overflow-y-auto]  ← scroll aquí
+  │   │   ├── {currentStep === 1 && ...}
+  │   │   ├── {currentStep === 2 && ...}
+  │   │   ├── {currentStep === 3 && ...}
+  │   │   ├── {currentStep === 4 && ...}
+  │   │   └── {currentStep === 5 && ...}
+  │   └── Footer botones [flex-shrink-0]  ← siempre al fondo
 ```
-// ANTES: hay un div con dos botones (Skip y Siguiente)
-// DESPUÉS: solo el botón Siguiente directamente
-```
 
-**Cambio 4 — Navegación footer: alinear correctamente para mobile (línea 2002)**
+### Resultado esperado
 
-En mobile, los botones "Anterior" / "Cancelar" / "Siguiente" están en `flex justify-between`. En pantallas muy estrechas, si hay 3 botones ("Anterior", "Cancelar", "Siguiente"), se aprietan. Agregar `flex-wrap gap-y-2` para que puedan bajar de línea si no caben.
-
----
-
-## Resultado esperado
-
-Todos los campos, selects y textos del stepper en todos los pasos (1-5) tendrán:
-- **Izquierda**: 16px de padding (p-4)
-- **Derecha**: 40px de padding (pr-10) — el botón X queda a 12px del borde con 16px de ícono = 28px, dejando 12px de holgura limpia
-- **Arriba/abajo**: 16px (p-4)
-- En **desktop** (`sm:`): padding uniforme 24px en todos lados (p-6), sin cambios
-
-El cambio en `dialog.tsx` beneficia a **todos los modales del sistema** en mobile, no solo el de órdenes.
+- El modal **no cambia de tamaño** entre pasos — siempre ocupa exactamente el 90% de la pantalla.
+- Los pasos con poco contenido (Paso 2: Metal) tendrán espacio vacío debajo — el footer queda abajo.
+- Los pasos con mucho contenido (Paso 1: Cliente+Pagos) harán scroll dentro del área de contenido.
+- El stepper y los botones de navegación son siempre visibles — no quedan ocultos por el scroll.
+- El cambio es completamente autónomo dentro de `OrderDialog.tsx` — no afecta ningún otro modal del sistema.
