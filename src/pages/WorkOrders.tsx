@@ -133,67 +133,17 @@ const WorkOrders = () => {
           </p>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          {stats.map((stat) => (
-            <Card key={stat.title} className="border-border">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                  <stat.icon className="h-4 w-4" />
-                  {stat.title}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold text-foreground">{stat.value}</div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {/* Filters */}
-        <Card className="mb-6">
-          <CardContent className="pt-6 space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="font-semibold">Filtros avanzados</h3>
-            </div>
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar por cliente o descripción..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-full md:w-48">
-                  <SelectValue placeholder="Filtrar por estado" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos los estados</SelectItem>
-                  {Object.entries(WORK_ORDER_STATUS_LABELS).map(([value, label]) => (
-                    <SelectItem key={value} value={value}>
-                      {label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Tabs */}
+        {/* Tabs wrapping everything below */}
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "taller" | "diseño")}>
-          <TabsList className="mb-6">
-            <TabsTrigger value="taller" className="flex items-center gap-2">
+          <TabsList className="w-full mb-8">
+            <TabsTrigger value="taller" className="flex-1 flex items-center justify-center gap-2">
               <Wrench className="h-4 w-4" />
               Órdenes de taller
               <span className="ml-1 rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
                 {workshopOrders.length}
               </span>
             </TabsTrigger>
-            <TabsTrigger value="diseño" className="flex items-center gap-2">
+            <TabsTrigger value="diseño" className="flex-1 flex items-center justify-center gap-2">
               <Pencil className="h-4 w-4" />
               Órdenes de diseño
               <span className="ml-1 rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
@@ -201,6 +151,56 @@ const WorkOrders = () => {
               </span>
             </TabsTrigger>
           </TabsList>
+
+          {/* Stats Cards — reactive to active tab */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            {stats.map((stat) => (
+              <Card key={stat.title} className="border-border">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                    <stat.icon className="h-4 w-4" />
+                    {stat.title}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-foreground">{stat.value}</div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Filters */}
+          <Card className="mb-6">
+            <CardContent className="pt-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold">Filtros avanzados</h3>
+              </div>
+              <div className="flex flex-col md:flex-row gap-4">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Buscar por cliente o descripción..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-full md:w-48">
+                    <SelectValue placeholder="Filtrar por estado" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos los estados</SelectItem>
+                    {Object.entries(WORK_ORDER_STATUS_LABELS).map(([value, label]) => (
+                      <SelectItem key={value} value={value}>
+                        {label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          </Card>
 
           <TabsContent value="taller">
             <p className="text-sm text-muted-foreground mb-4">
