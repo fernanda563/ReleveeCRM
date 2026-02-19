@@ -1,69 +1,54 @@
 
-## Dos mejoras en el modal de nueva orden de compra
+## Expandir catálogo de tipos de piedra en el modal de Nueva Orden de Compra
 
-### 1. Corrección del stepper en vista móvil
+### Contexto actual
 
-**Problema:** El stepper en líneas 910-947 usa una distribución horizontal con `flex items-center justify-between`. En pantallas pequeñas los 5 pasos no caben: los círculos se comprimen y el texto de las etiquetas ("Cliente y Pago", "Metal", etc.) queda aplastado o invisible.
+El campo `piedra_tipo` en el paso 3 del modal solo ofrece dos opciones: **Diamante** y **Gema**. Internamente, la lógica del sistema distingue entre:
+- `"diamante"` → muestra formulario completo con Corte, Quilataje, Color, Claridad y Calidad de Corte
+- cualquier otro valor → muestra solo un campo de observaciones de texto libre
 
-**Solución:** Hacer el stepper adaptativo:
-- En **móvil**: mostrar solo el paso actual con texto descriptivo y una barra de progreso (ej: "Paso 2 de 5 — Metal"), sin intentar mostrar los 5 círculos en fila.
-- En **desktop** (`sm:` en adelante): mantener el diseño horizontal de círculos que ya funciona bien.
+### Catálogo propuesto
 
-Esto se logra con clases responsivas de Tailwind:
-```
-- div del stepper completo: hidden sm:flex (ocultar en móvil)
-- nuevo div móvil: flex sm:hidden (mostrar solo en móvil)
-```
+Se incluirán las opciones solicitadas más variantes estándar del mercado joyero:
 
-El componente móvil mostrará:
-```
-[ ● ● ● ○ ○ ]   Paso 3 de 5 — Piedra
-```
-Con una barra de progreso y el nombre del paso actual centrado.
+| Valor en BD | Etiqueta visible | Formulario que activa |
+|---|---|---|
+| `diamante_natural` | Diamante Natural | Especificaciones completas (forma, quilataje, color, claridad, corte) |
+| `diamante_laboratorio` | Diamante de Laboratorio | Especificaciones completas (forma, quilataje, color, claridad, corte) |
+| `gema` | Gema (Rubí, Esmeralda, Zafiro, etc.) | Campo de observaciones libre |
+| `perla` | Perla | Campo de observaciones libre |
+| `circonia` | Circonia Cúbica | Campo de observaciones libre |
+| `moissanita` | Moissanita | Campo de observaciones libre |
+| `piedra_semipreciosa` | Piedra Semipreciosa | Campo de observaciones libre |
+| `piedra_personalizada` | Piedra Personalizada | Campo de observaciones libre |
 
----
+### Cambios técnicos en `src/components/orders/OrderDialog.tsx`
 
-### 2. Botón "Tomar foto" debajo de "Subir comprobante de pago"
+**1. Tipo del estado (línea 103)**
+Ampliar el tipo del estado `piedraTipo` de `"diamante" | "gema"` a un union type más amplio que incluya todos los nuevos valores.
 
-**Cómo funciona en cada dispositivo:**
-- **Celular**: `capture="environment"` en el `<input type="file">` abre directamente la cámara trasera.
-- **Computadora**: el mismo atributo es ignorado por los navegadores de escritorio, por lo que abre el explorador de archivos normal (igual que el botón de arriba, pero filtrado solo a imágenes).
+**2. Selector del dropdown (líneas 1475-1478)**
+Reemplazar las 2 opciones actuales por las 8 opciones del catálogo agrupadas visualmente con separadores:
+- Grupo "Diamantes": Diamante Natural, Diamante de Laboratorio
+- Grupo "Otras piedras": Gema, Perla, Circonia Cúbica, Moissanita, Piedra Semipreciosa, Piedra Personalizada
 
-**Cambios en líneas 1227-1247 de `OrderDialog.tsx`:**
+**3. Lógica de formulario condicional (líneas 1482 y 1617)**
+- El bloque de especificaciones técnicas (color, claridad, corte, quilataje, forma) se activa para `diamante_natural` y `diamante_laboratorio`
+- El bloque de observaciones en texto libre se activa para todos los demás tipos
 
-Agregar debajo del botón existente:
-```jsx
-{/* Botón cámara */}
-<input
-  id="receipt-camera"
-  type="file"
-  accept="image/*"
-  capture="environment"
-  onChange={handleReceiptUpload}
-  disabled={loading || uploading}
-  className="hidden"
-/>
-<Button
-  type="button"
-  variant="outline"
-  onClick={() => document.getElementById('receipt-camera')?.click()}
-  disabled={loading || uploading}
-  className="w-full mt-2"
->
-  <Camera className="h-4 w-4 mr-2" />
-  Tomar foto
-</Button>
-```
+**4. Validaciones (líneas 561-572 y 749-775)**
+Actualizar las condiciones `if (piedraTipo === "diamante")` para que validen cuando `piedraTipo === "diamante_natural" || piedraTipo === "diamante_laboratorio"`.
 
-Importar el ícono `Camera` desde `lucide-react` (ya está instalado, solo falta agregarlo al import existente en línea 28).
+**5. Lógica de guardado (líneas 821-834)**
+Igual que las validaciones: los campos específicos de diamante (`diamante_color`, `diamante_claridad`, etc.) se guardan cuando el tipo es `diamante_natural` o `diamante_laboratorio`.
 
-La foto tomada pasa por el mismo `handleReceiptUpload` que ya valida tipo y tamaño (≤10MB), y se agrega a `paymentReceipts` junto con los demás comprobantes.
+**6. Prellenado desde prospecto (líneas 134 y 351)**
+Actualizar la lógica de mapeo: si el prospecto tiene `tipo_piedra === "diamante"`, se mapea a `"diamante_natural"` como valor por defecto razonable.
 
----
+### Compatibilidad con datos históricos
+
+Las órdenes existentes que tienen `piedra_tipo = "diamante"` o `piedra_tipo = "gema"` en la base de datos seguirán funcionando. El valor `"diamante"` antiguo se mostrará tal cual en los registros históricos (el campo `capitalizeFirst` lo mostrará como "Diamante"). No se requiere migración de datos.
 
 ### Archivos a modificar
 
-- `src/components/orders/OrderDialog.tsx`
-  - **Línea 28**: Agregar `Camera` al import de lucide-react
-  - **Líneas 910-947**: Refactorizar el stepper para ser responsivo (ocultar en móvil, mostrar versión compacta)
-  - **Líneas 1247**: Agregar el input oculto con `capture="environment"` y el botón "Tomar foto"
+- **`src/components/orders/OrderDialog.tsx`**: Todos los cambios descritos arriba (tipo del estado, dropdown, validaciones, guardado, prellenado)
