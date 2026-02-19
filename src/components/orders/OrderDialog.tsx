@@ -928,8 +928,8 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-full max-w-4xl max-h-[90vh] overflow-y-auto mx-0 sm:mx-4 rounded-none sm:rounded-lg sm:w-auto pr-10 sm:pr-6">
-        <DialogHeader>
+      <DialogContent className="w-full max-w-4xl h-[90vh] flex flex-col mx-0 sm:mx-4 rounded-none sm:rounded-lg sm:w-auto pr-10 sm:pr-6 overflow-hidden">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>{order ? "Editar Orden" : "Nueva Orden de Compra"}</DialogTitle>
           <DialogDescription>
             {order
@@ -939,7 +939,7 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
         </DialogHeader>
 
         {/* Stepper visual — desktop */}
-        <div className="hidden sm:flex items-start justify-center mb-8 px-4 w-full">
+        <div className="hidden sm:flex items-start justify-center mb-8 px-4 w-full flex-shrink-0">
           {[1, 2, 3, 4, 5].map((step) => (
             <div key={step} className="flex items-start flex-1 min-w-0">
               {/* Paso: círculo + etiqueta */}
@@ -989,7 +989,7 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
         </div>
 
         {/* Stepper visual — móvil */}
-        <div className="flex sm:hidden flex-col gap-2 mb-4">
+        <div className="flex sm:hidden flex-col gap-2 mb-4 flex-shrink-0">
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground font-medium">
               Paso {currentStep} de 5
@@ -1019,7 +1019,9 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
           </div>
         </div>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden min-h-0">
+          {/* Área de contenido scrollable */}
+          <div className="flex-1 overflow-y-auto min-h-0 py-2">
             {/* Step 1: Client and Payment */}
             {currentStep === 1 && (
               <div className="space-y-4">
@@ -1998,8 +2000,9 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
                 onSTLUploaded={(newFile) => setAvailableSTLFiles(prev => [...prev, newFile])}
               />
             )}
+          </div>{/* end scrollable content */}
 
-          <div className="flex justify-between gap-3 pt-4 mt-4 border-t flex-wrap gap-y-2">
+          <div className="flex justify-between gap-3 pt-4 mt-4 border-t flex-wrap gap-y-2 flex-shrink-0">
             {/* Lado izquierdo: Eliminar o Anterior */}
             <div className="flex gap-3">
               {order && isAdmin ? (
