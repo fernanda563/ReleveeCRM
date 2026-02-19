@@ -9,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   Plus,
   Search,
@@ -16,6 +17,8 @@ import {
   CheckCircle,
   Loader2,
   AlertCircle,
+  Pencil,
+  Wrench,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -28,6 +31,7 @@ const WorkOrders = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [activeTab, setActiveTab] = useState<"taller" | "diseño">("taller");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingOrder, setEditingOrder] = useState<WorkOrder | null>(null);
 
@@ -78,6 +82,7 @@ const WorkOrders = () => {
     handleDialogClose();
   };
 
+  // Apply search + status filters first
   const filteredOrders = workOrders.filter((order) => {
     const clientName = order.client
       ? `${order.client.nombre} ${order.client.apellido}`.toLowerCase()
@@ -89,9 +94,19 @@ const WorkOrders = () => {
     return matchesSearch && matchesStatus;
   });
 
-  const pendingCount = workOrders.filter((o) => o.estado === "pendiente").length;
-  const inProgressCount = workOrders.filter((o) => o.estado === "en_proceso").length;
-  const completedCount = workOrders.filter((o) => o.estado === "completado").length;
+  // Split by type
+  const designOrders = filteredOrders.filter(
+    (o) => o.designer_id !== null && o.designer_id !== undefined
+  );
+  const workshopOrders = filteredOrders.filter(
+    (o) => !o.designer_id
+  );
+
+  const activeOrders = activeTab === "diseño" ? designOrders : workshopOrders;
+
+  const pendingCount = activeOrders.filter((o) => o.estado === "pendiente").length;
+  const inProgressCount = activeOrders.filter((o) => o.estado === "en_proceso").length;
+  const completedCount = activeOrders.filter((o) => o.estado === "completado").length;
 
   const stats = [
     { title: "Pendientes", value: pendingCount, icon: Clock },
@@ -168,39 +183,91 @@ const WorkOrders = () => {
           </CardContent>
         </Card>
 
-        {/* Results count */}
-        <p className="text-sm text-muted-foreground mb-4">
-          {filteredOrders.length} orden(es) de trabajo encontrada(s)
-        </p>
+        {/* Tabs */}
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "taller" | "diseño")}>
+          <TabsList className="mb-6">
+            <TabsTrigger value="taller" className="flex items-center gap-2">
+              <Wrench className="h-4 w-4" />
+              Órdenes de taller
+              <span className="ml-1 rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                {workshopOrders.length}
+              </span>
+            </TabsTrigger>
+            <TabsTrigger value="diseño" className="flex items-center gap-2">
+              <Pencil className="h-4 w-4" />
+              Órdenes de diseño
+              <span className="ml-1 rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                {designOrders.length}
+              </span>
+            </TabsTrigger>
+          </TabsList>
 
-        {/* Orders List */}
-        {loading ? (
-          <div className="flex justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          </div>
-        ) : filteredOrders.length === 0 ? (
-          <Card>
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
-              <p className="text-muted-foreground text-center">
-                No se encontraron órdenes de trabajo.
-                <br />
-                {workOrders.length === 0 && "Comienza creando tu primera orden de trabajo."}
-              </p>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {filteredOrders.map((order) => (
-              <WorkOrderCard
-                key={order.id}
-                workOrder={order}
-                onEdit={handleEdit}
-                onRefresh={fetchWorkOrders}
-              />
-            ))}
-          </div>
-        )}
+          <TabsContent value="taller">
+            <p className="text-sm text-muted-foreground mb-4">
+              {workshopOrders.length} orden(es) de taller encontrada(s)
+            </p>
+            {loading ? (
+              <div className="flex justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            ) : workshopOrders.length === 0 ? (
+              <Card>
+                <CardContent className="flex flex-col items-center justify-center py-12">
+                  <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
+                  <p className="text-muted-foreground text-center">
+                    No se encontraron órdenes de taller.
+                    <br />
+                    {workOrders.length === 0 && "Comienza creando tu primera orden de trabajo."}
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {workshopOrders.map((order) => (
+                  <WorkOrderCard
+                    key={order.id}
+                    workOrder={order}
+                    onEdit={handleEdit}
+                    onRefresh={fetchWorkOrders}
+                  />
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="diseño">
+            <p className="text-sm text-muted-foreground mb-4">
+              {designOrders.length} orden(es) de diseño encontrada(s)
+            </p>
+            {loading ? (
+              <div className="flex justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            ) : designOrders.length === 0 ? (
+              <Card>
+                <CardContent className="flex flex-col items-center justify-center py-12">
+                  <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
+                  <p className="text-muted-foreground text-center">
+                    No se encontraron órdenes de diseño.
+                    <br />
+                    {workOrders.length === 0 && "Comienza creando tu primera orden de trabajo."}
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {designOrders.map((order) => (
+                  <WorkOrderCard
+                    key={order.id}
+                    workOrder={order}
+                    onEdit={handleEdit}
+                    onRefresh={fetchWorkOrders}
+                  />
+                ))}
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
 
         {/* Dialog */}
         <WorkOrderDialog
