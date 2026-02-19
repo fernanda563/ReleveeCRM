@@ -928,7 +928,7 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-full max-w-4xl max-h-[90vh] overflow-y-auto sm:mx-4 mx-0 sm:rounded-lg rounded-none sm:w-auto">
         <DialogHeader>
           <DialogTitle>{order ? "Editar Orden" : "Nueva Orden de Compra"}</DialogTitle>
           <DialogDescription>
@@ -1125,7 +1125,7 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="precio">Precio de Venta *</Label>
                   <Input
@@ -1230,7 +1230,7 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="forma_pago">Forma de Pago *</Label>
                   <Select 
@@ -1454,7 +1454,7 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
               </div>
 
               {metalTipo === "oro" && (
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Pureza del Oro *</Label>
                     <Select
@@ -1526,7 +1526,7 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
 
               {(piedraTipo === "diamante_natural" || piedraTipo === "diamante_laboratorio" || piedraTipo === "diamante") && (
                 <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>Corte *</Label>
                       <Select
@@ -1575,7 +1575,7 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div className="space-y-2">
                       <Label>Color *</Label>
                       <Select
