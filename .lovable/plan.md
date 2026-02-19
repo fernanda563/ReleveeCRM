@@ -1,88 +1,98 @@
 
-## Dos problemas a resolver
+## Unificar "Proceso de Diseño" y "Proceso de Taller" en Órdenes de Trabajo
 
-### Problema 1 — Error al crear la orden (constraint violation)
+### Objetivo
 
-**Causa exacta identificada:** La base de datos tiene un check constraint en la columna `piedra_tipo` de la tabla `orders` que solo acepta dos valores:
-
-```
-CHECK (piedra_tipo = ANY (ARRAY['diamante'::text, 'gema'::text]))
-```
-
-Pero el formulario en `OrderDialog.tsx` usa una lista ampliada de valores como `diamante_natural`, `diamante_laboratorio`, `perla`, `circonia`, `moissanita`, `piedra_semipreciosa`, `piedra_personalizada`. Cuando el usuario selecciona cualquiera de estos valores nuevos, la inserción en la base de datos falla con el error:
-
-```
-new row for relation "orders" violates check constraint "orders_piedra_tipo_check"
-```
-
-**Solución:** Hay dos opciones:
-
-- **Opción A (recomendada):** Ampliar el check constraint de la base de datos para incluir todos los valores que el formulario ya ofrece.
-- **Opción B:** Mapear los valores del formulario a `'diamante'` o `'gema'` antes de guardar.
-
-La **Opción A** es la correcta porque preserva la información granular (diamante natural vs laboratorio) en la base de datos para futuras consultas y reportes. Se ejecutará una migración SQL que amplía el constraint.
-
-**Migración SQL a ejecutar:**
-
-```sql
--- Eliminar el constraint actual
-ALTER TABLE public.orders DROP CONSTRAINT orders_piedra_tipo_check;
-
--- Crear el constraint actualizado con todos los valores válidos del formulario
-ALTER TABLE public.orders ADD CONSTRAINT orders_piedra_tipo_check
-  CHECK (piedra_tipo = ANY (ARRAY[
-    'diamante'::text,
-    'diamante_natural'::text,
-    'diamante_laboratorio'::text,
-    'gema'::text,
-    'perla'::text,
-    'circonia'::text,
-    'moissanita'::text,
-    'piedra_semipreciosa'::text,
-    'piedra_personalizada'::text
-  ]));
-```
-
-También hay que actualizar la validación en `handleSubmit` (línea 782) que detecta si es diamante para incluir `diamante_natural` y `diamante_laboratorio` — eso ya está correcto. Solo falta el constraint de BD.
+Eliminar los dos ítems del menú de navegación ("Proceso de Diseño" y "Proceso de Taller") y reorganizar la página de Órdenes de Trabajo para mostrar las órdenes divididas en dos pestañas: **Órdenes de diseño** y **Órdenes de taller**.
 
 ---
 
-### Problema 2 — Reordenar sección de comprobantes en el Paso 1
+### Análisis del estado actual
 
-**Situación actual (líneas 1300-1397):**
+**Menú (AppSidebar.tsx):** La sección "Proceso de Producción" actualmente tiene 4 ítems:
+- Seguimiento de Producción → `/production`
+- Órdenes de Trabajo → `/work-orders`
+- Proceso de Diseño → `/design-process` ← eliminar
+- Proceso de Taller → `/workshop-process` ← eliminar
+
+**Distinción diseño vs taller (ya existe en el modelo):**
+- Si `designer_id` tiene valor → orden de diseño
+- Si `workshop_id` tiene valor → orden de taller
+- El `WorkOrderDialog` ya usa un `RadioGroup` con `assignmentType: 'taller' | 'diseñador'` para determinar a quién se asigna
+
+**Estructura actual de WorkOrders.tsx:**
+- Tarjetas de estadísticas (Pendientes, En proceso, Completadas)
+- Filtros (búsqueda + estado)
+- Contador de resultados
+- Grid de tarjetas `WorkOrderCard`
+
+---
+
+### Cambios a realizar
+
+#### 1. AppSidebar.tsx — Eliminar ítems del menú
+
+Quitar los dos ítems de la sección "Proceso de Producción":
+```
+{ title: "Proceso de Diseño", url: "/design-process", icon: Pencil, adminOnly: false },
+{ title: "Proceso de Taller", url: "/workshop-process", icon: Wrench, adminOnly: false },
+```
+
+También quitar las importaciones de iconos `Pencil` y `Wrench` si ya no se usan en ningún otro lugar del sidebar.
+
+#### 2. WorkOrders.tsx — Agregar pestañas por tipo
+
+Reestructurar la página para incorporar las pestañas **antes** del grid de tarjetas (pero **después** de los filtros y estadísticas).
+
+**Nueva lógica de filtrado:**
 
 ```
-[Label "Comprobantes de Pago"]
-  [Botón: Subir comprobantes de pago]    ← botón 1
-  [Botón: Tomar foto]                    ← botón 2
-[p: texto de ayuda]
-[Lista de comprobantes nuevos]           ← aparece DESPUÉS del texto de ayuda
-[Lista de comprobantes guardados]
-[Label "Fecha de Entrega *"]
+Todas las órdenes → filtradas por búsqueda/estado → separadas por tab activo:
+  - Tab "Órdenes de diseño": workOrder.designer_id !== null
+  - Tab "Órdenes de taller": workOrder.workshop_id !== null (o sin asignación a diseñador)
 ```
 
-**Situación deseada:**
+**Estructura visual nueva:**
 
 ```
-[Label "Comprobantes de Pago"]
-  [Botón: Subir comprobantes de pago]    ← botón 1
-  [Lista de comprobantes nuevos]         ← inmediatamente debajo del botón 1
-  [Botón: Tomar foto]                    ← botón 2
-  [Lista de fotos tomadas]               ← inmediatamente debajo del botón 2
-[p: texto de ayuda]
-[Label "Fecha de Entrega *"]
+[Header + botón Nueva Orden]
+[Tarjetas de estadísticas — contextuales al tab activo]
+[Filtros (búsqueda + estado)]
+
+[Tabs]
+  ┌─────────────────┬──────────────────┐
+  │ Órdenes de      │ Órdenes de       │
+  │ diseño  (N)     │ taller  (N)      │
+  └─────────────────┴──────────────────┘
+  [Contador de resultados]
+  [Grid de WorkOrderCard]
 ```
 
-**Cambio en `OrderDialog.tsx` (líneas 1300-1397):** Mover la lista de `paymentReceipts` para que quede justo después del primer botón y antes del segundo botón "Tomar foto". Actualmente ambas listas están al final del bloque después del texto de ayuda. Se reestructurará el JSX para que cada botón tenga su lista debajo de forma inmediata.
+Las estadísticas (Pendientes / En proceso / Completadas) se calcularán sobre las órdenes del tab activo, para que los números sean siempre relevantes al contexto visible.
 
 ---
 
 ### Archivos a modificar
 
-1. **Nueva migración SQL** — ampliar el check constraint `orders_piedra_tipo_check`.
-2. **`src/components/orders/OrderDialog.tsx`** — reordenar el JSX de comprobantes en el Paso 1 (líneas ~1300-1397).
+**`src/components/AppSidebar.tsx`**
+- Eliminar líneas de "Proceso de Diseño" y "Proceso de Taller" del array `menuSections`
+- Quitar importaciones de `Pencil` y `Wrench` de lucide-react (si no se usan en otro lugar dentro del mismo archivo)
+
+**`src/pages/WorkOrders.tsx`**
+- Añadir import de `Tabs`, `TabsList`, `TabsTrigger`, `TabsContent` desde `@/components/ui/tabs`
+- Agregar estado `activeTab: 'diseño' | 'taller'` (valor inicial: `'taller'`)
+- Separar `filteredOrders` en dos subconjuntos tras aplicar filtros de búsqueda/estado:
+  - `designOrders`: donde `designer_id !== null && designer_id !== ""`
+  - `workshopOrders`: resto (donde `workshop_id` tiene valor o no hay asignación)
+- Hacer que las stats (pendientes/en proceso/completadas) sean reactivas al tab activo
+- Renderizar `<Tabs>` envolviendo el contador y el grid, con dos `<TabsTrigger>` que muestren el nombre y el conteo entre paréntesis
+
+---
 
 ### Resultado esperado
 
-- Al crear una orden con cualquier tipo de piedra (diamante natural, diamante de laboratorio, gema, perla, circonia, moissanita, etc.), la orden se guarda correctamente sin errores de constraint.
-- Los comprobantes subidos aparecen inmediatamente debajo del botón "Subir comprobantes de pago", y las fotos tomadas aparecen inmediatamente debajo del botón "Tomar foto".
+- El menú lateral queda limpio con solo 2 ítems en "Proceso de Producción": Seguimiento de Producción y Órdenes de Trabajo.
+- La página de Órdenes de Trabajo muestra una pestaña "Órdenes de taller" y otra "Órdenes de diseño", cada una con su propio listado de tarjetas filtrado.
+- Las tarjetas son las mismas `WorkOrderCard` ya existentes — no hay cambio de componente.
+- Los filtros de búsqueda y estado siguen funcionando dentro del tab activo.
+- Las rutas `/design-process` y `/workshop-process` siguen existiendo técnicamente en `App.tsx` pero dejan de aparecer en el menú (no se eliminan las páginas para no romper rutas existentes).
