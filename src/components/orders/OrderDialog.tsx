@@ -928,7 +928,7 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-full max-w-4xl max-h-[90vh] overflow-y-auto sm:mx-4 mx-0 sm:rounded-lg rounded-none sm:w-auto sm:p-6 p-4">
+      <DialogContent className="w-full max-w-4xl max-h-[90vh] overflow-y-auto sm:mx-4 mx-0 sm:rounded-lg rounded-none sm:w-auto sm:p-6 pt-4 pb-4 pl-4 pr-10">
         <DialogHeader>
           <DialogTitle>{order ? "Editar Orden" : "Nueva Orden de Compra"}</DialogTitle>
           <DialogDescription>
