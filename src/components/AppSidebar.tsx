@@ -68,13 +68,6 @@ const menuSections = [
     ],
   },
   {
-    label: "Herramientas",
-    items: [
-      { title: "Colección STL/EDIT", url: "/stl-collection", icon: Box, adminOnly: true },
-      { title: "Log de Auditoría", url: "/audit-log", icon: FileText, adminOnly: true },
-    ],
-  },
-  {
     label: "Administración",
     items: [
       { title: "Gestión de Conceptos", url: "/work-concepts", icon: Layers, adminOnly: true },
@@ -82,6 +75,13 @@ const menuSections = [
       { title: "Gestión de Diseñadores", url: "/designers", icon: Palette, adminOnly: true },
       { title: "Gestión de Usuarios", url: "/users", icon: Shield, adminOnly: true },
       { title: "Gestión de Proveedores", url: "/suppliers", icon: Building2, adminOnly: true },
+    ],
+  },
+  {
+    label: "Herramientas",
+    items: [
+      { title: "Colección STL/EDIT", url: "/stl-collection", icon: Box, adminOnly: true },
+      { title: "Log de Auditoría", url: "/audit-log", icon: FileText, adminOnly: true },
     ],
   },
 ];
