@@ -2042,14 +2042,26 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
               </Button>
 
               {currentStep < totalSteps ? (
-                <Button
-                  type="button"
-                  onClick={handleNext}
-                  className="bg-accent hover:bg-accent/90 text-accent-foreground"
-                  disabled={loading}
-                >
-                  Siguiente
-                </Button>
+                <div className="flex gap-2">
+                  {/* DEV: botón para saltar al último paso */}
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => setCurrentStep(totalSteps)}
+                    disabled={loading}
+                    className="text-xs text-muted-foreground"
+                  >
+                    ⚡ Skip
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={handleNext}
+                    className="bg-accent hover:bg-accent/90 text-accent-foreground"
+                    disabled={loading}
+                  >
+                    Siguiente
+                  </Button>
+                </div>
               ) : (
                 <Button
                   type="submit"
