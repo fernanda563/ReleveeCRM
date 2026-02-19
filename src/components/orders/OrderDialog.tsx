@@ -1300,6 +1300,7 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
               <div className="space-y-2 mt-4">
                 <Label>Comprobantes de Pago</Label>
                 <div className="space-y-2">
+                  {/* Botón 1: Subir archivo */}
                   <input
                     id="receipt-upload"
                     type="file"
@@ -1319,6 +1320,62 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
                     <Upload className="h-4 w-4 mr-2" />
                     Subir comprobantes de pago
                   </Button>
+
+                  {/* Lista de comprobantes subidos (nuevos + guardados) */}
+                  {paymentReceipts.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium">Comprobantes nuevos ({paymentReceipts.length})</p>
+                      {paymentReceipts.map((file, index) => (
+                        <div key={index} className="flex items-center justify-between p-2 bg-muted rounded">
+                          <div className="flex items-center gap-2">
+                            <Upload className="h-4 w-4" />
+                            <span className="text-sm">{file.name}</span>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeReceipt(index)}
+                            disabled={loading || uploading}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {uploadedReceiptUrls.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium">Comprobantes guardados ({uploadedReceiptUrls.length})</p>
+                      {uploadedReceiptUrls.map((url, index) => (
+                        <div key={index} className="flex items-center justify-between p-2 bg-accent/5 border border-accent/20 rounded">
+                          <div className="flex items-center gap-2">
+                            <Upload className="h-4 w-4 text-accent" />
+                            <a
+                              href={url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-sm text-accent hover:underline truncate flex-1"
+                            >
+                              Ver comprobante {index + 1}
+                            </a>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeUploadedReceipt(index)}
+                            disabled={loading || uploading}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Botón 2: Tomar foto */}
                   <input
                     id="receipt-camera"
                     type="file"
@@ -1342,59 +1399,6 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
                 <p className="text-xs text-muted-foreground">
                   Sube imágenes (JPG, PNG) o PDFs de los comprobantes. Máximo 10MB por archivo.
                 </p>
-                
-                {paymentReceipts.length > 0 && (
-                  <div className="space-y-2 mt-2">
-                    <p className="text-sm font-medium">Comprobantes nuevos ({paymentReceipts.length})</p>
-                    {paymentReceipts.map((file, index) => (
-                      <div key={index} className="flex items-center justify-between p-2 bg-muted rounded">
-                        <div className="flex items-center gap-2">
-                          <Upload className="h-4 w-4" />
-                          <span className="text-sm">{file.name}</span>
-                        </div>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeReceipt(index)}
-                          disabled={loading || uploading}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {uploadedReceiptUrls.length > 0 && (
-                  <div className="space-y-2 mt-2">
-                    <p className="text-sm font-medium">Comprobantes guardados ({uploadedReceiptUrls.length})</p>
-                    {uploadedReceiptUrls.map((url, index) => (
-                      <div key={index} className="flex items-center justify-between p-2 bg-accent/5 border border-accent/20 rounded">
-                        <div className="flex items-center gap-2">
-                          <Upload className="h-4 w-4 text-accent" />
-                          <a 
-                            href={url} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="text-sm text-accent hover:underline truncate flex-1"
-                          >
-                            Ver comprobante {index + 1}
-                          </a>
-                        </div>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeUploadedReceipt(index)}
-                          disabled={loading || uploading}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
               </div>
 
               <div className="space-y-2">
