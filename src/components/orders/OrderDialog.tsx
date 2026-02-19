@@ -1224,13 +1224,27 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
 
               <div className="space-y-2 mt-4">
                 <Label>Comprobantes de Pago</Label>
-                <Input
-                  type="file"
-                  accept="image/jpeg,image/png,image/jpg,application/pdf"
-                  multiple
-                  onChange={handleReceiptUpload}
-                  disabled={loading || uploading}
-                />
+                <div>
+                  <input
+                    id="receipt-upload"
+                    type="file"
+                    accept="image/jpeg,image/png,image/jpg,application/pdf"
+                    multiple
+                    onChange={handleReceiptUpload}
+                    disabled={loading || uploading}
+                    className="hidden"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => document.getElementById('receipt-upload')?.click()}
+                    disabled={loading || uploading}
+                    className="w-full"
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    Subir comprobantes de pago
+                  </Button>
+                </div>
                 <p className="text-xs text-muted-foreground">
                   Sube imágenes (JPG, PNG) o PDFs de los comprobantes. Máximo 10MB por archivo.
                 </p>
