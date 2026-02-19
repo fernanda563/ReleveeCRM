@@ -928,7 +928,7 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-full max-w-4xl max-h-[90vh] overflow-y-auto sm:mx-4 mx-0 sm:rounded-lg rounded-none sm:w-auto">
+      <DialogContent className="w-full max-w-4xl max-h-[90vh] overflow-y-auto sm:mx-4 mx-0 sm:rounded-lg rounded-none sm:w-auto sm:p-6 p-4">
         <DialogHeader>
           <DialogTitle>{order ? "Editar Orden" : "Nueva Orden de Compra"}</DialogTitle>
           <DialogDescription>
@@ -989,7 +989,7 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
         </div>
 
         {/* Stepper visual — móvil */}
-        <div className="flex sm:hidden flex-col gap-2 mb-6 px-2">
+        <div className="flex sm:hidden flex-col gap-2 mb-4 px-2">
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground font-medium">
               Paso {currentStep} de 5
@@ -1436,58 +1436,58 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
             {currentStep === 2 && (
               <div className="space-y-4">
                 <div className="space-y-2">
-                <Label>Tipo de Metal *</Label>
-                <Select
-                  value={metalTipo}
-                  onValueChange={(value: any) => setMetalTipo(value)}
-                  disabled={loading}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="oro">Oro</SelectItem>
-                    <SelectItem value="plata">Plata</SelectItem>
-                    <SelectItem value="platino">Platino</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {metalTipo === "oro" && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Pureza del Oro *</Label>
-                    <Select
-                      value={metalPureza}
-                      onValueChange={setMetalPureza}
-                      disabled={loading}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Seleccionar" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="10k">10k</SelectItem>
-                        <SelectItem value="14k">14k</SelectItem>
-                        <SelectItem value="18k">18k</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Color del Oro *</Label>
-                    <Select value={metalColor} onValueChange={setMetalColor} disabled={loading}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Seleccionar" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="amarillo">Amarillo</SelectItem>
-                        <SelectItem value="blanco">Blanco</SelectItem>
-                        <SelectItem value="rosado">Rosado</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  <Label>Tipo de Metal *</Label>
+                  <Select
+                    value={metalTipo}
+                    onValueChange={(value: any) => setMetalTipo(value)}
+                    disabled={loading}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="oro">Oro</SelectItem>
+                      <SelectItem value="plata">Plata</SelectItem>
+                      <SelectItem value="platino">Platino</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-              )}
+
+                {metalTipo === "oro" && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Pureza del Oro *</Label>
+                      <Select
+                        value={metalPureza}
+                        onValueChange={setMetalPureza}
+                        disabled={loading}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Seleccionar" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="10k">10k</SelectItem>
+                          <SelectItem value="14k">14k</SelectItem>
+                          <SelectItem value="18k">18k</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Color del Oro *</Label>
+                      <Select value={metalColor} onValueChange={setMetalColor} disabled={loading}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Seleccionar" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="amarillo">Amarillo</SelectItem>
+                          <SelectItem value="blanco">Blanco</SelectItem>
+                          <SelectItem value="rosado">Rosado</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -1495,34 +1495,34 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
             {currentStep === 3 && (
               <div className="space-y-4">
                 <div className="space-y-2">
-                <Label>Tipo de Piedra *</Label>
-                <Select
-                  value={piedraTipo}
-                  onValueChange={(value: any) => setPiedraTipo(value)}
-                  disabled={loading}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectLabel>Diamantes</SelectLabel>
-                      <SelectItem value="diamante_natural">Diamante Natural</SelectItem>
-                      <SelectItem value="diamante_laboratorio">Diamante de Laboratorio</SelectItem>
-                    </SelectGroup>
-                    <SelectSeparator />
-                    <SelectGroup>
-                      <SelectLabel>Otras Piedras</SelectLabel>
-                      <SelectItem value="gema">Gema (Rubí, Esmeralda, Zafiro, etc.)</SelectItem>
-                      <SelectItem value="perla">Perla</SelectItem>
-                      <SelectItem value="circonia">Circonia Cúbica</SelectItem>
-                      <SelectItem value="moissanita">Moissanita</SelectItem>
-                      <SelectItem value="piedra_semipreciosa">Piedra Semipreciosa</SelectItem>
-                      <SelectItem value="piedra_personalizada">Piedra Personalizada</SelectItem>
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-              </div>
+                  <Label>Tipo de Piedra *</Label>
+                  <Select
+                    value={piedraTipo}
+                    onValueChange={(value: any) => setPiedraTipo(value)}
+                    disabled={loading}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectLabel>Diamantes</SelectLabel>
+                        <SelectItem value="diamante_natural">Diamante Natural</SelectItem>
+                        <SelectItem value="diamante_laboratorio">Diamante de Laboratorio</SelectItem>
+                      </SelectGroup>
+                      <SelectSeparator />
+                      <SelectGroup>
+                        <SelectLabel>Otras Piedras</SelectLabel>
+                        <SelectItem value="gema">Gema (Rubí, Esmeralda, Zafiro, etc.)</SelectItem>
+                        <SelectItem value="perla">Perla</SelectItem>
+                        <SelectItem value="circonia">Circonia Cúbica</SelectItem>
+                        <SelectItem value="moissanita">Moissanita</SelectItem>
+                        <SelectItem value="piedra_semipreciosa">Piedra Semipreciosa</SelectItem>
+                        <SelectItem value="piedra_personalizada">Piedra Personalizada</SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </div>
 
               {(piedraTipo === "diamante_natural" || piedraTipo === "diamante_laboratorio" || piedraTipo === "diamante") && (
                 <div className="space-y-4">
@@ -1999,7 +1999,7 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
               />
             )}
 
-          <div className="flex justify-between gap-3 pt-6 mt-6 border-t">
+          <div className="flex justify-between gap-3 pt-4 mt-4 border-t">
             {/* Lado izquierdo: Eliminar o Anterior */}
             <div className="flex gap-3">
               {order && isAdmin ? (
