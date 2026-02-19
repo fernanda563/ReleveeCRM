@@ -1,54 +1,46 @@
 
-## Expandir catálogo de tipos de piedra en el modal de Nueva Orden de Compra
+## Fix: Responsive Padding and Spacing in Steps 2 and 3 of the New Order Modal
 
-### Contexto actual
+### Problem Analysis
 
-El campo `piedra_tipo` en el paso 3 del modal solo ofrece dos opciones: **Diamante** y **Gema**. Internamente, la lógica del sistema distingue entre:
-- `"diamante"` → muestra formulario completo con Corte, Quilataje, Color, Claridad y Calidad de Corte
-- cualquier otro valor → muestra solo un campo de observaciones de texto libre
+After inspecting the code in `src/components/orders/OrderDialog.tsx`, two classes of problems were found:
 
-### Catálogo propuesto
+**Problem 1 — Missing inner padding on mobile**
 
-Se incluirán las opciones solicitadas más variantes estándar del mercado joyero:
+The `DialogContent` uses `mx-0 rounded-none` on mobile (full-width modal), but the form and its step containers have no horizontal padding. On a 390px screen, the content runs edge-to-edge with no breathing room. The `<form>` and each step `<div className="space-y-4">` need explicit `px-1` or `px-0` on mobile (the `DialogContent` itself already has `p-6` from the shadcn default, but that needs to be verified and normalized for mobile).
 
-| Valor en BD | Etiqueta visible | Formulario que activa |
-|---|---|---|
-| `diamante_natural` | Diamante Natural | Especificaciones completas (forma, quilataje, color, claridad, corte) |
-| `diamante_laboratorio` | Diamante de Laboratorio | Especificaciones completas (forma, quilataje, color, claridad, corte) |
-| `gema` | Gema (Rubí, Esmeralda, Zafiro, etc.) | Campo de observaciones libre |
-| `perla` | Perla | Campo de observaciones libre |
-| `circonia` | Circonia Cúbica | Campo de observaciones libre |
-| `moissanita` | Moissanita | Campo de observaciones libre |
-| `piedra_semipreciosa` | Piedra Semipreciosa | Campo de observaciones libre |
-| `piedra_personalizada` | Piedra Personalizada | Campo de observaciones libre |
+**Problem 2 — Broken indentation structure in Steps 2 and 3**
 
-### Cambios técnicos en `src/components/orders/OrderDialog.tsx`
+The previous responsive refactor changed grid classes but inadvertently left the inner `<div className="space-y-2">` for the first field in each step at a misaligned indentation level relative to its parent `<div className="space-y-4">`. This means:
 
-**1. Tipo del estado (línea 103)**
-Ampliar el tipo del estado `piedraTipo` de `"diamante" | "gema"` a un union type más amplio que incluya todos los nuevos valores.
+- In **Step 2**: The "Tipo de Metal" field's `<Label>` and `<Select>` are children of a `<div className="space-y-2">` but that div is not properly closed before the conditional gold fields grid — causing visual spacing inconsistency.
+- In **Step 3**: Same pattern — the "Tipo de Piedra" field hangs outside its natural `space-y-4` flow.
 
-**2. Selector del dropdown (líneas 1475-1478)**
-Reemplazar las 2 opciones actuales por las 8 opciones del catálogo agrupadas visualmente con separadores:
-- Grupo "Diamantes": Diamante Natural, Diamante de Laboratorio
-- Grupo "Otras piedras": Gema, Perla, Circonia Cúbica, Moissanita, Piedra Semipreciosa, Piedra Personalizada
+**Problem 3 — DialogContent padding on mobile**
 
-**3. Lógica de formulario condicional (líneas 1482 y 1617)**
-- El bloque de especificaciones técnicas (color, claridad, corte, quilataje, forma) se activa para `diamante_natural` y `diamante_laboratorio`
-- El bloque de observaciones en texto libre se activa para todos los demás tipos
+The `DialogContent` has Tailwind class `p-6` by default (from the shadcn component). On mobile with `mx-0 rounded-none`, this p-6 gives 24px of padding on each side, which should be fine. However, the issue may be that the `max-h-[90vh] overflow-y-auto` clips content on short screens combined with the stepper taking up vertical space. The stepper on mobile needs compact spacing.
 
-**4. Validaciones (líneas 561-572 y 749-775)**
-Actualizar las condiciones `if (piedraTipo === "diamante")` para que validen cuando `piedraTipo === "diamante_natural" || piedraTipo === "diamante_laboratorio"`.
+### Technical Changes in `src/components/orders/OrderDialog.tsx`
 
-**5. Lógica de guardado (líneas 821-834)**
-Igual que las validaciones: los campos específicos de diamante (`diamante_color`, `diamante_claridad`, etc.) se guardan cuando el tipo es `diamante_natural` o `diamante_laboratorio`.
+**1. DialogContent — normalize padding for mobile (line 931)**
+Add `sm:p-6 p-4` override to reduce the default padding slightly on narrow screens, giving fields more horizontal space.
 
-**6. Prellenado desde prospecto (líneas 134 y 351)**
-Actualizar la lógica de mapeo: si el prospecto tiene `tipo_piedra === "diamante"`, se mapea a `"diamante_natural"` como valor por defecto razonable.
+**2. Step 2 block — fix structure (lines 1436–1492)**
 
-### Compatibilidad con datos históricos
+The first `<div className="space-y-2">` wrapping the "Tipo de Metal" field is indented incorrectly and its closing `</div>` is misplaced. Restructure so that:
+- The outer `<div className="space-y-4">` contains properly indented children
+- Each field group (`space-y-2`) is a direct, consistently indented child
 
-Las órdenes existentes que tienen `piedra_tipo = "diamante"` o `piedra_tipo = "gema"` en la base de datos seguirán funcionando. El valor `"diamante"` antiguo se mostrará tal cual en los registros históricos (el campo `capitalizeFirst` lo mostrará como "Diamante"). No se requiere migración de datos.
+**3. Step 3 block — fix structure (lines 1494–1675)**
 
-### Archivos a modificar
+Same fix as Step 2: the "Tipo de Piedra" `<div className="space-y-2">` needs proper indentation and its closing tag placed correctly so the diamond specs block and the observations block are siblings at the same level inside `space-y-4`.
 
-- **`src/components/orders/OrderDialog.tsx`**: Todos los cambios descritos arriba (tipo del estado, dropdown, validaciones, guardado, prellenado)
+**4. Navigation buttons — add mobile spacing (around line 2010)**
+The footer buttons row needs `mt-4 pt-4` to ensure it doesn't crowd the last form field on mobile.
+
+**5. Stepper (mobile) — tighten spacing (line 992)**
+Change `mb-6` to `mb-4` on the mobile stepper container to reclaim vertical space.
+
+### Summary of Files Changed
+
+- **`src/components/orders/OrderDialog.tsx`**: Fix DialogContent padding, restructure Steps 2 and 3 inner divs for correct indentation and spacing, tighten mobile stepper margin.
