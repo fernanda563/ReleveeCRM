@@ -18,8 +18,6 @@ import {
   Users2,
   ClipboardList,
   Building2,
-  Pencil,
-  Wrench,
   Factory,
   Layers,
   Palette,
@@ -66,8 +64,6 @@ const menuSections = [
     items: [
       { title: "Seguimiento de Producción", url: "/production", icon: Box, adminOnly: false },
       { title: "Órdenes de Trabajo", url: "/work-orders", icon: ClipboardList, adminOnly: false },
-      { title: "Proceso de Diseño", url: "/design-process", icon: Pencil, adminOnly: false },
-      { title: "Proceso de Taller", url: "/workshop-process", icon: Wrench, adminOnly: false },
     ],
   },
   {
