@@ -928,7 +928,7 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-full max-w-4xl max-h-[90vh] overflow-y-auto sm:mx-4 mx-0 sm:rounded-lg rounded-none sm:w-auto sm:!p-6 !pt-4 !pb-4 !pl-4 !pr-12">
+      <DialogContent className="w-full max-w-4xl max-h-[90vh] overflow-y-auto mx-0 sm:mx-4 rounded-none sm:rounded-lg sm:w-auto pr-10 sm:pr-6">
         <DialogHeader>
           <DialogTitle>{order ? "Editar Orden" : "Nueva Orden de Compra"}</DialogTitle>
           <DialogDescription>
@@ -989,7 +989,7 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
         </div>
 
         {/* Stepper visual — móvil */}
-        <div className="flex sm:hidden flex-col gap-2 mb-4 px-2 pr-8">
+        <div className="flex sm:hidden flex-col gap-2 mb-4">
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground font-medium">
               Paso {currentStep} de 5
@@ -1999,7 +1999,7 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
               />
             )}
 
-          <div className="flex justify-between gap-3 pt-4 mt-4 border-t">
+          <div className="flex justify-between gap-3 pt-4 mt-4 border-t flex-wrap gap-y-2">
             {/* Lado izquierdo: Eliminar o Anterior */}
             <div className="flex gap-3">
               {order && isAdmin ? (
@@ -2039,26 +2039,14 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
               </Button>
 
               {currentStep < totalSteps ? (
-                <div className="flex gap-2">
-                  {/* DEV ONLY: skip validations — eliminar antes de producción */}
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => { setStep5Visited(true); setCurrentStep(prev => Math.min(prev + 1, totalSteps)); }}
-                    disabled={loading}
-                    className="border-dashed border-border text-muted-foreground hover:bg-muted text-xs"
-                  >
-                    ⚡ Skip
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={handleNext}
-                    className="bg-accent hover:bg-accent/90 text-accent-foreground"
-                    disabled={loading}
-                  >
-                    Siguiente
-                  </Button>
-                </div>
+                <Button
+                  type="button"
+                  onClick={handleNext}
+                  className="bg-accent hover:bg-accent/90 text-accent-foreground"
+                  disabled={loading}
+                >
+                  Siguiente
+                </Button>
               ) : (
                 <Button
                   type="submit"
