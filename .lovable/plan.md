@@ -1,58 +1,69 @@
 
-## Mejora del selector de comprobantes de pago en el modal de nueva orden
+## Dos mejoras en el modal de nueva orden de compra
 
-### Problema actual
-En el paso 1 del modal de orden de compra, el selector de archivos usa un `<Input type="file">` nativo del navegador (línea 1227 de `OrderDialog.tsx`). Esto genera el botón gris estándar del sistema operativo con el texto "Elegir archivos", que es poco intuitivo y visualmente inconsistente con el resto del sistema.
+### 1. Corrección del stepper en vista móvil
 
-### Solución
-Reemplazar el `<Input type="file">` visible por un patrón de botón estilizado + input oculto, un patrón ya usado en otros componentes del sistema.
+**Problema:** El stepper en líneas 910-947 usa una distribución horizontal con `flex items-center justify-between`. En pantallas pequeñas los 5 pasos no caben: los círculos se comprimen y el texto de las etiquetas ("Cliente y Pago", "Metal", etc.) queda aplastado o invisible.
 
-### Cambios en `src/components/orders/OrderDialog.tsx` (líneas 1225-1233)
+**Solución:** Hacer el stepper adaptativo:
+- En **móvil**: mostrar solo el paso actual con texto descriptivo y una barra de progreso (ej: "Paso 2 de 5 — Metal"), sin intentar mostrar los 5 círculos en fila.
+- En **desktop** (`sm:` en adelante): mantener el diseño horizontal de círculos que ya funciona bien.
 
-Reemplazar esto:
-```jsx
-<div className="space-y-2 mt-4">
-  <Label>Comprobantes de Pago</Label>
-  <Input
-    type="file"
-    accept="image/jpeg,image/png,image/jpg,application/pdf"
-    multiple
-    onChange={handleReceiptUpload}
-    disabled={loading || uploading}
-  />
+Esto se logra con clases responsivas de Tailwind:
+```
+- div del stepper completo: hidden sm:flex (ocultar en móvil)
+- nuevo div móvil: flex sm:hidden (mostrar solo en móvil)
 ```
 
-Por esto:
+El componente móvil mostrará:
+```
+[ ● ● ● ○ ○ ]   Paso 3 de 5 — Piedra
+```
+Con una barra de progreso y el nombre del paso actual centrado.
+
+---
+
+### 2. Botón "Tomar foto" debajo de "Subir comprobante de pago"
+
+**Cómo funciona en cada dispositivo:**
+- **Celular**: `capture="environment"` en el `<input type="file">` abre directamente la cámara trasera.
+- **Computadora**: el mismo atributo es ignorado por los navegadores de escritorio, por lo que abre el explorador de archivos normal (igual que el botón de arriba, pero filtrado solo a imágenes).
+
+**Cambios en líneas 1227-1247 de `OrderDialog.tsx`:**
+
+Agregar debajo del botón existente:
 ```jsx
-<div className="space-y-2 mt-4">
-  <Label>Comprobantes de Pago</Label>
-  <div>
-    <input
-      id="receipt-upload"
-      type="file"
-      accept="image/jpeg,image/png,image/jpg,application/pdf"
-      multiple
-      onChange={handleReceiptUpload}
-      disabled={loading || uploading}
-      className="hidden"
-    />
-    <Button
-      type="button"
-      variant="outline"
-      onClick={() => document.getElementById('receipt-upload')?.click()}
-      disabled={loading || uploading}
-      className="w-full"
-    >
-      <Upload className="h-4 w-4 mr-2" />
-      Subir comprobantes de pago
-    </Button>
-  </div>
+{/* Botón cámara */}
+<input
+  id="receipt-camera"
+  type="file"
+  accept="image/*"
+  capture="environment"
+  onChange={handleReceiptUpload}
+  disabled={loading || uploading}
+  className="hidden"
+/>
+<Button
+  type="button"
+  variant="outline"
+  onClick={() => document.getElementById('receipt-camera')?.click()}
+  disabled={loading || uploading}
+  className="w-full mt-2"
+>
+  <Camera className="h-4 w-4 mr-2" />
+  Tomar foto
+</Button>
 ```
 
-### Resultado visual
+Importar el ícono `Camera` desde `lucide-react` (ya está instalado, solo falta agregarlo al import existente en línea 28).
 
-| Antes | Después |
-|---|---|
-| Botón gris genérico del sistema operativo | Botón estilizado con ícono de subida, borde, ancho completo y texto claro |
+La foto tomada pasa por el mismo `handleReceiptUpload` que ya valida tipo y tamaño (≤10MB), y se agrega a `paymentReceipts` junto con los demás comprobantes.
 
-El comportamiento es idéntico: al hacer clic en el botón se abre el explorador de archivos con los mismos filtros (JPG, PNG, PDF) y permite selección múltiple.
+---
+
+### Archivos a modificar
+
+- `src/components/orders/OrderDialog.tsx`
+  - **Línea 28**: Agregar `Camera` al import de lucide-react
+  - **Líneas 910-947**: Refactorizar el stepper para ser responsivo (ocultar en móvil, mostrar versión compacta)
+  - **Líneas 1247**: Agregar el input oculto con `capture="environment"` y el botón "Tomar foto"
