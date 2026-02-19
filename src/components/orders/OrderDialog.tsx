@@ -13,7 +13,10 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
+  SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -100,7 +103,7 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
   const [metalColor, setMetalColor] = useState<string>("");
 
   // Stone data
-  const [piedraTipo, setPiedraTipo] = useState<"diamante" | "gema">("diamante");
+  const [piedraTipo, setPiedraTipo] = useState<"diamante_natural" | "diamante_laboratorio" | "gema" | "perla" | "circonia" | "moissanita" | "piedra_semipreciosa" | "piedra_personalizada" | "diamante">("diamante_natural");
   
   // Diamond data
   const [diamanteColor, setDiamanteColor] = useState("");
@@ -131,7 +134,7 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
         setMetalTipo((prospect.metal_tipo as any) || "oro");
         setMetalColor(prospect.color_oro || "");
         setMetalPureza(prospect.pureza_oro || "");
-        setPiedraTipo(prospect.tipo_piedra === "diamante" ? "diamante" : "gema");
+        setPiedraTipo(prospect.tipo_piedra === "diamante" ? "diamante_natural" : (prospect.tipo_piedra as any) || "gema");
         setNotas(prospect.observaciones || "");
         
         if (prospect.importe_previsto) {
@@ -348,7 +351,7 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
 
     // Prellenar Piedra (Paso 3)
     if (prospect.tipo_piedra && prospect.incluye_piedra === "sí") {
-      setPiedraTipo(prospect.tipo_piedra as "diamante" | "gema");
+      setPiedraTipo(prospect.tipo_piedra === "diamante" ? "diamante_natural" : (prospect.tipo_piedra as any) || "gema");
     }
 
     // Prellenar Precio de Venta (Paso 1) - como sugerencia
@@ -560,7 +563,7 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
     }
     if (currentStep === 3) {
       // Validar paso 3
-      if (piedraTipo === "diamante") {
+      if (piedraTipo === "diamante_natural" || piedraTipo === "diamante_laboratorio" || piedraTipo === "diamante") {
         if (!diamanteForma || !diamanteQuilataje) {
           toast.error("Completa el corte y quilataje del diamante");
           return false;
@@ -747,7 +750,7 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
     }
 
     // Validar campos obligatorios de diamante
-    if (piedraTipo === "diamante") {
+    if (piedraTipo === "diamante_natural" || piedraTipo === "diamante_laboratorio" || piedraTipo === "diamante") {
       if (!diamanteForma) {
         toast.error("Por favor selecciona el corte del diamante");
         setCurrentStep(3); // Volver al paso de la piedra
@@ -818,7 +821,7 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
         stl_file_id: selectedSTLFileId && selectedSTLFileId !== "none" ? selectedSTLFileId : null,
       };
 
-      if (piedraTipo === "diamante") {
+      if (piedraTipo === "diamante_natural" || piedraTipo === "diamante_laboratorio" || piedraTipo === "diamante") {
         orderData.diamante_color = diamanteColor || null;
         orderData.diamante_claridad = diamanteClaridad || null;
         orderData.diamante_corte = diamanteCorte || null;
@@ -1473,13 +1476,26 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="diamante">Diamante</SelectItem>
-                    <SelectItem value="gema">Gema</SelectItem>
+                    <SelectGroup>
+                      <SelectLabel>Diamantes</SelectLabel>
+                      <SelectItem value="diamante_natural">Diamante Natural</SelectItem>
+                      <SelectItem value="diamante_laboratorio">Diamante de Laboratorio</SelectItem>
+                    </SelectGroup>
+                    <SelectSeparator />
+                    <SelectGroup>
+                      <SelectLabel>Otras Piedras</SelectLabel>
+                      <SelectItem value="gema">Gema (Rubí, Esmeralda, Zafiro, etc.)</SelectItem>
+                      <SelectItem value="perla">Perla</SelectItem>
+                      <SelectItem value="circonia">Circonia Cúbica</SelectItem>
+                      <SelectItem value="moissanita">Moissanita</SelectItem>
+                      <SelectItem value="piedra_semipreciosa">Piedra Semipreciosa</SelectItem>
+                      <SelectItem value="piedra_personalizada">Piedra Personalizada</SelectItem>
+                    </SelectGroup>
                   </SelectContent>
                 </Select>
               </div>
 
-              {piedraTipo === "diamante" && (
+              {(piedraTipo === "diamante_natural" || piedraTipo === "diamante_laboratorio" || piedraTipo === "diamante") && (
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
@@ -1614,14 +1630,14 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
                 </div>
               )}
 
-              {piedraTipo === "gema" && (
+              {piedraTipo !== "diamante_natural" && piedraTipo !== "diamante_laboratorio" && piedraTipo !== "diamante" && (
                 <div className="space-y-2">
-                  <Label>Observaciones de la Gema</Label>
+                  <Label>Observaciones</Label>
                   <Textarea
                     value={gemaObservaciones}
                     onChange={(e) => setGemaObservaciones(e.target.value)}
                     disabled={loading}
-                    placeholder="Describe la gema, su tipo, características, etc."
+                    placeholder="Describe la piedra, sus características, color, tamaño, etc."
                     rows={5}
                   />
                 </div>
