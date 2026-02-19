@@ -2001,7 +2001,6 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
                 setSelectedSTLFileId={setSelectedSTLFileId}
                 availableSTLFiles={availableSTLFiles}
                 loading={loading}
-                onSTLUploaded={(newFile) => setAvailableSTLFiles(prev => [...prev, newFile])}
               />
             )}
           </div>{/* end scrollable content */}
