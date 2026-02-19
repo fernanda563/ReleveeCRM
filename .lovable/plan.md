@@ -1,98 +1,90 @@
 
-## Unificar "Proceso de Diseño" y "Proceso de Taller" en Órdenes de Trabajo
+## Simplificar el Paso 5: Eliminar subida de STL y agregar búsqueda por nombre
 
-### Objetivo
+### Qué hay que cambiar
 
-Eliminar los dos ítems del menú de navegación ("Proceso de Diseño" y "Proceso de Taller") y reorganizar la página de Órdenes de Trabajo para mostrar las órdenes divididas en dos pestañas: **Órdenes de diseño** y **Órdenes de taller**.
+El archivo `src/components/orders/OrderDialogStep5.tsx` actualmente tiene dos mecanismos:
+1. Un `<Select>` para seleccionar STL existentes del repositorio.
+2. Un panel expandible (toggle) para subir un archivo STL nuevo directamente al repositorio.
 
----
-
-### Análisis del estado actual
-
-**Menú (AppSidebar.tsx):** La sección "Proceso de Producción" actualmente tiene 4 ítems:
-- Seguimiento de Producción → `/production`
-- Órdenes de Trabajo → `/work-orders`
-- Proceso de Diseño → `/design-process` ← eliminar
-- Proceso de Taller → `/workshop-process` ← eliminar
-
-**Distinción diseño vs taller (ya existe en el modelo):**
-- Si `designer_id` tiene valor → orden de diseño
-- Si `workshop_id` tiene valor → orden de taller
-- El `WorkOrderDialog` ya usa un `RadioGroup` con `assignmentType: 'taller' | 'diseñador'` para determinar a quién se asigna
-
-**Estructura actual de WorkOrders.tsx:**
-- Tarjetas de estadísticas (Pendientes, En proceso, Completadas)
-- Filtros (búsqueda + estado)
-- Contador de resultados
-- Grid de tarjetas `WorkOrderCard`
+La petición es eliminar el mecanismo de subida y reemplazar el `<Select>` por un buscador por nombre.
 
 ---
 
-### Cambios a realizar
+### Cambios en `OrderDialogStep5.tsx`
 
-#### 1. AppSidebar.tsx — Eliminar ítems del menú
+**Eliminar completamente:**
+- Los estados `showUpload`, `uploading`, `stlFile`, `stlNombre`, `stlDescripcion`
+- Las funciones `resetUpload` y `handleUpload`
+- Todo el bloque JSX del panel de subida (el `div` con la clase `rounded-lg border border-dashed`)
+- Los imports de `Upload`, `Loader2`, `X`, `ChevronDown`, `ChevronUp` de lucide-react (si ya no se usan)
+- La prop `onSTLUploaded` de la interfaz y del componente
 
-Quitar los dos ítems de la sección "Proceso de Producción":
-```
-{ title: "Proceso de Diseño", url: "/design-process", icon: Pencil, adminOnly: false },
-{ title: "Proceso de Taller", url: "/workshop-process", icon: Wrench, adminOnly: false },
-```
+**Reemplazar el `<Select>` por un buscador con `Command`:**
 
-También quitar las importaciones de iconos `Pencil` y `Wrench` si ya no se usan en ningún otro lugar del sidebar.
+El proyecto ya tiene instalado `cmdk` y el componente `Command` disponible en `src/components/ui/command.tsx`. Se usará para crear un combo de búsqueda tipo "popover + command" que:
+- Muestra un campo de texto con placeholder "Buscar STL por nombre..."
+- Al escribir, filtra la lista de `availableSTLFiles` por nombre en tiempo real
+- Al seleccionar un resultado, actualiza `selectedSTLFileId`
+- Muestra el nombre del STL seleccionado en el trigger del popover
+- Incluye una opción "Ninguno" para deseleccionar
 
-#### 2. WorkOrders.tsx — Agregar pestañas por tipo
-
-Reestructurar la página para incorporar las pestañas **antes** del grid de tarjetas (pero **después** de los filtros y estadísticas).
-
-**Nueva lógica de filtrado:**
-
-```
-Todas las órdenes → filtradas por búsqueda/estado → separadas por tab activo:
-  - Tab "Órdenes de diseño": workOrder.designer_id !== null
-  - Tab "Órdenes de taller": workOrder.workshop_id !== null (o sin asignación a diseñador)
-```
-
-**Estructura visual nueva:**
+**Patrón a usar:** `Popover` + `Command` + `CommandInput` + `CommandList` + `CommandItem` (patrón combobox estándar de shadcn/ui, que ya está completamente disponible en el proyecto).
 
 ```
-[Header + botón Nueva Orden]
-[Tarjetas de estadísticas — contextuales al tab activo]
-[Filtros (búsqueda + estado)]
-
-[Tabs]
-  ┌─────────────────┬──────────────────┐
-  │ Órdenes de      │ Órdenes de       │
-  │ diseño  (N)     │ taller  (N)      │
-  └─────────────────┴──────────────────┘
-  [Contador de resultados]
-  [Grid de WorkOrderCard]
+[Trigger: Popover]
+  "Buscar STL por nombre..."  ← campo de búsqueda
+  ─────────────────────────
+  Ninguno
+  Anillo solitario clásico
+  Solitario 6 uñas          ← filtrado en tiempo real
+  ...
 ```
 
-Las estadísticas (Pendientes / En proceso / Completadas) se calcularán sobre las órdenes del tab activo, para que los números sean siempre relevantes al contexto visible.
+**Interfaz de props actualizada:**
+```typescript
+interface OrderDialogStep5Props {
+  notas: string;
+  setNotas: (value: string) => void;
+  selectedSTLFileId: string;
+  setSelectedSTLFileId: (value: string) => void;
+  availableSTLFiles: STLFile[];
+  loading: boolean;
+  // onSTLUploaded ← eliminada
+}
+```
+
+---
+
+### Cambio en `OrderDialog.tsx`
+
+Quitar la prop `onSTLUploaded` que se pasa al componente `OrderDialogStep5` en el JSX del diálogo principal. Esta prop ya no existe en la interfaz del componente.
+
+---
+
+### Resultado visual esperado
+
+```
+Paso 5 — Notas y Diseño STL
+─────────────────────────────────────────────────────
+
+[Notas Adicionales]
+  [ Textarea para notas... ]
+
+Archivo STL (Opcional)
+  Selecciona un diseño existente del repositorio.
+
+  [🔍 Buscar archivo STL por nombre...  ▼]
+       ← popover con búsqueda reactiva →
+
+  [Vista previa del STL seleccionado]
+
+─────────────────────────────────────────────────────
+```
 
 ---
 
 ### Archivos a modificar
 
-**`src/components/AppSidebar.tsx`**
-- Eliminar líneas de "Proceso de Diseño" y "Proceso de Taller" del array `menuSections`
-- Quitar importaciones de `Pencil` y `Wrench` de lucide-react (si no se usan en otro lugar dentro del mismo archivo)
-
-**`src/pages/WorkOrders.tsx`**
-- Añadir import de `Tabs`, `TabsList`, `TabsTrigger`, `TabsContent` desde `@/components/ui/tabs`
-- Agregar estado `activeTab: 'diseño' | 'taller'` (valor inicial: `'taller'`)
-- Separar `filteredOrders` en dos subconjuntos tras aplicar filtros de búsqueda/estado:
-  - `designOrders`: donde `designer_id !== null && designer_id !== ""`
-  - `workshopOrders`: resto (donde `workshop_id` tiene valor o no hay asignación)
-- Hacer que las stats (pendientes/en proceso/completadas) sean reactivas al tab activo
-- Renderizar `<Tabs>` envolviendo el contador y el grid, con dos `<TabsTrigger>` que muestren el nombre y el conteo entre paréntesis
-
----
-
-### Resultado esperado
-
-- El menú lateral queda limpio con solo 2 ítems en "Proceso de Producción": Seguimiento de Producción y Órdenes de Trabajo.
-- La página de Órdenes de Trabajo muestra una pestaña "Órdenes de taller" y otra "Órdenes de diseño", cada una con su propio listado de tarjetas filtrado.
-- Las tarjetas son las mismas `WorkOrderCard` ya existentes — no hay cambio de componente.
-- Los filtros de búsqueda y estado siguen funcionando dentro del tab activo.
-- Las rutas `/design-process` y `/workshop-process` siguen existiendo técnicamente en `App.tsx` pero dejan de aparecer en el menú (no se eliminan las páginas para no romper rutas existentes).
+1. **`src/components/orders/OrderDialogStep5.tsx`** — Eliminar toda la lógica y UI de subida, reemplazar el `<Select>` por un combobox `Popover + Command`.
+2. **`src/components/orders/OrderDialog.tsx`** — Quitar la prop `onSTLUploaded` del lugar donde se renderiza `<OrderDialogStep5 ... />`.
