@@ -907,23 +907,41 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
         </DialogHeader>
 
         {/* Stepper visual — desktop */}
-        <div className="hidden sm:flex items-center justify-between mb-8 px-4">
+        <div className="hidden sm:flex items-start justify-center mb-8 px-4 w-full">
           {[1, 2, 3, 4, 5].map((step) => (
-            <div key={step} className="flex items-center flex-1">
-              <div className="flex flex-col items-center flex-1">
-                <div
-                  className={cn(
-                    "w-10 h-10 rounded-full flex items-center justify-center border-2 font-semibold transition-colors",
-                    currentStep === step && "border-accent bg-accent text-accent-foreground",
-                    currentStep > step && "border-primary bg-primary text-primary-foreground",
-                    currentStep < step && "border-muted-foreground/30 text-muted-foreground"
-                  )}
-                >
-                  {currentStep > step ? "✓" : step}
+            <div key={step} className="flex items-start flex-1 min-w-0">
+              {/* Paso: círculo + etiqueta */}
+              <div className="flex flex-col items-center flex-shrink-0 w-full">
+                <div className="flex items-center w-full">
+                  {/* Línea izquierda */}
+                  <div
+                    className={cn(
+                      "h-0.5 flex-1 transition-colors",
+                      step === 1 ? "invisible" : currentStep >= step ? "bg-primary" : "bg-muted-foreground/30"
+                    )}
+                  />
+                  {/* Círculo */}
+                  <div
+                    className={cn(
+                      "w-10 h-10 rounded-full flex items-center justify-center border-2 font-semibold transition-colors flex-shrink-0",
+                      currentStep === step && "border-accent bg-accent text-accent-foreground",
+                      currentStep > step && "border-primary bg-primary text-primary-foreground",
+                      currentStep < step && "border-muted-foreground/30 text-muted-foreground"
+                    )}
+                  >
+                    {currentStep > step ? "✓" : step}
+                  </div>
+                  {/* Línea derecha */}
+                  <div
+                    className={cn(
+                      "h-0.5 flex-1 transition-colors",
+                      step === 5 ? "invisible" : currentStep > step ? "bg-primary" : "bg-muted-foreground/30"
+                    )}
+                  />
                 </div>
                 <span
                   className={cn(
-                    "text-xs mt-2 font-medium transition-colors text-center",
+                    "text-xs mt-2 font-medium transition-colors text-center px-1",
                     currentStep >= step ? "text-foreground" : "text-muted-foreground"
                   )}
                 >
@@ -934,14 +952,6 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
                   {step === 5 && "Archivos 3D"}
                 </span>
               </div>
-              {step < 5 && (
-                <div
-                  className={cn(
-                    "h-0.5 flex-1 mx-2 transition-colors",
-                    currentStep > step ? "bg-primary" : "bg-muted-foreground/30"
-                  )}
-                />
-              )}
             </div>
           ))}
         </div>
