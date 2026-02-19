@@ -1746,7 +1746,7 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
                                     <button
                                       type="button"
                                       onClick={() => removeImage(imgIdx)}
-                                      className="w-6 h-6 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center flex-shrink-0 ml-2"
+                                      className="w-6 h-6 rounded-full bg-muted text-muted-foreground hover:bg-foreground hover:text-background flex items-center justify-center flex-shrink-0 ml-2 transition-colors"
                                     >
                                       <X className="h-3 w-3" />
                                     </button>
