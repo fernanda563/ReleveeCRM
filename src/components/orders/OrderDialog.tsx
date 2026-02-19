@@ -928,7 +928,7 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-full max-w-4xl max-h-[90vh] overflow-y-auto sm:mx-4 mx-0 sm:rounded-lg rounded-none sm:w-auto sm:p-6 pt-4 pb-4 pl-4 pr-10">
+      <DialogContent className="w-full max-w-4xl max-h-[90vh] overflow-y-auto sm:mx-4 mx-0 sm:rounded-lg rounded-none sm:w-auto sm:!p-6 !pt-4 !pb-4 !pl-4 !pr-12">
         <DialogHeader>
           <DialogTitle>{order ? "Editar Orden" : "Nueva Orden de Compra"}</DialogTitle>
           <DialogDescription>
@@ -989,7 +989,7 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
         </div>
 
         {/* Stepper visual — móvil */}
-        <div className="flex sm:hidden flex-col gap-2 mb-4 px-2">
+        <div className="flex sm:hidden flex-col gap-2 mb-4 px-2 pr-8">
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground font-medium">
               Paso {currentStep} de 5
