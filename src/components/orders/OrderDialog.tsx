@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/popover";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, Upload, X, Plus, Trash2, CalendarIcon, ImageIcon, Box } from "lucide-react";
+import { Loader2, Upload, X, Plus, Trash2, CalendarIcon, ImageIcon, Box, Camera } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
@@ -906,8 +906,8 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
           </DialogDescription>
         </DialogHeader>
 
-        {/* Stepper visual */}
-        <div className="flex items-center justify-between mb-8 px-4">
+        {/* Stepper visual — desktop */}
+        <div className="hidden sm:flex items-center justify-between mb-8 px-4">
           {[1, 2, 3, 4, 5].map((step) => (
             <div key={step} className="flex items-center flex-1">
               <div className="flex flex-col items-center flex-1">
@@ -944,6 +944,37 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
               )}
             </div>
           ))}
+        </div>
+
+        {/* Stepper visual — móvil */}
+        <div className="flex sm:hidden flex-col gap-2 mb-6 px-2">
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground font-medium">
+              Paso {currentStep} de 5
+            </span>
+            <span className="font-semibold text-foreground">
+              {currentStep === 1 && "Cliente y Pago"}
+              {currentStep === 2 && "Metal"}
+              {currentStep === 3 && "Piedra"}
+              {currentStep === 4 && "Imágenes"}
+              {currentStep === 5 && "Archivos 3D"}
+            </span>
+          </div>
+          <div className="flex gap-1">
+            {[1, 2, 3, 4, 5].map((step) => (
+              <div
+                key={step}
+                className={cn(
+                  "h-1.5 flex-1 rounded-full transition-colors",
+                  currentStep > step
+                    ? "bg-primary"
+                    : currentStep === step
+                    ? "bg-accent"
+                    : "bg-muted-foreground/25"
+                )}
+              />
+            ))}
+          </div>
         </div>
 
         <form onSubmit={handleSubmit}>
@@ -1224,7 +1255,7 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
 
               <div className="space-y-2 mt-4">
                 <Label>Comprobantes de Pago</Label>
-                <div>
+                <div className="space-y-2">
                   <input
                     id="receipt-upload"
                     type="file"
@@ -1243,6 +1274,25 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
                   >
                     <Upload className="h-4 w-4 mr-2" />
                     Subir comprobantes de pago
+                  </Button>
+                  <input
+                    id="receipt-camera"
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    onChange={handleReceiptUpload}
+                    disabled={loading || uploading}
+                    className="hidden"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => document.getElementById('receipt-camera')?.click()}
+                    disabled={loading || uploading}
+                    className="w-full"
+                  >
+                    <Camera className="h-4 w-4 mr-2" />
+                    Tomar foto
                   </Button>
                 </div>
                 <p className="text-xs text-muted-foreground">
