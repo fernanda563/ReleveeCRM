@@ -21,6 +21,7 @@ import {
   Factory,
   Layers,
   Palette,
+  Package,
 } from "lucide-react";
 import { useUserRole } from "@/hooks/useUserRole";
 import {
