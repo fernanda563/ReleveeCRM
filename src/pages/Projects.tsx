@@ -174,7 +174,7 @@ export default function Projects() {
       fetchProspects();
     } catch (error) {
       console.error("Error deleting prospect:", error);
-      toast.error("Error al eliminar el proyecto");
+      toast.error("Error al eliminar la cotización");
     }
   };
 
