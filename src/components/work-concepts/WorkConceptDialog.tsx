@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { Separator } from "@/components/ui/separator";
 import {
   Select,
   SelectContent,
@@ -23,6 +24,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { WorkConcept, WorkArea, UNIT_MEASURES } from "@/types/work-concepts";
+import { calcularPrecioMaterial } from "@/lib/material-utils";
 
 interface WorkConceptDialogProps {
   open: boolean;
@@ -30,6 +32,38 @@ interface WorkConceptDialogProps {
   concept: WorkConcept | null;
   onSaved: () => void;
 }
+
+const formatCurrency = (value: string): string => {
+  const numericValue = value.replace(/[^\d.]/g, '');
+  const parts = numericValue.split('.');
+  if (parts.length > 2) {
+    return formatCurrency(parts[0] + '.' + parts.slice(1).join(''));
+  }
+  if (numericValue === '') return '';
+  const integerPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  const decimalPart = parts.length > 1 ? '.' + parts[1].slice(0, 2) : '';
+  return '$' + integerPart + decimalPart;
+};
+
+const unformatCurrency = (value: string): string => {
+  return value.replace(/[^\d.]/g, '');
+};
+
+const formatPercentage = (value: string): string => {
+  const numericValue = value.replace(/[^\d.]/g, '');
+  const parts = numericValue.split('.');
+  if (parts.length > 2) {
+    return formatPercentage(parts[0] + '.' + parts.slice(1).join(''));
+  }
+  if (numericValue === '') return '';
+  const integerPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  const decimalPart = parts.length > 1 ? '.' + parts[1].slice(0, 2) : '';
+  return integerPart + decimalPart + '%';
+};
+
+const unformatPercentage = (value: string): string => {
+  return value.replace(/[^\d.]/g, '');
+};
 
 export const WorkConceptDialog = ({
   open,
@@ -43,23 +77,53 @@ export const WorkConceptDialog = ({
     descripcion: "",
     area: "taller" as WorkArea,
     costo_base: "",
-    precio_venta_base: "",
     unidad_medida: "unidad",
     es_precio_variable: false,
     activo: true,
+    tipo_margen: "porcentaje",
+    valor_margen: "",
+    redondeo: "ninguno",
+    redondeo_multiplo: "",
   });
 
   useEffect(() => {
+    if (!open) return;
+
     if (concept) {
+      // Infer margin type from existing data
+      const costo = concept.costo_base;
+      const precio = concept.precio_venta_base;
+      let tipoMargen = "porcentaje";
+      let valorMargen = "";
+
+      if (costo > 0) {
+        const diff = precio - costo;
+        const pct = (diff / costo) * 100;
+        // If percentage is a round-ish number, treat as percentage
+        if (Math.abs(pct - Math.round(pct)) < 0.01 && pct >= 0) {
+          tipoMargen = "porcentaje";
+          valorMargen = formatPercentage(String(Math.round(pct)));
+        } else {
+          tipoMargen = "fijo";
+          valorMargen = formatCurrency(String(diff));
+        }
+      } else if (precio > 0) {
+        tipoMargen = "fijo";
+        valorMargen = formatCurrency(String(precio));
+      }
+
       setFormData({
         nombre: concept.nombre,
         descripcion: concept.descripcion || "",
         area: concept.area,
-        costo_base: concept.costo_base.toString(),
-        precio_venta_base: concept.precio_venta_base.toString(),
+        costo_base: formatCurrency(String(concept.costo_base)),
         unidad_medida: concept.unidad_medida,
         es_precio_variable: concept.es_precio_variable,
         activo: concept.activo,
+        tipo_margen: tipoMargen,
+        valor_margen: valorMargen,
+        redondeo: "ninguno",
+        redondeo_multiplo: "",
       });
     } else {
       setFormData({
@@ -67,13 +131,26 @@ export const WorkConceptDialog = ({
         descripcion: "",
         area: "taller",
         costo_base: "",
-        precio_venta_base: "",
         unidad_medida: "unidad",
         es_precio_variable: false,
         activo: true,
+        tipo_margen: "porcentaje",
+        valor_margen: "",
+        redondeo: "ninguno",
+        redondeo_multiplo: "",
       });
     }
   }, [concept, open]);
+
+  const update = (field: string, value: any) =>
+    setFormData((prev) => ({ ...prev, [field]: value }));
+
+  const costoNumerico = parseFloat(unformatCurrency(formData.costo_base)) || 0;
+  const margenNumerico = parseFloat(unformatPercentage(formData.valor_margen)) || 0;
+  const multiploNumerico = parseFloat(unformatCurrency(formData.redondeo_multiplo)) || 1;
+  const precioCalculado = calcularPrecioMaterial(
+    costoNumerico, formData.tipo_margen, margenNumerico, formData.redondeo, multiploNumerico
+  );
 
   const handleSave = async () => {
     if (!formData.nombre.trim()) {
@@ -81,13 +158,8 @@ export const WorkConceptDialog = ({
       return;
     }
 
-    if (!formData.costo_base || parseFloat(formData.costo_base) < 0) {
+    if (costoNumerico < 0) {
       toast.error("El costo base debe ser un valor válido");
-      return;
-    }
-
-    if (!formData.precio_venta_base || parseFloat(formData.precio_venta_base) < 0) {
-      toast.error("El precio de venta base debe ser un valor válido");
       return;
     }
 
@@ -98,8 +170,8 @@ export const WorkConceptDialog = ({
         nombre: formData.nombre.trim(),
         descripcion: formData.descripcion.trim() || null,
         area: formData.area,
-        costo_base: parseFloat(formData.costo_base),
-        precio_venta_base: parseFloat(formData.precio_venta_base),
+        costo_base: costoNumerico,
+        precio_venta_base: precioCalculado,
         unidad_medida: formData.unidad_medida,
         es_precio_variable: formData.es_precio_variable,
         activo: formData.activo,
@@ -129,22 +201,17 @@ export const WorkConceptDialog = ({
     }
   };
 
-  const margin =
-    formData.precio_venta_base && formData.costo_base
-      ? parseFloat(formData.precio_venta_base) - parseFloat(formData.costo_base)
-      : 0;
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {concept ? "Editar Concepto" : "Nuevo Concepto de Trabajo"}
+            {concept ? "Editar Concepto" : "Nuevo Concepto de Mano de Obra"}
           </DialogTitle>
           <DialogDescription>
             {concept
-              ? "Modifica los datos del concepto de trabajo"
-              : "Define un nuevo concepto de trabajo para diseño o taller"}
+              ? "Modifica los datos del concepto de mano de obra"
+              : "Define un nuevo concepto de mano de obra para diseño o taller"}
           </DialogDescription>
         </DialogHeader>
 
@@ -155,9 +222,7 @@ export const WorkConceptDialog = ({
             <Input
               id="nombre"
               value={formData.nombre}
-              onChange={(e) =>
-                setFormData({ ...formData, nombre: e.target.value })
-              }
+              onChange={(e) => update("nombre", e.target.value)}
               placeholder="Ej: Montaje de piedra"
             />
           </div>
@@ -168,9 +233,7 @@ export const WorkConceptDialog = ({
             <Textarea
               id="descripcion"
               value={formData.descripcion}
-              onChange={(e) =>
-                setFormData({ ...formData, descripcion: e.target.value })
-              }
+              onChange={(e) => update("descripcion", e.target.value)}
               placeholder="Descripción opcional del concepto..."
               rows={2}
             />
@@ -181,9 +244,7 @@ export const WorkConceptDialog = ({
             <Label>Área *</Label>
             <Select
               value={formData.area}
-              onValueChange={(value: WorkArea) =>
-                setFormData({ ...formData, area: value })
-              }
+              onValueChange={(value: WorkArea) => update("area", value)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Seleccionar área" />
@@ -195,68 +256,12 @@ export const WorkConceptDialog = ({
             </Select>
           </div>
 
-          {/* Costo y Precio */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="costo_base">Costo base *</Label>
-              <Input
-                id="costo_base"
-                type="number"
-                min="0"
-                step="0.01"
-                value={formData.costo_base}
-                onChange={(e) =>
-                  setFormData({ ...formData, costo_base: e.target.value })
-                }
-                placeholder="0.00"
-              />
-              <p className="text-xs text-muted-foreground">
-                Lo que pagas al artesano/diseñador
-              </p>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="precio_venta_base">Precio de venta *</Label>
-              <Input
-                id="precio_venta_base"
-                type="number"
-                min="0"
-                step="0.01"
-                value={formData.precio_venta_base}
-                onChange={(e) =>
-                  setFormData({ ...formData, precio_venta_base: e.target.value })
-                }
-                placeholder="0.00"
-              />
-              <p className="text-xs text-muted-foreground">
-                Lo que cobras al cliente
-              </p>
-            </div>
-          </div>
-
-          {/* Margen */}
-          {formData.costo_base && formData.precio_venta_base && (
-            <div className="p-3 rounded-lg bg-muted">
-              <p className="text-sm text-muted-foreground">
-                Margen de ganancia:{" "}
-                <span
-                  className={`font-semibold ${
-                    margin >= 0 ? "text-green-600" : "text-red-600"
-                  }`}
-                >
-                  ${margin.toFixed(2)}
-                </span>
-              </p>
-            </div>
-          )}
-
           {/* Unidad de medida */}
           <div className="space-y-2">
             <Label>Unidad de medida</Label>
             <Select
               value={formData.unidad_medida}
-              onValueChange={(value) =>
-                setFormData({ ...formData, unidad_medida: value })
-              }
+              onValueChange={(value) => update("unidad_medida", value)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Seleccionar unidad" />
@@ -271,8 +276,110 @@ export const WorkConceptDialog = ({
             </Select>
           </div>
 
+          <Separator />
+
+          {/* Costo base */}
+          <div className="space-y-2">
+            <Label htmlFor="costo_base">Costo base por unidad ($) *</Label>
+            <Input
+              id="costo_base"
+              type="text"
+              value={formData.costo_base}
+              onChange={(e) => update("costo_base", formatCurrency(e.target.value))}
+              placeholder="$0.00"
+            />
+            <p className="text-xs text-muted-foreground">
+              Lo que pagas al artesano/diseñador
+            </p>
+          </div>
+
+          {/* Tipo de margen */}
+          <div className="space-y-2">
+            <Label>Tipo de margen</Label>
+            <Select
+              value={formData.tipo_margen}
+              onValueChange={(v) => {
+                const rawVal = unformatPercentage(formData.valor_margen);
+                const reformatted = rawVal
+                  ? (v === "porcentaje" ? formatPercentage(rawVal) : formatCurrency(rawVal))
+                  : "";
+                setFormData((prev) => ({ ...prev, tipo_margen: v, valor_margen: reformatted }));
+              }}
+            >
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="porcentaje">Porcentaje (%)</SelectItem>
+                <SelectItem value="fijo">Cantidad fija ($)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Valor de margen */}
+          <div className="space-y-2">
+            <Label htmlFor="valor_margen">
+              Valor de margen {formData.tipo_margen === "porcentaje" ? "(%)" : "($)"}
+            </Label>
+            <Input
+              id="valor_margen"
+              type="text"
+              value={formData.valor_margen}
+              onChange={(e) =>
+                update(
+                  "valor_margen",
+                  formData.tipo_margen === "porcentaje"
+                    ? formatPercentage(e.target.value)
+                    : formatCurrency(e.target.value)
+                )
+              }
+              placeholder={formData.tipo_margen === "porcentaje" ? "0%" : "$0.00"}
+            />
+          </div>
+
+          <Separator />
+
+          {/* Redondeo */}
+          <div className="space-y-2">
+            <Label>Redondeo</Label>
+            <Select value={formData.redondeo} onValueChange={(v) => update("redondeo", v)}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ninguno">Sin redondeo</SelectItem>
+                <SelectItem value="superior">Redondeo superior</SelectItem>
+                <SelectItem value="inferior">Redondeo inferior</SelectItem>
+                <SelectItem value="mas_cercano">Al más cercano</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {formData.redondeo !== "ninguno" && (
+            <div className="space-y-2">
+              <Label htmlFor="redondeo_multiplo">Múltiplo de redondeo</Label>
+              <Input
+                id="redondeo_multiplo"
+                type="text"
+                value={formData.redondeo_multiplo}
+                onChange={(e) => update("redondeo_multiplo", formatCurrency(e.target.value))}
+                placeholder="$0.00"
+              />
+              <p className="text-xs text-muted-foreground">
+                Ej: $10 redondeará a múltiplos de 10 ($10, $20, $30...)
+              </p>
+            </div>
+          )}
+
+          {/* Preview del precio */}
+          <div className="rounded-lg border border-border bg-muted/30 p-4 text-center">
+            <p className="text-xs text-muted-foreground mb-1">Precio de venta resultante</p>
+            <p className="text-2xl font-bold text-primary">${precioCalculado.toLocaleString()}</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Lo que se cobrará al cliente
+            </p>
+          </div>
+
+          <Separator />
+
           {/* Switches */}
-          <div className="space-y-4 pt-2">
+          <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label>Precio variable según cantidad</Label>
@@ -282,9 +389,7 @@ export const WorkConceptDialog = ({
               </div>
               <Switch
                 checked={formData.es_precio_variable}
-                onCheckedChange={(checked) =>
-                  setFormData({ ...formData, es_precio_variable: checked })
-                }
+                onCheckedChange={(checked) => update("es_precio_variable", checked)}
               />
             </div>
 
@@ -297,9 +402,7 @@ export const WorkConceptDialog = ({
               </div>
               <Switch
                 checked={formData.activo}
-                onCheckedChange={(checked) =>
-                  setFormData({ ...formData, activo: checked })
-                }
+                onCheckedChange={(checked) => update("activo", checked)}
               />
             </div>
           </div>
