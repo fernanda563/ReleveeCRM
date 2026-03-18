@@ -87,12 +87,25 @@ export const ProspectDetailDialog = ({
   );
   const [observaciones, setObservaciones] = React.useState<string>(prospect.observaciones || "");
 
-  // Reset isEditing when dialog opens
+  // Reset all state when prospect or dialog changes
   React.useEffect(() => {
-    if (open) {
+    if (open && prospect) {
       setIsEditing(initialEditMode);
+      setEstado(prospect.estado);
+      setTipoAccesorio(prospect.tipo_accesorio || "");
+      setSubtipoAccesorio(prospect.subtipo_accesorio || "");
+      setTipoMetal(prospect.metal_tipo || "");
+      setColorOro(prospect.color_oro || "");
+      setPurezaOro(prospect.pureza_oro || "");
+      setIncluyePiedra(prospect.incluye_piedra || "");
+      setTipoPiedra(prospect.tipo_piedra || "");
+      setLargoAprox(prospect.largo_aprox || "");
+      setEstiloAnillo(prospect.estilo_anillo || "");
+      setImportePrevisto(prospect.importe_previsto !== null ? String(prospect.importe_previsto) : "");
+      setFechaEntrega(prospect.fecha_entrega_deseada || "");
+      setObservaciones(prospect.observaciones || "");
     }
-  }, [open, initialEditMode]);
+  }, [open, prospect, initialEditMode]);
 
   const handleCancel = () => {
     setIsEditing(false);
