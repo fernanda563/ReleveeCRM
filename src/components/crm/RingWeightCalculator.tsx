@@ -53,8 +53,8 @@ interface RingWeightCalculatorProps {
 }
 
 export default function RingWeightCalculator({ onUseWeight, alloy: controlledAlloy, onAlloyChange }: RingWeightCalculatorProps = {}) {
-  const [size, setSize] = useState(7);
-  const [width, setWidth] = useState(4);
+  const [size, setSize] = useState(5);
+  const [width, setWidth] = useState(2);
   const [thickness, setThickness] = useState(2);
   const [internalAlloy, setInternalAlloy] = useState<AlloyKey>("14K");
 
@@ -120,14 +120,14 @@ export default function RingWeightCalculator({ onUseWeight, alloy: controlledAll
         <div className="space-y-2">
           <div className="flex items-center gap-1.5">
             <span className="text-sm font-medium text-foreground">Ancho de banda</span>
-            <span className="text-sm text-muted-foreground">({width} mm)</span>
+            <span className="text-sm text-muted-foreground">({width.toFixed(1)} mm)</span>
           </div>
           <Slider
             value={[width]}
             min={2}
             max={8}
-            step={1}
-            onValueChange={([v]) => setWidth(v)}
+            step={0.1}
+            onValueChange={([v]) => setWidth(Math.round(v * 10) / 10)}
           />
           <div className="flex justify-between text-xs text-muted-foreground">
             <span>2 mm</span><span>8 mm</span>
