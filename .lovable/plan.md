@@ -1,90 +1,56 @@
 
-## Simplificar el Paso 5: Eliminar subida de STL y agregar búsqueda por nombre
 
-### Qué hay que cambiar
+## Estandarizar tarjetas en grid de 3 columnas para Talleres, Diseñadores, Usuarios y Proveedores
 
-El archivo `src/components/orders/OrderDialogStep5.tsx` actualmente tiene dos mecanismos:
-1. Un `<Select>` para seleccionar STL existentes del repositorio.
-2. Un panel expandible (toggle) para subir un archivo STL nuevo directamente al repositorio.
+Las 4 secciones actualmente usan `<div className="space-y-4">` (una sola columna, tarjetas a ancho completo). Se cambiarán a `grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4` como ya se hizo en Materiales y Mano de Obra.
 
-La petición es eliminar el mecanismo de subida y reemplazar el `<Select>` por un buscador por nombre.
+### Cambios por archivo
 
----
+**1. `src/pages/Workshops.tsx` (~línea 264)**
+- Cambiar `<div className="space-y-4">` → `<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">`
+- Reestructurar la tarjeta de layout horizontal (`flex items-start justify-between`) a vertical:
+  - Nombre + badges arriba con dropdown menu (MoreHorizontal icon en lugar de botón "Acciones")
+  - Info de contacto (responsable, email, teléfono, ubicación) en bloque vertical
+  - Conteo de procesos al pie
 
-### Cambios en `OrderDialogStep5.tsx`
+**2. `src/pages/Designers.tsx` (~línea 210)**
+- Cambiar `<div className="space-y-4">` → `<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">`
+- Reestructurar tarjeta a vertical:
+  - Nombre + badges (activo/especialidad) + dropdown menu (icon) arriba
+  - Contacto (email, teléfono, ubicación, portafolio) en bloque
+  - Procesos como badges al pie
+  - Conteo de órdenes
 
-**Eliminar completamente:**
-- Los estados `showUpload`, `uploading`, `stlFile`, `stlNombre`, `stlDescripcion`
-- Las funciones `resetUpload` y `handleUpload`
-- Todo el bloque JSX del panel de subida (el `div` con la clase `rounded-lg border border-dashed`)
-- Los imports de `Upload`, `Loader2`, `X`, `ChevronDown`, `ChevronUp` de lucide-react (si ya no se usan)
-- La prop `onSTLUploaded` de la interfaz y del componente
+**3. `src/pages/Users.tsx` (~línea 220)**
+- Cambiar `<div className="space-y-4">` → `<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">`
+- Reestructurar tarjeta a vertical:
+  - Nombre + dropdown menu (con "Gestionar Roles") arriba
+  - Email, teléfono, fecha de registro en bloque
+  - Roles como badges al pie
 
-**Reemplazar el `<Select>` por un buscador con `Command`:**
+**4. `src/pages/Suppliers.tsx` (~línea 221)**
+- Cambiar `<div className="space-y-4">` → `<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">`
+- Reestructurar tarjeta a vertical:
+  - Nombre empresa + badge activo/inactivo + dropdown menu arriba
+  - Contacto, email, teléfono, país en bloque
+  - Tipos de productos como badges al pie
 
-El proyecto ya tiene instalado `cmdk` y el componente `Command` disponible en `src/components/ui/command.tsx`. Se usará para crear un combo de búsqueda tipo "popover + command" que:
-- Muestra un campo de texto con placeholder "Buscar STL por nombre..."
-- Al escribir, filtra la lista de `availableSTLFiles` por nombre en tiempo real
-- Al seleccionar un resultado, actualiza `selectedSTLFileId`
-- Muestra el nombre del STL seleccionado en el trigger del popover
-- Incluye una opción "Ninguno" para deseleccionar
+### Patrón de tarjeta unificado
 
-**Patrón a usar:** `Popover` + `Command` + `CommandInput` + `CommandList` + `CommandItem` (patrón combobox estándar de shadcn/ui, que ya está completamente disponible en el proyecto).
+Todas las tarjetas seguirán esta estructura vertical consistente con Materiales y Mano de Obra:
 
-```
-[Trigger: Popover]
-  "Buscar STL por nombre..."  ← campo de búsqueda
-  ─────────────────────────
-  Ninguno
-  Anillo solitario clásico
-  Solitario 6 uñas          ← filtrado en tiempo real
-  ...
-```
-
-**Interfaz de props actualizada:**
-```typescript
-interface OrderDialogStep5Props {
-  notas: string;
-  setNotas: (value: string) => void;
-  selectedSTLFileId: string;
-  setSelectedSTLFileId: (value: string) => void;
-  availableSTLFiles: STLFile[];
-  loading: boolean;
-  // onSTLUploaded ← eliminada
-}
+```text
+┌─────────────────────────┐
+│ Nombre           [···]  │  ← Header + DropdownMenu (MoreHorizontal)
+│ Badge Badge             │  ← Status / categoría
+├─────────────────────────┤
+│ Info línea 1            │  ← Datos de contacto / detalle
+│ Info línea 2            │
+│ Info línea 3            │
+├─────────────────────────┤
+│ [badge] [badge] [badge] │  ← Tags / procesos / roles
+└─────────────────────────┘
 ```
 
----
+El dropdown menu usará el icono `MoreHorizontal` (como en MaterialCard) en lugar del botón texto "Acciones" o "Editar", para mantener consistencia visual.
 
-### Cambio en `OrderDialog.tsx`
-
-Quitar la prop `onSTLUploaded` que se pasa al componente `OrderDialogStep5` en el JSX del diálogo principal. Esta prop ya no existe en la interfaz del componente.
-
----
-
-### Resultado visual esperado
-
-```
-Paso 5 — Notas y Diseño STL
-─────────────────────────────────────────────────────
-
-[Notas Adicionales]
-  [ Textarea para notas... ]
-
-Archivo STL (Opcional)
-  Selecciona un diseño existente del repositorio.
-
-  [🔍 Buscar archivo STL por nombre...  ▼]
-       ← popover con búsqueda reactiva →
-
-  [Vista previa del STL seleccionado]
-
-─────────────────────────────────────────────────────
-```
-
----
-
-### Archivos a modificar
-
-1. **`src/components/orders/OrderDialogStep5.tsx`** — Eliminar toda la lógica y UI de subida, reemplazar el `<Select>` por un combobox `Popover + Command`.
-2. **`src/components/orders/OrderDialog.tsx`** — Quitar la prop `onSTLUploaded` del lugar donde se renderiza `<OrderDialogStep5 ... />`.
