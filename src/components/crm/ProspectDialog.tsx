@@ -563,7 +563,7 @@ const ProspectDialog = ({
             </>
           )}
 
-          <div className="flex justify-end gap-3 pt-2">
+          <DialogFooter>
             <Button
               type="button"
               variant="outline"
@@ -575,7 +575,6 @@ const ProspectDialog = ({
             <Button
               type="submit"
               disabled={loading}
-              className="bg-warning hover:bg-warning/90 text-warning-foreground"
             >
               {loading ? (
                 <>
@@ -586,7 +585,7 @@ const ProspectDialog = ({
                 "Registrar Cotización"
               )}
             </Button>
-          </div>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
