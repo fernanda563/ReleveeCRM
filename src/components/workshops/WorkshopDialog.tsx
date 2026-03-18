@@ -201,6 +201,7 @@ export const WorkshopDialog = ({
     setFormData({
       ...formData,
       ubicacion_pais: selectedCountry,
+      ubicacion_estado: selectedCountry !== formData.ubicacion_pais ? "" : formData.ubicacion_estado,
       responsable_telefono_codigo_pais: phoneCode,
       responsable_telefono: phoneNumber ? `${phoneCode}${phoneNumber}` : phoneCode,
     });
