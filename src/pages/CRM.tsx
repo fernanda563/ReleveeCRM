@@ -184,9 +184,7 @@ const CRM = () => {
           >
             <CardHeader className="flex items-center py-4">
               <CardTitle className="text-base flex items-center gap-2">
-                <div className="p-2 bg-secondary rounded-lg">
-                  <Users className="h-4 w-4 text-secondary-foreground" />
-                </div>
+                <Users className="h-5 w-5 text-foreground" />
                 Nuevo Cliente
               </CardTitle>
             </CardHeader>
@@ -198,9 +196,7 @@ const CRM = () => {
           >
             <CardHeader className="flex items-center py-4">
               <CardTitle className="text-base flex items-center gap-2">
-                <div className="p-2 bg-secondary rounded-lg">
-                  <Calendar className="h-4 w-4 text-secondary-foreground" />
-                </div>
+                <Calendar className="h-5 w-5 text-foreground" />
                 Agendar Cita
               </CardTitle>
             </CardHeader>
@@ -212,9 +208,7 @@ const CRM = () => {
           >
             <CardHeader className="flex items-center py-4">
               <CardTitle className="text-base flex items-center gap-2">
-                <div className="p-2 bg-secondary rounded-lg">
-              <Gem className="h-4 w-4 text-secondary-foreground" />
-            </div>
+                <Gem className="h-5 w-5 text-foreground" />
             Añadir Cotización
               </CardTitle>
             </CardHeader>
@@ -226,9 +220,7 @@ const CRM = () => {
           >
             <CardHeader className="flex items-center py-4">
               <CardTitle className="text-base flex items-center gap-2">
-                <div className="p-2 bg-secondary rounded-lg">
-                  <Bell className="h-4 w-4 text-secondary-foreground" />
-                </div>
+                <Bell className="h-5 w-5 text-foreground" />
                 Crear Recordatorio
               </CardTitle>
             </CardHeader>
@@ -248,10 +240,7 @@ const CRM = () => {
                   className="pl-10"
                 />
               </div>
-              <Button
-                onClick={() => handleClientAction()}
-                className="bg-accent hover:bg-accent/90 text-accent-foreground"
-              >
+              <Button onClick={() => handleClientAction()}>
                 <Plus className="h-4 w-4 mr-2" />
                 Nuevo Cliente
               </Button>
