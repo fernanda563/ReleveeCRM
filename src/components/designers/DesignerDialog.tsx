@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { Designer } from "@/types/designers";
 import { COUNTRIES } from "@/lib/countries";
 import { COUNTRY_PHONE_CODES } from "@/lib/country-phone-codes";
+import { MEXICAN_STATES } from "@/lib/mexican-states";
 import { ChevronsUpDown, X } from "lucide-react";
 
 interface DesignerDialogProps {
