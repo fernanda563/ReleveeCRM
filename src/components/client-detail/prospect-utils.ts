@@ -25,17 +25,17 @@ export const generateProspectTitle = (prospect: ProspectLike) => {
 export const getStatusColor = (estado?: string | null) => {
   switch (estado) {
     case "activo":
-      return "bg-success/10 text-success";
+      return "border-transparent bg-primary text-primary-foreground";
     case "convertido":
-      return "bg-primary/10 text-primary";
+      return "border-border bg-secondary text-secondary-foreground";
     case "en_pausa":
-      return "bg-warning/10 text-warning";
+      return "border-border bg-background text-foreground";
     case "inactivo":
-      return "bg-muted/50 text-muted-foreground";
+      return "border-border bg-muted/70 text-muted-foreground";
     case "vencida":
-      return "bg-destructive/10 text-destructive";
+      return "border-border bg-muted text-foreground";
     default:
-      return "bg-muted";
+      return "border-border bg-muted text-muted-foreground";
   }
 };
 

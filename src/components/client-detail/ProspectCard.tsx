@@ -155,7 +155,7 @@ export const ProspectCard = ({
           )}
         </div>
         <div className="flex flex-wrap gap-2">
-          <Badge className={vigencia.color}>
+          <Badge className={cn("rounded-full px-3 py-1 text-[11px] font-medium uppercase tracking-[0.12em]", vigencia.color)}>
             {vigencia.label}
           </Badge>
         </div>
