@@ -25,6 +25,7 @@ interface Supplier {
   telefono: string | null;
   telefono_codigo_pais: string | null;
   pais: string | null;
+  estado: string | null;
   notas: string | null;
   activo: boolean;
   tipos_productos: string[];

@@ -875,6 +875,7 @@ export type Database = {
           activo: boolean | null
           created_at: string | null
           email: string
+          estado: string | null
           id: string
           nombre_contacto: string
           nombre_empresa: string
@@ -889,6 +890,7 @@ export type Database = {
           activo?: boolean | null
           created_at?: string | null
           email: string
+          estado?: string | null
           id?: string
           nombre_contacto: string
           nombre_empresa: string
@@ -903,6 +905,7 @@ export type Database = {
           activo?: boolean | null
           created_at?: string | null
           email?: string
+          estado?: string | null
           id?: string
           nombre_contacto?: string
           nombre_empresa?: string
