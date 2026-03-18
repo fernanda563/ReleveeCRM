@@ -173,7 +173,7 @@ export const ProspectsHistory = ({ clientId }: ProspectsHistoryProps) => {
       fetchProspects();
     } catch (error) {
       console.error("Error deleting prospect:", error);
-      toast.error("Error al eliminar el proyecto");
+      toast.error("Error al eliminar la cotización");
     }
   };
 
