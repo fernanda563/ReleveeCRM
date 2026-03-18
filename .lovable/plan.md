@@ -1,72 +1,90 @@
 
+## Simplificar el Paso 5: Eliminar subida de STL y agregar búsqueda por nombre
 
-## Nueva Cotización: Modal con selección de pieza, materiales y mano de obra
+### Qué hay que cambiar
 
-### Concepto
+El archivo `src/components/orders/OrderDialogStep5.tsx` actualmente tiene dos mecanismos:
+1. Un `<Select>` para seleccionar STL existentes del repositorio.
+2. Un panel expandible (toggle) para subir un archivo STL nuevo directamente al repositorio.
 
-Crear un nuevo componente `QuotationDialog` que permita al usuario:
-1. Seleccionar un **cliente** (dropdown de clientes existentes)
-2. Seleccionar un **tipo de pieza** de joyería (dropdown con ~20 tipos comunes)
-3. Agregar **materiales** del catálogo (metales y piedras) con cantidad/peso/quilataje
-4. Agregar **mano de obra** del catálogo (work_concepts) con cantidad
-5. Ver el **precio total calculado** en tiempo real (materiales + mano de obra)
-6. Guardar la cotización en la tabla `prospects` + `prospect_items`
+La petición es eliminar el mecanismo de subida y reemplazar el `<Select>` por un buscador por nombre.
 
-### Tipos de pieza (Top 20 joyería)
+---
 
-Se ampliará la tabla `accessory_type_config` con los tipos faltantes. Los tipos actuales son: anillo, arete, brazalete, cadena, collar, dije, piercing, pulsera, toby, otro. Se agregarán:
-- Anillo de compromiso, Anillo de boda, Churumbela, Argolla, Escapulario, Medalla, Broche, Mancuernillas, Reloj (bisel/caja), Tiara/Corona
+### Cambios en `OrderDialogStep5.tsx`
 
-### Estructura del modal (pasos)
+**Eliminar completamente:**
+- Los estados `showUpload`, `uploading`, `stlFile`, `stlNombre`, `stlDescripcion`
+- Las funciones `resetUpload` y `handleUpload`
+- Todo el bloque JSX del panel de subida (el `div` con la clase `rounded-lg border border-dashed`)
+- Los imports de `Upload`, `Loader2`, `X`, `ChevronDown`, `ChevronUp` de lucide-react (si ya no se usan)
+- La prop `onSTLUploaded` de la interfaz y del componente
 
-**Paso 1 — Información general:**
-- Cliente (dropdown, obligatorio)
-- Tipo de pieza (dropdown desde `accessory_type_config`)
-- Fecha de entrega deseada (opcional)
-- Observaciones (textarea, opcional)
+**Reemplazar el `<Select>` por un buscador con `Command`:**
 
-**Paso 2 — Materiales:**
-- Dropdown para seleccionar material del catálogo (tabla `materials`, solo activos)
-- Al seleccionar, se muestra su precio unitario (calculado con `calcularPrecioMaterial`)
-- Input de cantidad/peso según `unidad_medida` del material
-- Para piedras: input de quilataje y número de piedras
-- Botón "Agregar" → se acumula en una tabla resumen
-- Se pueden agregar múltiples materiales
+El proyecto ya tiene instalado `cmdk` y el componente `Command` disponible en `src/components/ui/command.tsx`. Se usará para crear un combo de búsqueda tipo "popover + command" que:
+- Muestra un campo de texto con placeholder "Buscar STL por nombre..."
+- Al escribir, filtra la lista de `availableSTLFiles` por nombre en tiempo real
+- Al seleccionar un resultado, actualiza `selectedSTLFileId`
+- Muestra el nombre del STL seleccionado en el trigger del popover
+- Incluye una opción "Ninguno" para deseleccionar
 
-**Paso 3 — Mano de obra:**
-- Dropdown para seleccionar concepto de trabajo (tabla `work_concepts`, solo activos)
-- Se muestra su `precio_venta_base` y `unidad_medida`
-- Input de cantidad según unidad
-- Botón "Agregar" → se acumula en tabla resumen
+**Patrón a usar:** `Popover` + `Command` + `CommandInput` + `CommandList` + `CommandItem` (patrón combobox estándar de shadcn/ui, que ya está completamente disponible en el proyecto).
 
-**Paso 4 — Resumen y precio:**
-- Tabla con todos los materiales + cantidades + subtotales
-- Tabla con toda la mano de obra + cantidades + subtotales
-- **Total materiales + Total mano de obra = Precio cotización**
-- Botón "Guardar Cotización"
+```
+[Trigger: Popover]
+  "Buscar STL por nombre..."  ← campo de búsqueda
+  ─────────────────────────
+  Ninguno
+  Anillo solitario clásico
+  Solitario 6 uñas          ← filtrado en tiempo real
+  ...
+```
 
-### Lógica de precios
+**Interfaz de props actualizada:**
+```typescript
+interface OrderDialogStep5Props {
+  notas: string;
+  setNotas: (value: string) => void;
+  selectedSTLFileId: string;
+  setSelectedSTLFileId: (value: string) => void;
+  availableSTLFiles: STLFile[];
+  loading: boolean;
+  // onSTLUploaded ← eliminada
+}
+```
 
-- **Materiales**: `calcularPrecioMaterial(costo_directo, tipo_margen, valor_margen, redondeo, redondeo_multiplo) × cantidad`
-- **Piedras**: precio unitario × quilataje (o × número de piedras, según `unidad_medida`)
-- **Mano de obra**: `precio_venta_base × cantidad`
-- **Total**: Σ subtotales materiales + Σ subtotales mano de obra
+---
 
-### Persistencia
+### Cambio en `OrderDialog.tsx`
 
-- Insertar en `prospects`: `client_id`, `tipo_accesorio`, `importe_previsto` (total calculado), `fecha_entrega_deseada`, `observaciones`, `estado: 'activo'`
-- Insertar en `prospect_items`: una fila por cada material/concepto agregado, con `tipo` ('material' o 'mano_de_obra'), `referencia_id` (material.id o work_concept.id), `cantidad`, `costo_unitario`, `precio_unitario`
+Quitar la prop `onSTLUploaded` que se pasa al componente `OrderDialogStep5` en el JSX del diálogo principal. Esta prop ya no existe en la interfaz del componente.
 
-### Archivos
+---
 
-| Archivo | Acción |
-|---------|--------|
-| `src/components/crm/QuotationDialog.tsx` | **Crear** — Modal multi-paso con toda la lógica |
-| `src/pages/Projects.tsx` | **Editar** — Agregar botón "Nueva Cotización" + import y estado del dialog |
-| `src/pages/ClientDetail.tsx` | **Editar** — Agregar botón "Nueva Cotización" en pestaña de cotizaciones |
-| Migración SQL | **Crear** — Insertar tipos faltantes en `accessory_type_config` |
+### Resultado visual esperado
 
-### Estilo
+```
+Paso 5 — Notas y Diseño STL
+─────────────────────────────────────────────────────
 
-Seguir el patrón monocromático del sistema: `DialogHeader`, `DialogFooter`, `<Button>` sin clases de color, `<Input>` del sistema, `<Select>` estándar.
+[Notas Adicionales]
+  [ Textarea para notas... ]
 
+Archivo STL (Opcional)
+  Selecciona un diseño existente del repositorio.
+
+  [🔍 Buscar archivo STL por nombre...  ▼]
+       ← popover con búsqueda reactiva →
+
+  [Vista previa del STL seleccionado]
+
+─────────────────────────────────────────────────────
+```
+
+---
+
+### Archivos a modificar
+
+1. **`src/components/orders/OrderDialogStep5.tsx`** — Eliminar toda la lógica y UI de subida, reemplazar el `<Select>` por un combobox `Popover + Command`.
+2. **`src/components/orders/OrderDialog.tsx`** — Quitar la prop `onSTLUploaded` del lugar donde se renderiza `<OrderDialogStep5 ... />`.

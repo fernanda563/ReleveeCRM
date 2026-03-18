@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
-import { Search, Loader2, FolderOpen, CheckCircle, ArrowRightCircle, PauseCircle, XCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Search, Loader2, FolderOpen, CheckCircle, ArrowRightCircle, PauseCircle, XCircle, Plus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProspectCard, type Prospect } from "@/components/client-detail/ProspectCard";
 import { ProspectDetailDialog } from "@/components/client-detail/ProspectDetailDialog";
@@ -26,6 +27,7 @@ import {
 } from "@/components/ui/select";
 import OrderDialog from "@/components/orders/OrderDialog";
 import { generateProspectTitle } from "@/components/client-detail/prospect-utils";
+import QuotationDialog from "@/components/crm/QuotationDialog";
 
 interface ProspectWithClient extends Prospect {
   clients: {
@@ -47,7 +49,7 @@ export default function Projects() {
   const [convertingProspect, setConvertingProspect] = useState<ProspectWithClient | null>(null);
   const [showOrderDialog, setShowOrderDialog] = useState(false);
   const [deletingProspect, setDeletingProspect] = useState<ProspectWithClient | null>(null);
-  
+  const [showQuotationDialog, setShowQuotationDialog] = useState(false);
 
   useEffect(() => {
     fetchProspects();
@@ -192,11 +194,17 @@ export default function Projects() {
     <div className="min-h-full bg-background">
       <main className="container mx-auto px-6 py-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">Cotizaciones</h1>
-          <p className="text-muted-foreground">
-            Explora todas las cotizaciones de joyería de tus clientes
-          </p>
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground mb-2">Cotizaciones</h1>
+            <p className="text-muted-foreground">
+              Explora todas las cotizaciones de joyería de tus clientes
+            </p>
+          </div>
+          <Button onClick={() => setShowQuotationDialog(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Nueva Cotización
+          </Button>
         </div>
 
         {/* Dashboard de estadísticas */}
@@ -386,6 +394,12 @@ export default function Projects() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+        {/* Dialog de Nueva Cotización */}
+        <QuotationDialog
+          open={showQuotationDialog}
+          onOpenChange={setShowQuotationDialog}
+          onSuccess={fetchProspects}
+        />
 
       </main>
     </div>

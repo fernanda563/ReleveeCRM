@@ -24,6 +24,7 @@ import { AppointmentsHistory } from "@/components/client-detail/AppointmentsHist
 import { ProspectsHistory } from "@/components/client-detail/ProspectsHistory";
 import { RemindersHistory } from "@/components/client-detail/RemindersHistory";
 import { OrdersHistory } from "@/components/client-detail/OrdersHistory";
+import QuotationDialog from "@/components/crm/QuotationDialog";
 
 
 interface Client {
@@ -44,6 +45,7 @@ const ClientDetail = () => {
   const [client, setClient] = useState<Client | null>(null);
   const [loading, setLoading] = useState(true);
   const [downloadingINE, setDownloadingINE] = useState(false);
+  const [showQuotationDialog, setShowQuotationDialog] = useState(false);
   
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -238,7 +240,19 @@ const ClientDetail = () => {
           </TabsContent>
 
           <TabsContent value="prospects" className="mt-6">
+            <div className="flex justify-end mb-4">
+              <Button onClick={() => setShowQuotationDialog(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Nueva Cotización
+              </Button>
+            </div>
             <ProspectsHistory key={refreshKey} clientId={client.id} />
+            <QuotationDialog
+              open={showQuotationDialog}
+              onOpenChange={setShowQuotationDialog}
+              clientId={client.id}
+              onSuccess={() => setRefreshKey((k) => k + 1)}
+            />
           </TabsContent>
 
           <TabsContent value="reminders" className="mt-6">
