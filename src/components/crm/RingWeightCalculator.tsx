@@ -14,11 +14,16 @@ import {
 
 // US ring sizes → internal diameter (mm)
 const SIZE_MAP: Record<number, number> = {
-  4: 14.86, 4.5: 15.27, 5: 15.70, 5.5: 16.10,
-  6: 16.51, 6.5: 16.92, 7: 17.35, 7.5: 17.75,
-  8: 18.19, 8.5: 18.59, 9: 19.02, 9.5: 19.43,
-  10: 19.84, 10.5: 20.26, 11: 20.68, 11.5: 21.08,
-  12: 21.49, 12.5: 21.89, 13: 22.33,
+  4: 14.86, 4.25: 15.07, 4.5: 15.27, 4.75: 15.49,
+  5: 15.70, 5.25: 15.90, 5.5: 16.10, 5.75: 16.31,
+  6: 16.51, 6.25: 16.71, 6.5: 16.92, 6.75: 17.13,
+  7: 17.35, 7.25: 17.55, 7.5: 17.75, 7.75: 17.97,
+  8: 18.19, 8.25: 18.39, 8.5: 18.59, 8.75: 18.80,
+  9: 19.02, 9.25: 19.22, 9.5: 19.43, 9.75: 19.63,
+  10: 19.84, 10.25: 20.05, 10.5: 20.26, 10.75: 20.47,
+  11: 20.68, 11.25: 20.88, 11.5: 21.08, 11.75: 21.29,
+  12: 21.49, 12.25: 21.69, 12.5: 21.89, 12.75: 22.11,
+  13: 22.33,
 };
 
 const ALLOYS = {
@@ -90,7 +95,7 @@ export default function RingWeightCalculator({ onUseWeight, alloy: controlledAll
   );
 
   // Size slider: convert 0-18 index to 4-13 step 0.5
-  const sizeIndex = (size - 4) * 2;
+  const sizeIndex = (size - 4) * 4;
 
   return (
     <div className="space-y-6 pt-4">
@@ -107,9 +112,9 @@ export default function RingWeightCalculator({ onUseWeight, alloy: controlledAll
           <Slider
             value={[sizeIndex]}
             min={0}
-            max={18}
+            max={36}
             step={1}
-            onValueChange={([v]) => setSize(4 + v * 0.5)}
+            onValueChange={([v]) => setSize(4 + v * 0.25)}
           />
           <div className="flex justify-between text-xs text-muted-foreground">
             <span>4</span><span>13</span>
