@@ -223,6 +223,7 @@ export default function QuotationDialog({
       referencia_id: selectedMaterial.id,
       nombre: selectedMaterial.nombre,
       tipo: "material",
+      categoria: selectedMaterial.categoria || undefined,
       cantidad: qty,
       costo_unitario: selectedMaterial.costo_directo,
       precio_unitario: precioUnit,
