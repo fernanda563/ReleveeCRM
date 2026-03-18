@@ -278,8 +278,17 @@ export default function QuotationDialog({
 
   const grandTotal = totalMaterials + totalLabor;
 
+  const pieceRequirements = useMemo(() => getPieceRequirements(selectedType), [selectedType]);
+
+  const hasMetal = materialItems.some((i) => i.categoria === "Metales");
+  const hasStone = materialItems.some((i) => i.categoria === "Piedras Preciosas");
+
+  const missingMetal = pieceRequirements.requiresMetal && !skipMetal && !hasMetal;
+  const missingStone = pieceRequirements.requiresStone && !skipStone && !hasStone;
+
   const canAdvance = () => {
     if (step === 0) return !!selectedClientId && !!selectedType;
+    if (step === 1) return !missingMetal && !missingStone;
     return true;
   };
 
