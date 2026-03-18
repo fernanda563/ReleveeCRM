@@ -10,7 +10,7 @@ export const generateProspectTitle = (prospect: ProspectLike) => {
   const subtipo = (prospect.subtipo_accesorio || "").trim().toLowerCase();
   const estilo = (prospect.estilo_anillo || "").trim().toLowerCase().replace(/_/g, " ");
 
-  let title = tipo || "proyecto";
+  let title = tipo || "cotización";
   if (subtipo) {
     // e.g., "anillo de compromiso"
     title += ` de ${subtipo}`;

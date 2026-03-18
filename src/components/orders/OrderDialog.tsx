@@ -1122,7 +1122,7 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
                     )}
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Al seleccionar un proyecto, se rellenarán automáticamente los campos relacionados (metal, piedra, precio sugerido y notas).
+                    Al seleccionar una cotización, se rellenarán automáticamente los campos relacionados (metal, piedra, precio sugerido y notas).
                   </p>
                 </div>
               )}

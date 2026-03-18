@@ -166,7 +166,7 @@ export const ProspectDetailDialog = ({
       return;
     }
 
-    toast.success("Proyecto actualizado");
+    toast.success("Cotización actualizada");
     setIsEditing(false);
     if (onSaved && data) {
       onSaved(data);

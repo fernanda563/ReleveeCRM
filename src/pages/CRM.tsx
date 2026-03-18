@@ -294,7 +294,7 @@ const CRM = () => {
         onOpenChange={setIsProspectDialogOpen}
         client={selectedClient}
         onSuccess={() => {
-          toast.success("Proyecto registrado exitosamente");
+          toast.success("Cotización registrada exitosamente");
           setIsProspectDialogOpen(false);
         }}
       />

@@ -55,7 +55,7 @@ const menuSections = [
     items: [
       { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard, adminOnly: false },
       { title: "Gestión de Clientes", url: "/crm", icon: Users, adminOnly: false },
-      { title: "Proyectos", url: "/projects", icon: Gem, adminOnly: false },
+      { title: "Cotizaciones", url: "/projects", icon: Gem, adminOnly: false },
       { title: "Órdenes de Compra", url: "/orders", icon: ShoppingCart, adminOnly: false },
     ],
   },

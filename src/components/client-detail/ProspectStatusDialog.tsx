@@ -90,7 +90,7 @@ export const ProspectStatusDialog = ({
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="status-select">Estatus del proyecto</Label>
+            <Label htmlFor="status-select">Estatus de la cotización</Label>
             <Select
               value={selectedStatus}
               onValueChange={setSelectedStatus}

@@ -145,7 +145,7 @@ const Dashboard = () => {
                   <span className="font-semibold text-foreground">248</span>
                 </div>
                 <div className="flex justify-between text-sm mt-2">
-                  <span className="text-muted-foreground">Proyectos activos:</span>
+                  <span className="text-muted-foreground">Cotizaciones activas:</span>
                   <span className="font-semibold text-foreground">32</span>
                 </div>
               </div>

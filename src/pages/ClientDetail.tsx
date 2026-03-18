@@ -263,7 +263,7 @@ const ClientDetail = () => {
           client={client}
           onSuccess={() => {
             setRefreshKey(prev => prev + 1);
-            toast.success("Proyecto registrado exitosamente");
+            toast.success("Cotización registrada exitosamente");
           }}
         />
       </div>

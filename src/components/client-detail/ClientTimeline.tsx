@@ -93,7 +93,7 @@ export const ClientTimeline = ({ clientId }: ClientTimelineProps) => {
         timelineEvents.push({
           id: pros.id,
           type: "prospect",
-          title: "Proyecto registrado",
+          title: "Cotización registrada",
           description: `${pros.tipo_accesorio || "N/A"}${pros.subtipo_accesorio ? ` - ${pros.subtipo_accesorio}` : ""}`,
           date: pros.created_at,
           status: pros.estado,

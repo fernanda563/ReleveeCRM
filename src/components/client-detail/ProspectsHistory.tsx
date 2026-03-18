@@ -238,9 +238,9 @@ export const ProspectsHistory = ({ clientId }: ProspectsHistoryProps) => {
       <AlertDialog open={!!deletingProspect} onOpenChange={(open) => !open && setDeletingProspect(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>¿Eliminar proyecto?</AlertDialogTitle>
+            <AlertDialogTitle>¿Eliminar cotización?</AlertDialogTitle>
             <AlertDialogDescription>
-              ¿Estás seguro de eliminar el proyecto "{deletingProspect ? generateProspectTitle(deletingProspect) : ""}"? 
+              ¿Estás seguro de eliminar la cotización "{deletingProspect ? generateProspectTitle(deletingProspect) : ""}"? 
               Esta acción no se puede deshacer.
             </AlertDialogDescription>
           </AlertDialogHeader>
