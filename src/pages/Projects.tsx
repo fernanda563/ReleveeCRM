@@ -279,7 +279,7 @@ export default function Projects() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-destructive">{stats.vencidas}</div>
+              <div className="text-3xl font-bold text-foreground">{stats.vencidas}</div>
             </CardContent>
           </Card>
         </div>
