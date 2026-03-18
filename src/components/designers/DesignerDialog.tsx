@@ -99,11 +99,12 @@ export function DesignerDialog({ open, onOpenChange, designer, onSaved }: Design
     }
 
     setLoading(true);
+    const dataToSave = { ...formData, especialidad: especialidades.join(", ") || null };
     try {
       if (designer) {
         const { error } = await supabase
           .from("designers")
-          .update(formData)
+          .update(dataToSave)
           .eq("id", designer.id);
         
         if (error) throw error;
@@ -111,7 +112,7 @@ export function DesignerDialog({ open, onOpenChange, designer, onSaved }: Design
       } else {
         const { error } = await supabase
           .from("designers")
-          .insert(formData);
+          .insert(dataToSave);
         
         if (error) throw error;
         toast.success("Diseñador creado correctamente");
