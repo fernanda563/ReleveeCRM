@@ -170,7 +170,7 @@ export default function QuotationDialog({
     setSelectedClientId(clientId || "");
     setSelectedType("");
     setFechaEntrega("");
-    setFechaVigencia("");
+    setFechaVigencia(getDefaultVigencia());
     setObservaciones("");
     setMaterialItems([]);
     setLaborItems([]);
