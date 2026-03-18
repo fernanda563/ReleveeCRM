@@ -165,6 +165,7 @@ export default function QuotationDialog({
     setSelectedClientId(clientId || "");
     setSelectedType("");
     setFechaEntrega("");
+    setFechaVigencia("");
     setObservaciones("");
     setMaterialItems([]);
     setLaborItems([]);
