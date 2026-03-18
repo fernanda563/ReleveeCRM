@@ -51,9 +51,9 @@ export function DesignerDialog({ open, onOpenChange, designer, onSaved }: Design
 
   useEffect(() => {
     if (designer) {
+      setEspecialidades(designer.especialidad ? designer.especialidad.split(", ").filter(Boolean) : []);
       setFormData({
         nombre: designer.nombre || "",
-        especialidad: designer.especialidad || "",
         email: designer.email || "",
         telefono: designer.telefono || "",
         telefono_codigo_pais: designer.telefono_codigo_pais || "+52",
@@ -65,9 +65,9 @@ export function DesignerDialog({ open, onOpenChange, designer, onSaved }: Design
         activo: designer.activo ?? true
       });
     } else {
+      setEspecialidades([]);
       setFormData({
         nombre: "",
-        especialidad: "",
         email: "",
         telefono: "",
         telefono_codigo_pais: "+52",
