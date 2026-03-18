@@ -240,7 +240,19 @@ const ClientDetail = () => {
           </TabsContent>
 
           <TabsContent value="prospects" className="mt-6">
+            <div className="flex justify-end mb-4">
+              <Button onClick={() => setShowQuotationDialog(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Nueva Cotización
+              </Button>
+            </div>
             <ProspectsHistory key={refreshKey} clientId={client.id} />
+            <QuotationDialog
+              open={showQuotationDialog}
+              onOpenChange={setShowQuotationDialog}
+              clientId={client.id}
+              onSuccess={() => setRefreshKey((k) => k + 1)}
+            />
           </TabsContent>
 
           <TabsContent value="reminders" className="mt-6">
