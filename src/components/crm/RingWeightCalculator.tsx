@@ -48,13 +48,21 @@ const WHOLE_SIZES = [4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
 
 interface RingWeightCalculatorProps {
   onUseWeight?: (weight: number) => void;
+  alloy?: AlloyKey;
+  onAlloyChange?: (alloy: AlloyKey) => void;
 }
 
-export default function RingWeightCalculator({ onUseWeight }: RingWeightCalculatorProps = {}) {
+export default function RingWeightCalculator({ onUseWeight, alloy: controlledAlloy, onAlloyChange }: RingWeightCalculatorProps = {}) {
   const [size, setSize] = useState(7);
   const [width, setWidth] = useState(4);
   const [thickness, setThickness] = useState(2);
-  const [alloy, setAlloy] = useState<AlloyKey>("14K");
+  const [internalAlloy, setInternalAlloy] = useState<AlloyKey>("14K");
+
+  const alloy = controlledAlloy ?? internalAlloy;
+  const setAlloy = (v: AlloyKey) => {
+    setInternalAlloy(v);
+    onAlloyChange?.(v);
+  };
 
   const id = SIZE_MAP[size];
   const currentAlloy = ALLOYS[alloy];
