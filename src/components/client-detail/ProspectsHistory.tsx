@@ -190,7 +190,7 @@ export const ProspectsHistory = ({ clientId }: ProspectsHistoryProps) => {
       <Card>
         <CardContent className="py-12 text-center">
           <Gem className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground">No hay proyectos registrados</p>
+          <p className="text-muted-foreground">No hay cotizaciones registradas</p>
         </CardContent>
       </Card>
     );
