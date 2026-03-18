@@ -150,7 +150,7 @@ export default function Projects() {
       fetchProspects();
     } catch (error) {
       console.error("Error:", error);
-      toast.error("Error al convertir proyecto");
+      toast.error("Error al convertir cotización");
     }
   };
 
