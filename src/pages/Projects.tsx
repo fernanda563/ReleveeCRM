@@ -75,8 +75,8 @@ export default function Projects() {
 
       setProspects(data as ProspectWithClient[]);
     } catch (error) {
-      console.error("Error al cargar proyectos:", error);
-      toast.error("Error al cargar los proyectos");
+      console.error("Error al cargar cotizaciones:", error);
+      toast.error("Error al cargar las cotizaciones");
     } finally {
       setLoading(false);
     }
