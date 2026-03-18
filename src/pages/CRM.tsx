@@ -215,7 +215,7 @@ const CRM = () => {
                 <div className="p-2 bg-secondary rounded-lg">
               <Gem className="h-4 w-4 text-secondary-foreground" />
             </div>
-            Añadir Proyecto
+            Añadir Cotización
               </CardTitle>
             </CardHeader>
           </Card>
