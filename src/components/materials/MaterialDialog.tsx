@@ -120,6 +120,8 @@ export function MaterialDialog({
     onSubmit({
       ...form,
       costo_directo: parseFloat(unformatCurrency(form.costo_directo)) || 0,
+      valor_margen: parseFloat(unformatPercentage(form.valor_margen)) || 0,
+      redondeo_multiplo: parseFloat(unformatCurrency(form.redondeo_multiplo)) || 1,
     } as any);
   };
 
