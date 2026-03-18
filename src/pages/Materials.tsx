@@ -13,24 +13,8 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Package, Plus, Search, BarChart3, CheckCircle2, Layers } from "lucide-react";
-import { MaterialCard } from "@/components/materials/MaterialCard";
+import { MaterialCard, type Material } from "@/components/materials/MaterialCard";
 import { MaterialDialog } from "@/components/materials/MaterialDialog";
-
-interface Material {
-  id: string;
-  nombre: string;
-  categoria: string | null;
-  unidad_medida: string;
-  costo_directo: number;
-  tipo_margen: string;
-  valor_margen: number;
-  redondeo: string;
-  redondeo_multiplo: number | null;
-  activo: boolean;
-  notas: string | null;
-  created_at: string;
-  updated_at: string;
-}
 
 export default function Materials() {
   const navigate = useNavigate();

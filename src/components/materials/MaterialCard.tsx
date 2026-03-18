@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Edit, Trash2 } from "lucide-react";
 import { calcularPrecioMaterial } from "@/lib/material-utils";
 
-interface Material {
+export interface Material {
   id: string;
   nombre: string;
   categoria: string | null;
@@ -16,8 +16,8 @@ interface Material {
   redondeo_multiplo: number | null;
   activo: boolean;
   notas: string | null;
-  created_at?: string;
-  updated_at?: string;
+  created_at: string;
+  updated_at: string;
 }
 
 interface MaterialCardProps {
