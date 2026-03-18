@@ -172,7 +172,7 @@ const CRM = () => {
             Gestión de Clientes
           </h1>
           <p className="text-muted-foreground">
-            Administra tu cartera de clientes, citas, proyectos y recordatorios
+            Administra tu cartera de clientes, citas, cotizaciones y recordatorios
           </p>
         </div>
 
