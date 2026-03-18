@@ -64,7 +64,7 @@ export const ProspectDetailDialog = ({
   onSaved,
   initialEditMode = false,
 }: ProspectDetailDialogProps) => {
-  if (!prospect) return null;
+  
 
   // Edición de proyecto
   const [isEditing, setIsEditing] = React.useState(initialEditMode);
