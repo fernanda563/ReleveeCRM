@@ -240,10 +240,7 @@ const CRM = () => {
                   className="pl-10"
                 />
               </div>
-              <Button
-                onClick={() => handleClientAction()}
-                className="bg-accent hover:bg-accent/90 text-accent-foreground"
-              >
+              <Button onClick={() => handleClientAction()}>
                 <Plus className="h-4 w-4 mr-2" />
                 Nuevo Cliente
               </Button>
