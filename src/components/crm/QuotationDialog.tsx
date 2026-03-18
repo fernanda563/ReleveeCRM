@@ -141,6 +141,10 @@ export default function QuotationDialog({
   const [materialCantidad, setMaterialCantidad] = useState("1");
   const [materialItems, setMaterialItems] = useState<QuoteItem[]>([]);
 
+  // Step 2 - skip overrides
+  const [skipMetal, setSkipMetal] = useState(false);
+  const [skipStone, setSkipStone] = useState(false);
+
   // Step 3
   const [workConcepts, setWorkConcepts] = useState<WorkConcept[]>([]);
   const [selectedConceptId, setSelectedConceptId] = useState("");
