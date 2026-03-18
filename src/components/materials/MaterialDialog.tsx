@@ -30,7 +30,7 @@ interface MaterialDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmit: (data: MaterialFormData) => void;
-  initialData?: Partial<MaterialFormData> & { costo_directo?: number | string } | null;
+  initialData?: Record<string, any> | null;
   existingCategories: string[];
   loading?: boolean;
 }
