@@ -8,7 +8,8 @@ import {
   MoreHorizontal, 
   Pencil, 
   Trash2,
-  Circle
+  Circle,
+  CalendarPlus
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -17,7 +18,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import { generateProspectTitle, getStatusColor, type ProspectLike } from "./prospect-utils";
+import { generateProspectTitle, getVigenciaStatus, type ProspectLike } from "./prospect-utils";
 
 export interface Prospect extends ProspectLike {
   id: string;
@@ -30,6 +31,7 @@ export interface Prospect extends ProspectLike {
   largo_aprox: string | null;
   importe_previsto: number | null;
   fecha_entrega_deseada: string | null;
+  fecha_vigencia?: string | null;
   estado: string;
   observaciones: string | null;
   created_at: string;
@@ -77,6 +79,7 @@ export const ProspectCard = ({
   clientId
 }: ProspectCardProps) => {
   const title = generateProspectTitle(prospect);
+  const vigencia = getVigenciaStatus(prospect);
 
   const metalLine = [
     prospect.metal_tipo,
@@ -152,37 +155,33 @@ export const ProspectCard = ({
           )}
         </div>
         <div className="flex flex-wrap gap-2">
-          <Badge className={getStatusColor(prospect.estado)}>
-            {prospect.estado.replace(/_/g, " ")}
+          <Badge className={vigencia.color}>
+            {vigencia.label}
           </Badge>
         </div>
       </CardHeader>
-      <CardContent className="pt-0 space-y-3">
-        <div className="space-y-2">
-          {metalLine && (
-            <div className="flex items-center gap-2 text-sm">
-              <Circle className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
-              <span className="text-muted-foreground truncate">{metalLine}</span>
-            </div>
-          )}
-          {prospect.importe_previsto && (
-            <div className="flex items-center gap-2 text-sm">
-              <DollarSign className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
-              <span className="font-semibold">{formatCurrency(prospect.importe_previsto)}</span>
-            </div>
-          )}
-          {prospect.fecha_entrega_deseada && (
-            <div className="flex items-center gap-2 text-sm">
-              <Calendar className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
-              <span className="text-muted-foreground">{formatDate(prospect.fecha_entrega_deseada)}</span>
-            </div>
-          )}
+      <CardContent className="pt-0 space-y-2">
+        {metalLine && (
+          <div className="flex items-center gap-2 text-sm">
+            <Circle className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+            <span className="text-muted-foreground truncate">{metalLine}</span>
+          </div>
+        )}
+        {prospect.importe_previsto && (
+          <div className="flex items-center gap-2 text-sm">
+            <DollarSign className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+            <span className="font-semibold">{formatCurrency(prospect.importe_previsto)}</span>
+          </div>
+        )}
+        <div className="flex items-center gap-2 text-sm">
+          <CalendarPlus className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+          <span className="text-muted-foreground">Creada: {formatDate(prospect.created_at)}</span>
         </div>
-
-        {prospect.observaciones && (
-          <p className="text-xs text-muted-foreground line-clamp-2 pt-2 border-t">
-            {prospect.observaciones}
-          </p>
+        {prospect.fecha_entrega_deseada && (
+          <div className="flex items-center gap-2 text-sm">
+            <Calendar className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+            <span className="text-muted-foreground">Entrega: {formatDate(prospect.fecha_entrega_deseada)}</span>
+          </div>
         )}
       </CardContent>
     </Card>

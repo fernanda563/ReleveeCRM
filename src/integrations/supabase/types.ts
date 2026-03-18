@@ -640,6 +640,7 @@ export type Database = {
           estado: string
           estilo_anillo: string | null
           fecha_entrega_deseada: string | null
+          fecha_vigencia: string | null
           id: string
           importe_previsto: number | null
           incluye_piedra: string | null
@@ -659,6 +660,7 @@ export type Database = {
           estado?: string
           estilo_anillo?: string | null
           fecha_entrega_deseada?: string | null
+          fecha_vigencia?: string | null
           id?: string
           importe_previsto?: number | null
           incluye_piedra?: string | null
@@ -678,6 +680,7 @@ export type Database = {
           estado?: string
           estilo_anillo?: string | null
           fecha_entrega_deseada?: string | null
+          fecha_vigencia?: string | null
           id?: string
           importe_previsto?: number | null
           incluye_piedra?: string | null

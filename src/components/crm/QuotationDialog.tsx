@@ -133,6 +133,7 @@ export default function QuotationDialog({
   const [selectedClientId, setSelectedClientId] = useState(clientId || "");
   const [selectedType, setSelectedType] = useState("");
   const [fechaEntrega, setFechaEntrega] = useState("");
+  const [fechaVigencia, setFechaVigencia] = useState("");
   const [observaciones, setObservaciones] = useState("");
 
   // Step 2
@@ -164,6 +165,7 @@ export default function QuotationDialog({
     setSelectedClientId(clientId || "");
     setSelectedType("");
     setFechaEntrega("");
+    setFechaVigencia("");
     setObservaciones("");
     setMaterialItems([]);
     setLaborItems([]);
@@ -307,6 +309,7 @@ export default function QuotationDialog({
           tipo_accesorio: selectedType,
           importe_previsto: grandTotal,
           fecha_entrega_deseada: fechaEntrega || null,
+          fecha_vigencia: fechaVigencia || null,
           observaciones: observaciones || null,
           estado: "activo",
         })
@@ -462,6 +465,18 @@ export default function QuotationDialog({
                 value={fechaEntrega}
                 onChange={(e) => setFechaEntrega(e.target.value)}
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Vigencia de la cotización</Label>
+              <Input
+                type="date"
+                value={fechaVigencia}
+                onChange={(e) => setFechaVigencia(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">
+                Fecha hasta la cual esta cotización es válida
+              </p>
             </div>
 
             <div className="space-y-2">

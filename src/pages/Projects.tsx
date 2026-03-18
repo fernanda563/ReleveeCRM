@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Loader2, FolderOpen, CheckCircle, ArrowRightCircle, PauseCircle, XCircle, Plus } from "lucide-react";
+import { Search, Loader2, FolderOpen, CheckCircle, ArrowRightCircle, PauseCircle, XCircle, Plus, AlertTriangle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProspectCard, type Prospect } from "@/components/client-detail/ProspectCard";
 import { ProspectDetailDialog } from "@/components/client-detail/ProspectDetailDialog";
@@ -182,12 +182,19 @@ export default function Projects() {
   };
 
   // Calcular estadísticas
+  const now = new Date();
+  const vencidasCount = prospects.filter(p => {
+    if (p.estado !== "activo" || !p.fecha_vigencia) return false;
+    return new Date(p.fecha_vigencia + "T23:59:59") < now;
+  }).length;
+
   const stats = {
     total: prospects.length,
-    activo: prospects.filter(p => p.estado === "activo").length,
+    activo: prospects.filter(p => p.estado === "activo").length - vencidasCount,
     convertido: prospects.filter(p => p.estado === "convertido").length,
     en_pausa: prospects.filter(p => p.estado === "en_pausa").length,
     inactivo: prospects.filter(p => p.estado === "inactivo").length,
+    vencidas: vencidasCount,
   };
 
   return (
@@ -208,7 +215,7 @@ export default function Projects() {
         </div>
 
         {/* Dashboard de estadísticas */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6 mb-8">
           <Card className="border-border">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
@@ -262,6 +269,17 @@ export default function Projects() {
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-muted-foreground">{stats.inactivo}</div>
+            </CardContent>
+          </Card>
+          <Card className="border-border">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4" />
+                Vencidas
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-destructive">{stats.vencidas}</div>
             </CardContent>
           </Card>
         </div>

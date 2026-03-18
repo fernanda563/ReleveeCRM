@@ -32,7 +32,35 @@ export const getStatusColor = (estado?: string | null) => {
       return "bg-warning/10 text-warning";
     case "inactivo":
       return "bg-muted/50 text-muted-foreground";
+    case "vencida":
+      return "bg-destructive/10 text-destructive";
     default:
       return "bg-muted";
   }
+};
+
+export const getVigenciaStatus = (prospect: { estado: string; fecha_vigencia?: string | null }) => {
+  if (prospect.estado === "convertido") {
+    return { label: "Convertido", color: getStatusColor("convertido") };
+  }
+  if (prospect.estado === "en_pausa") {
+    return { label: "En pausa", color: getStatusColor("en_pausa") };
+  }
+  if (prospect.estado === "inactivo") {
+    return { label: "Inactivo", color: getStatusColor("inactivo") };
+  }
+  if (prospect.fecha_vigencia) {
+    const now = new Date();
+    const vigencia = new Date(prospect.fecha_vigencia + "T23:59:59");
+    if (vigencia < now) {
+      return { label: "Vencida", color: getStatusColor("vencida") };
+    }
+    const formatted = new Date(prospect.fecha_vigencia).toLocaleDateString("es-MX", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+    return { label: `Vigente hasta ${formatted}`, color: getStatusColor("activo") };
+  }
+  return { label: "Sin vigencia", color: "bg-muted/50 text-muted-foreground" };
 };
