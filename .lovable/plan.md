@@ -1,90 +1,49 @@
 
-## Simplificar el Paso 5: Eliminar subida de STL y agregar búsqueda por nombre
 
-### Qué hay que cambiar
+## Validación de materiales requeridos por tipo de pieza
 
-El archivo `src/components/orders/OrderDialogStep5.tsx` actualmente tiene dos mecanismos:
-1. Un `<Select>` para seleccionar STL existentes del repositorio.
-2. Un panel expandible (toggle) para subir un archivo STL nuevo directamente al repositorio.
+### Enfoque
 
-La petición es eliminar el mecanismo de subida y reemplazar el `<Select>` por un buscador por nombre.
+Definir un mapa client-side que asocie cada tipo de pieza con sus requisitos de materiales (metal y/o piedra). En el paso 2, validar que se hayan agregado los materiales necesarios antes de avanzar. Incluir checkboxes de excepción ("El cliente proporciona su metal/piedra").
 
----
+### Mapa de requisitos por tipo de pieza
 
-### Cambios en `OrderDialogStep5.tsx`
+| Tipo de pieza | Requiere metal | Requiere piedra |
+|---|---|---|
+| anillo | ✓ | ✗ |
+| anillo de compromiso* | ✓ | ✓ |
+| collar | ✓ | ✗ |
+| pulsera | ✓ | ✗ |
+| arete | ✓ | ✗ |
+| dije | ✓ | ✗ |
+| cadena | ✓ | ✗ |
+| brazalete | ✓ | ✗ |
+| piercing | ✓ | ✗ |
+| toby | ✓ | ✗ |
+| otro | ✗ | ✗ |
 
-**Eliminar completamente:**
-- Los estados `showUpload`, `uploading`, `stlFile`, `stlNombre`, `stlDescripcion`
-- Las funciones `resetUpload` y `handleUpload`
-- Todo el bloque JSX del panel de subida (el `div` con la clase `rounded-lg border border-dashed`)
-- Los imports de `Upload`, `Loader2`, `X`, `ChevronDown`, `ChevronUp` de lucide-react (si ya no se usan)
-- La prop `onSTLUploaded` de la interfaz y del componente
+*Nota: El `selectedType` viene de `accessory_type_config.tipo_accesorio`. Necesito verificar los valores exactos en la BD para mapear correctamente cuáles requieren piedra. La mayoría de piezas requieren metal; solo algunas requieren piedra obligatoriamente.
 
-**Reemplazar el `<Select>` por un buscador con `Command`:**
+### Cambios en `QuotationDialog.tsx`
 
-El proyecto ya tiene instalado `cmdk` y el componente `Command` disponible en `src/components/ui/command.tsx`. Se usará para crear un combo de búsqueda tipo "popover + command" que:
-- Muestra un campo de texto con placeholder "Buscar STL por nombre..."
-- Al escribir, filtra la lista de `availableSTLFiles` por nombre en tiempo real
-- Al seleccionar un resultado, actualiza `selectedSTLFileId`
-- Muestra el nombre del STL seleccionado en el trigger del popover
-- Incluye una opción "Ninguno" para deseleccionar
+1. **Nuevo estado**: `skipMetal` y `skipStone` (booleans, default false).
 
-**Patrón a usar:** `Popover` + `Command` + `CommandInput` + `CommandList` + `CommandItem` (patrón combobox estándar de shadcn/ui, que ya está completamente disponible en el proyecto).
+2. **Mapa de requisitos**: Objeto constante que define para cada `tipo_accesorio` si requiere metal (`requiresMetal`) y piedra (`requiresStone`). Por defecto todas requieren metal; las que típicamente llevan piedra (como tipos que incluyan "compromiso") también requieren piedra.
 
-```
-[Trigger: Popover]
-  "Buscar STL por nombre..."  ← campo de búsqueda
-  ─────────────────────────
-  Ninguno
-  Anillo solitario clásico
-  Solitario 6 uñas          ← filtrado en tiempo real
-  ...
-```
+3. **UI en paso 2**: Mostrar al inicio del paso un bloque informativo con los requisitos de la pieza seleccionada, y dos checkboxes:
+   - "El cliente proporciona su propio metal" (solo si requiere metal)
+   - "El cliente proporciona su propia piedra" (solo si requiere piedra)
 
-**Interfaz de props actualizada:**
-```typescript
-interface OrderDialogStep5Props {
-  notas: string;
-  setNotas: (value: string) => void;
-  selectedSTLFileId: string;
-  setSelectedSTLFileId: (value: string) => void;
-  availableSTLFiles: STLFile[];
-  loading: boolean;
-  // onSTLUploaded ← eliminada
-}
-```
+4. **Validación en `canAdvance()`**: Cuando `step === 1`:
+   - Si requiere metal y `!skipMetal`, verificar que `materialItems` contenga al menos un item con categoría "Metales".
+   - Si requiere piedra y `!skipStone`, verificar que `materialItems` contenga al menos un item con categoría "Piedras Preciosas".
+   - Si no se cumplen, no permitir avanzar.
 
----
+5. **Mensaje de ayuda**: Mostrar texto debajo de la tabla indicando qué falta agregar (ej. "Falta agregar un metal" / "Falta agregar una piedra").
 
-### Cambio en `OrderDialog.tsx`
+6. **Reset**: Limpiar `skipMetal`/`skipStone` en `resetForm()`.
 
-Quitar la prop `onSTLUploaded` que se pasa al componente `OrderDialogStep5` en el JSX del diálogo principal. Esta prop ya no existe en la interfaz del componente.
+### Detalle técnico
 
----
+Para saber la categoría de cada item agregado, se guardará la categoría del material en el `QuoteItem` (agregar campo `categoria` al interface) al momento de hacer `addMaterial`, ya que `selectedMaterial.categoria` está disponible. Luego en la validación se filtra por `categoria === "Metales"` o `categoria === "Piedras Preciosas"`.
 
-### Resultado visual esperado
-
-```
-Paso 5 — Notas y Diseño STL
-─────────────────────────────────────────────────────
-
-[Notas Adicionales]
-  [ Textarea para notas... ]
-
-Archivo STL (Opcional)
-  Selecciona un diseño existente del repositorio.
-
-  [🔍 Buscar archivo STL por nombre...  ▼]
-       ← popover con búsqueda reactiva →
-
-  [Vista previa del STL seleccionado]
-
-─────────────────────────────────────────────────────
-```
-
----
-
-### Archivos a modificar
-
-1. **`src/components/orders/OrderDialogStep5.tsx`** — Eliminar toda la lógica y UI de subida, reemplazar el `<Select>` por un combobox `Popover + Command`.
-2. **`src/components/orders/OrderDialog.tsx`** — Quitar la prop `onSTLUploaded` del lugar donde se renderiza `<OrderDialogStep5 ... />`.
