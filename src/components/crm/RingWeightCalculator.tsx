@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
+import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   Table,
@@ -45,7 +46,11 @@ function calcWeight(id: number, width: number, thickness: number, density: numbe
 
 const WHOLE_SIZES = [4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
 
-export default function RingWeightCalculator() {
+interface RingWeightCalculatorProps {
+  onUseWeight?: (weight: number) => void;
+}
+
+export default function RingWeightCalculator({ onUseWeight }: RingWeightCalculatorProps = {}) {
   const [size, setSize] = useState(7);
   const [width, setWidth] = useState(4);
   const [thickness, setThickness] = useState(2);
@@ -238,6 +243,16 @@ export default function RingWeightCalculator() {
           </Table>
         </div>
       </div>
+
+      {/* Use weight button */}
+      {onUseWeight && (
+        <Button
+          onClick={() => onUseWeight(parseFloat(weight.toFixed(2)))}
+          className="w-full"
+        >
+          Usar este peso ({weight.toFixed(2)} g)
+        </Button>
+      )}
 
       {/* Footnote */}
       <p className="text-xs text-muted-foreground text-center">

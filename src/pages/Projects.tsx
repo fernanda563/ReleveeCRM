@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Loader2, FolderOpen, CheckCircle, ArrowRightCircle, PauseCircle, XCircle, Plus, Calculator } from "lucide-react";
+import { Search, Loader2, FolderOpen, CheckCircle, ArrowRightCircle, PauseCircle, XCircle, Plus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProspectCard, type Prospect } from "@/components/client-detail/ProspectCard";
 import { ProspectDetailDialog } from "@/components/client-detail/ProspectDetailDialog";
@@ -28,13 +28,6 @@ import {
 import OrderDialog from "@/components/orders/OrderDialog";
 import { generateProspectTitle } from "@/components/client-detail/prospect-utils";
 import QuotationDialog from "@/components/crm/QuotationDialog";
-import RingWeightCalculator from "@/components/crm/RingWeightCalculator";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 
 interface ProspectWithClient extends Prospect {
   clients: {
@@ -57,7 +50,6 @@ export default function Projects() {
   const [showOrderDialog, setShowOrderDialog] = useState(false);
   const [deletingProspect, setDeletingProspect] = useState<ProspectWithClient | null>(null);
   const [showQuotationDialog, setShowQuotationDialog] = useState(false);
-  const [showCalculator, setShowCalculator] = useState(false);
 
   useEffect(() => {
     fetchProspects();
@@ -209,16 +201,10 @@ export default function Projects() {
               Explora todas las cotizaciones de joyería de tus clientes
             </p>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setShowCalculator(true)}>
-              <Calculator className="h-4 w-4 mr-2" />
-              Calculadora de Peso
-            </Button>
-            <Button onClick={() => setShowQuotationDialog(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Nueva Cotización
-            </Button>
-          </div>
+          <Button onClick={() => setShowQuotationDialog(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Nueva Cotización
+          </Button>
         </div>
 
         {/* Dashboard de estadísticas */}
@@ -414,16 +400,6 @@ export default function Projects() {
           onOpenChange={setShowQuotationDialog}
           onSuccess={fetchProspects}
         />
-
-        {/* Calculadora de Peso */}
-        <Dialog open={showCalculator} onOpenChange={setShowCalculator}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Calculadora de Peso de Anillos</DialogTitle>
-            </DialogHeader>
-            <RingWeightCalculator />
-          </DialogContent>
-        </Dialog>
 
       </main>
     </div>

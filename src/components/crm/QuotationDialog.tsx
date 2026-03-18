@@ -29,8 +29,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
-import { Plus, Trash2, ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
+import { Plus, Trash2, ArrowLeft, ArrowRight, Loader2, Calculator, ChevronDown } from "lucide-react";
 import { calcularPrecioMaterial } from "@/lib/material-utils";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import RingWeightCalculator from "@/components/crm/RingWeightCalculator";
 
 interface Client {
   id: string;
@@ -493,6 +495,22 @@ export default function QuotationDialog({
                 </span>{" "}
                 / {selectedMaterial.unidad_medida}
               </p>
+            )}
+
+            {/* Ring Weight Calculator - only for metals */}
+            {selectedMaterial?.categoria === "Metales" && (
+              <Collapsible>
+                <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors w-full py-2">
+                  <Calculator className="h-4 w-4" />
+                  Calculadora de peso de anillo
+                  <ChevronDown className="h-3.5 w-3.5 ml-auto transition-transform [[data-state=open]>&]:rotate-180" />
+                </CollapsibleTrigger>
+                <CollapsibleContent className="pt-2 pb-3 border border-border rounded-md p-4 mt-1">
+                  <RingWeightCalculator
+                    onUseWeight={(w) => setMaterialCantidad(String(w))}
+                  />
+                </CollapsibleContent>
+              </Collapsible>
             )}
 
             <Separator />
