@@ -1,90 +1,49 @@
 
-## Simplificar el Paso 5: Eliminar subida de STL y agregar búsqueda por nombre
 
-### Qué hay que cambiar
+## Problema
 
-El archivo `src/components/orders/OrderDialogStep5.tsx` actualmente tiene dos mecanismos:
-1. Un `<Select>` para seleccionar STL existentes del repositorio.
-2. Un panel expandible (toggle) para subir un archivo STL nuevo directamente al repositorio.
+Las variables de color semánticas `--success`, `--warning` y sus foregrounds **no están definidas** en el CSS ni en el tailwind config. Esto significa que todas las clases como `bg-success`, `text-success`, `bg-warning`, `text-warning` que se usan en ~10 archivos del proyecto **no renderizan ningún color visible** — se caen silenciosamente.
 
-La petición es eliminar el mecanismo de subida y reemplazar el `<Select>` por un buscador por nombre.
+El badge de vigencia en la tarjeta de cotización usa estas clases inexistentes, por lo que no muestra colores diferenciados para "Vigente", "Vencida", etc.
 
----
+## Cambios propuestos
 
-### Cambios en `OrderDialogStep5.tsx`
+### 1. `src/index.css` — Agregar variables semánticas de color
 
-**Eliminar completamente:**
-- Los estados `showUpload`, `uploading`, `stlFile`, `stlNombre`, `stlDescripcion`
-- Las funciones `resetUpload` y `handleUpload`
-- Todo el bloque JSX del panel de subida (el `div` con la clase `rounded-lg border border-dashed`)
-- Los imports de `Upload`, `Loader2`, `X`, `ChevronDown`, `ChevronUp` de lucide-react (si ya no se usan)
-- La prop `onSTLUploaded` de la interfaz y del componente
+Definir `--success`, `--success-foreground`, `--warning`, `--warning-foreground` en `:root` y `.dark`:
 
-**Reemplazar el `<Select>` por un buscador con `Command`:**
+- **Success** (verde): `142 76% 36%` (light) / `142 76% 56%` (dark)
+- **Warning** (ámbar): `38 92% 50%` (light) / `38 92% 50%` (dark)
+- **Destructive** (rojo): Cambiar de negro/blanco a un rojo real `0 84% 60%` (light) / `0 84% 50%` (dark) para que también comunique peligro visualmente
 
-El proyecto ya tiene instalado `cmdk` y el componente `Command` disponible en `src/components/ui/command.tsx`. Se usará para crear un combo de búsqueda tipo "popover + command" que:
-- Muestra un campo de texto con placeholder "Buscar STL por nombre..."
-- Al escribir, filtra la lista de `availableSTLFiles` por nombre en tiempo real
-- Al seleccionar un resultado, actualiza `selectedSTLFileId`
-- Muestra el nombre del STL seleccionado en el trigger del popover
-- Incluye una opción "Ninguno" para deseleccionar
+### 2. `tailwind.config.ts` — Registrar los colores
 
-**Patrón a usar:** `Popover` + `Command` + `CommandInput` + `CommandList` + `CommandItem` (patrón combobox estándar de shadcn/ui, que ya está completamente disponible en el proyecto).
-
+Agregar al `extend.colors`:
 ```
-[Trigger: Popover]
-  "Buscar STL por nombre..."  ← campo de búsqueda
-  ─────────────────────────
-  Ninguno
-  Anillo solitario clásico
-  Solitario 6 uñas          ← filtrado en tiempo real
-  ...
+success: {
+  DEFAULT: "hsl(var(--success))",
+  foreground: "hsl(var(--success-foreground))",
+},
+warning: {
+  DEFAULT: "hsl(var(--warning))",
+  foreground: "hsl(var(--warning-foreground))",
+},
 ```
 
-**Interfaz de props actualizada:**
-```typescript
-interface OrderDialogStep5Props {
-  notas: string;
-  setNotas: (value: string) => void;
-  selectedSTLFileId: string;
-  setSelectedSTLFileId: (value: string) => void;
-  availableSTLFiles: STLFile[];
-  loading: boolean;
-  // onSTLUploaded ← eliminada
-}
-```
+Actualizar `destructive` para usar el nuevo rojo.
 
----
+### 3. `src/components/client-detail/ProspectCard.tsx` — Ajustar badge de vigencia
 
-### Cambio en `OrderDialog.tsx`
+Mantener la misma lógica de `getVigenciaStatus` pero ahora los colores serán visibles:
+- **Vigente** → verde (success)
+- **Vencida** → rojo (destructive)
+- **En pausa** → ámbar (warning)
+- **Convertido** → primary (negro)
+- **Sin vigencia** → muted (gris)
 
-Quitar la prop `onSTLUploaded` que se pasa al componente `OrderDialogStep5` en el JSX del diálogo principal. Esta prop ya no existe en la interfaz del componente.
+El badge ya usa `<Badge className={vigencia.color}>` — una vez que los colores existan, funcionará correctamente sin cambios en el componente.
 
----
+### Impacto
 
-### Resultado visual esperado
+Esto corrige **todos** los usos de `bg-success`, `text-success`, `bg-warning`, `text-warning` en el proyecto (~10 archivos), no solo la tarjeta de cotización.
 
-```
-Paso 5 — Notas y Diseño STL
-─────────────────────────────────────────────────────
-
-[Notas Adicionales]
-  [ Textarea para notas... ]
-
-Archivo STL (Opcional)
-  Selecciona un diseño existente del repositorio.
-
-  [🔍 Buscar archivo STL por nombre...  ▼]
-       ← popover con búsqueda reactiva →
-
-  [Vista previa del STL seleccionado]
-
-─────────────────────────────────────────────────────
-```
-
----
-
-### Archivos a modificar
-
-1. **`src/components/orders/OrderDialogStep5.tsx`** — Eliminar toda la lógica y UI de subida, reemplazar el `<Select>` por un combobox `Popover + Command`.
-2. **`src/components/orders/OrderDialog.tsx`** — Quitar la prop `onSTLUploaded` del lugar donde se renderiza `<OrderDialogStep5 ... />`.
