@@ -314,8 +314,8 @@ export default function Projects() {
           <div className="text-center py-12">
             <p className="text-muted-foreground">
               {searchQuery || filterEstado !== "todos" 
-                ? "No se encontraron proyectos con esos filtros" 
-                : "No hay proyectos registrados"}
+                ? "No se encontraron cotizaciones con esos filtros" 
+                : "No hay cotizaciones registradas"}
             </p>
           </div>
         ) : (
