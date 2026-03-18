@@ -1,24 +1,90 @@
 
+## Simplificar el Paso 5: Eliminar subida de STL y agregar búsqueda por nombre
 
-## Estandarizar layout de tarjetas de Materiales
+### Qué hay que cambiar
 
-Actualmente las tarjetas de materiales se renderizan en `<div className="grid gap-3">` (una sola columna, ancho completo). Las tarjetas de Mano de Obra usan `<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">`.
+El archivo `src/components/orders/OrderDialogStep5.tsx` actualmente tiene dos mecanismos:
+1. Un `<Select>` para seleccionar STL existentes del repositorio.
+2. Un panel expandible (toggle) para subir un archivo STL nuevo directamente al repositorio.
 
-### Cambio
+La petición es eliminar el mecanismo de subida y reemplazar el `<Select>` por un buscador por nombre.
 
-**`src/pages/Materials.tsx` (línea ~189)**: Cambiar la clase del grid de resultados:
+---
+
+### Cambios en `OrderDialogStep5.tsx`
+
+**Eliminar completamente:**
+- Los estados `showUpload`, `uploading`, `stlFile`, `stlNombre`, `stlDescripcion`
+- Las funciones `resetUpload` y `handleUpload`
+- Todo el bloque JSX del panel de subida (el `div` con la clase `rounded-lg border border-dashed`)
+- Los imports de `Upload`, `Loader2`, `X`, `ChevronDown`, `ChevronUp` de lucide-react (si ya no se usan)
+- La prop `onSTLUploaded` de la interfaz y del componente
+
+**Reemplazar el `<Select>` por un buscador con `Command`:**
+
+El proyecto ya tiene instalado `cmdk` y el componente `Command` disponible en `src/components/ui/command.tsx`. Se usará para crear un combo de búsqueda tipo "popover + command" que:
+- Muestra un campo de texto con placeholder "Buscar STL por nombre..."
+- Al escribir, filtra la lista de `availableSTLFiles` por nombre en tiempo real
+- Al seleccionar un resultado, actualiza `selectedSTLFileId`
+- Muestra el nombre del STL seleccionado en el trigger del popover
+- Incluye una opción "Ninguno" para deseleccionar
+
+**Patrón a usar:** `Popover` + `Command` + `CommandInput` + `CommandList` + `CommandItem` (patrón combobox estándar de shadcn/ui, que ya está completamente disponible en el proyecto).
 
 ```
-// Antes
-<div className="grid gap-3">
-
-// Después
-<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+[Trigger: Popover]
+  "Buscar STL por nombre..."  ← campo de búsqueda
+  ─────────────────────────
+  Ninguno
+  Anillo solitario clásico
+  Solitario 6 uñas          ← filtrado en tiempo real
+  ...
 ```
 
-**`src/components/materials/MaterialCard.tsx`**: Adaptar el layout interno de la tarjeta para que funcione bien en formato card (no row). Reorganizar la estructura para que sea vertical similar a `WorkConceptCard`:
-- Nombre + badges arriba
-- Grid 2×2 con costo, margen, redondeo, precio resultante
-- Notas al pie
-- Botones de editar/eliminar en un dropdown menu (como en WorkConceptCard) en vez de iconos flotantes
+**Interfaz de props actualizada:**
+```typescript
+interface OrderDialogStep5Props {
+  notas: string;
+  setNotas: (value: string) => void;
+  selectedSTLFileId: string;
+  setSelectedSTLFileId: (value: string) => void;
+  availableSTLFiles: STLFile[];
+  loading: boolean;
+  // onSTLUploaded ← eliminada
+}
+```
 
+---
+
+### Cambio en `OrderDialog.tsx`
+
+Quitar la prop `onSTLUploaded` que se pasa al componente `OrderDialogStep5` en el JSX del diálogo principal. Esta prop ya no existe en la interfaz del componente.
+
+---
+
+### Resultado visual esperado
+
+```
+Paso 5 — Notas y Diseño STL
+─────────────────────────────────────────────────────
+
+[Notas Adicionales]
+  [ Textarea para notas... ]
+
+Archivo STL (Opcional)
+  Selecciona un diseño existente del repositorio.
+
+  [🔍 Buscar archivo STL por nombre...  ▼]
+       ← popover con búsqueda reactiva →
+
+  [Vista previa del STL seleccionado]
+
+─────────────────────────────────────────────────────
+```
+
+---
+
+### Archivos a modificar
+
+1. **`src/components/orders/OrderDialogStep5.tsx`** — Eliminar toda la lógica y UI de subida, reemplazar el `<Select>` por un combobox `Popover + Command`.
+2. **`src/components/orders/OrderDialog.tsx`** — Quitar la prop `onSTLUploaded` del lugar donde se renderiza `<OrderDialogStep5 ... />`.

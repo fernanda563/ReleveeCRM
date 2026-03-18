@@ -186,7 +186,7 @@ export default function Materials() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map((m) => (
             <MaterialCard
               key={m.id}

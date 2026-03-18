@@ -1,7 +1,13 @@
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { MoreHorizontal, Pencil, Trash2, DollarSign, Percent, RotateCw } from "lucide-react";
 import { calcularPrecioMaterial } from "@/lib/material-utils";
 
 export interface Material {
@@ -51,57 +57,75 @@ export function MaterialCard({ material, onEdit, onDelete }: MaterialCardProps) 
   const unidadLabel = unidadLabels[material.unidad_medida] || material.unidad_medida;
 
   return (
-    <Card className="group hover:shadow-md transition-shadow">
-      <CardContent className="p-5">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex-1 min-w-0 space-y-3">
-            <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="font-semibold text-foreground truncate">{material.nombre}</h3>
-              {material.categoria && (
-                <Badge variant="secondary" className="text-xs">{material.categoria}</Badge>
-              )}
-              {!material.activo && (
-                <Badge variant="outline" className="text-xs text-muted-foreground">Inactivo</Badge>
-              )}
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
-              <div>
-                <p className="text-muted-foreground text-xs">Costo directo</p>
-                <p className="font-medium">${material.costo_directo.toLocaleString()} / {unidadLabel}</p>
-              </div>
-              <div>
-                <p className="text-muted-foreground text-xs">Margen</p>
-                <p className="font-medium">{margenLabel} ({material.tipo_margen})</p>
-              </div>
-              <div>
-                <p className="text-muted-foreground text-xs">Redondeo</p>
-                <p className="font-medium capitalize">
-                  {material.redondeo === "ninguno"
-                    ? "Sin redondeo"
-                    : `${material.redondeo.replace("_", " ")} (×${material.redondeo_multiplo ?? 1})`}
-                </p>
-              </div>
-              <div>
-                <p className="text-muted-foreground text-xs">Precio resultante</p>
-                <p className="font-bold text-primary">${precio.toLocaleString()} / {unidadLabel}</p>
-              </div>
-            </div>
-
-            {material.notas && (
-              <p className="text-xs text-muted-foreground line-clamp-2">{material.notas}</p>
-            )}
+    <Card className={`${!material.activo ? "opacity-60" : ""}`}>
+      <CardHeader className="pb-3">
+        <div className="flex items-start justify-between">
+          <div className="space-y-1 flex-1 min-w-0">
+            <CardTitle className="text-base font-semibold truncate">
+              {material.nombre}
+            </CardTitle>
           </div>
-
-          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-            <Button variant="ghost" size="icon" onClick={() => onEdit(material)}>
-              <Edit className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="icon" onClick={() => onDelete(material)}>
-              <Trash2 className="h-4 w-4" />
-            </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => onEdit(material)}>
+                <Pencil className="h-4 w-4 mr-2" />
+                Editar
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onDelete(material)} className="text-destructive">
+                <Trash2 className="h-4 w-4 mr-2" />
+                Eliminar
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {material.categoria && (
+            <Badge variant="secondary" className="text-xs">{material.categoria}</Badge>
+          )}
+          {!material.activo && (
+            <Badge variant="outline" className="text-muted-foreground text-xs">Inactivo</Badge>
+          )}
+          <Badge variant="outline" className="text-xs">{unidadLabel}</Badge>
+        </div>
+      </CardHeader>
+      <CardContent className="pt-0 space-y-3">
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1">
+            <p className="text-xs text-muted-foreground">Costo directo</p>
+            <p className="text-sm font-medium">
+              ${material.costo_directo.toLocaleString("es-MX", { minimumFractionDigits: 2 })} / {unidadLabel}
+            </p>
+          </div>
+          <div className="space-y-1">
+            <p className="text-xs text-muted-foreground">Margen</p>
+            <p className="text-sm font-medium">
+              {margenLabel} ({material.tipo_margen})
+            </p>
+          </div>
+          <div className="space-y-1">
+            <p className="text-xs text-muted-foreground">Redondeo</p>
+            <p className="text-sm font-medium capitalize">
+              {material.redondeo === "ninguno"
+                ? "Sin redondeo"
+                : `${material.redondeo.replace("_", " ")} (×${material.redondeo_multiplo ?? 1})`}
+            </p>
+          </div>
+          <div className="space-y-1">
+            <p className="text-xs text-muted-foreground">Precio resultante</p>
+            <p className="text-sm font-bold text-primary">
+              ${precio.toLocaleString("es-MX", { minimumFractionDigits: 2 })} / {unidadLabel}
+            </p>
           </div>
         </div>
+
+        {material.notas && (
+          <p className="text-xs text-muted-foreground line-clamp-2 pt-2 border-t">{material.notas}</p>
+        )}
       </CardContent>
     </Card>
   );
