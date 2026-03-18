@@ -163,17 +163,17 @@ export default function RingWeightCalculator({ onUseWeight }: RingWeightCalculat
               <ToggleGroupItem
                 key={key}
                 value={key}
-                className={`flex flex-col items-center gap-0.5 py-3 rounded-md border ${
+                className={`flex flex-col items-center gap-0.5 py-4 rounded-md border ${
                   isActive
-                    ? "bg-primary text-primary-foreground border-primary"
+                    ? "!bg-primary !text-primary-foreground border-primary"
                     : "bg-background text-foreground border-border"
                 }`}
               >
                 <span className="font-semibold text-sm">{key}</span>
-                <span className={`text-xs ${isActive ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
+                <span className={`text-xs ${isActive ? "!text-primary-foreground/70" : "text-muted-foreground"}`}>
                   {(a.purity * 100).toFixed(1)}% oro
                 </span>
-                <span className={`text-xs ${isActive ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
+                <span className={`text-xs ${isActive ? "!text-primary-foreground/70" : "text-muted-foreground"}`}>
                   {a.density} g/cm³
                 </span>
               </ToggleGroupItem>
@@ -185,21 +185,21 @@ export default function RingWeightCalculator({ onUseWeight }: RingWeightCalculat
       {/* Result Cards */}
       <div className="grid grid-cols-3 gap-3">
         <Card className="border-border">
-          <CardContent className="pt-4 pb-3 text-center">
+          <CardContent className="pt-6 pb-3 text-center">
             <p className="text-xs text-muted-foreground mb-1">Peso estimado</p>
             <p className="text-2xl font-bold text-foreground">{weight.toFixed(2)}</p>
             <p className="text-xs text-muted-foreground">gramos</p>
           </CardContent>
         </Card>
         <Card className="border-border">
-          <CardContent className="pt-4 pb-3 text-center">
+          <CardContent className="pt-6 pb-3 text-center">
             <p className="text-xs text-muted-foreground mb-1">Oro puro</p>
             <p className="text-2xl font-bold text-foreground">{pureGold.toFixed(2)}</p>
             <p className="text-xs text-muted-foreground">gramos</p>
           </CardContent>
         </Card>
         <Card className="border-border">
-          <CardContent className="pt-4 pb-3 text-center">
+          <CardContent className="pt-6 pb-3 text-center">
             <p className="text-xs text-muted-foreground mb-1">Volumen</p>
             <p className="text-2xl font-bold text-foreground">{volumeCm3.toFixed(3)}</p>
             <p className="text-xs text-muted-foreground">cm³</p>
