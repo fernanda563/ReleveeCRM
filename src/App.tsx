@@ -62,6 +62,8 @@ const App = () => (
         <Route path="/settings/system" element={<SystemSettings />} />
         <Route path="/settings/roles" element={<RolesManagement />} />
         <Route path="/materials" element={<Materials />} />
+        <Route path="/calculators/ring-weight" element={<RingWeightCalculatorPage />} />
+        <Route path="/calculators/diamond-weight" element={<DiamondWeightCalculator />} />
       </Route>
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />
