@@ -112,9 +112,9 @@ export default function RingWeightCalculator({ onUseWeight, alloy: controlledAll
           <Slider
             value={[sizeIndex]}
             min={0}
-            max={18}
+            max={36}
             step={1}
-            onValueChange={([v]) => setSize(4 + v * 0.5)}
+            onValueChange={([v]) => setSize(4 + v * 0.25)}
           />
           <div className="flex justify-between text-xs text-muted-foreground">
             <span>4</span><span>13</span>
