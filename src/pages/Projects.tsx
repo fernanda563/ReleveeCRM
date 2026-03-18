@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/select";
 import OrderDialog from "@/components/orders/OrderDialog";
 import { generateProspectTitle } from "@/components/client-detail/prospect-utils";
+import QuotationDialog from "@/components/crm/QuotationDialog";
 
 interface ProspectWithClient extends Prospect {
   clients: {
