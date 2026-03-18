@@ -1,31 +1,90 @@
 
+## Simplificar el Paso 5: Eliminar subida de STL y agregar búsqueda por nombre
 
-## Plan: Adaptar Calculadora de Diamante al estilo del sistema
+### Qué hay que cambiar
 
-### Cambios en `src/pages/DiamondWeightCalculator.tsx`
+El archivo `src/components/orders/OrderDialogStep5.tsx` actualmente tiene dos mecanismos:
+1. Un `<Select>` para seleccionar STL existentes del repositorio.
+2. Un panel expandible (toggle) para subir un archivo STL nuevo directamente al repositorio.
 
-**1. Estructura de página estándar**
-- Envolver todo en `<div className="min-h-full bg-background"><main className="container mx-auto px-6 py-8">` como WorkConcepts
-- Header con `text-3xl font-bold` y subtítulo en `text-muted-foreground`
+La petición es eliminar el mecanismo de subida y reemplazar el `<Select>` por un buscador por nombre.
 
-**2. Eliminar colores semánticos (sistema monocromático estricto)**
-- Eliminar constantes `BLUE`, `GREEN`, `RED` — reemplazar con `foreground`, `muted-foreground` y estilos monocromáticos
-- Flechas SVG: usar tonos de gris diferenciados + estilos de línea (sólida, punteada, discontinua) para diferenciar largo/ancho/profundidad en lugar de colores
-- Botones del selector de corte: usar `bg-primary text-primary-foreground` (negro/blanco) para activo, en vez de azul
-- Indicadores de color en sliders: usar `foreground`/`muted-foreground` en vez de colores RGB
-- `ResultBox`: usar `border-border` sin colores
+---
 
-**3. Traducir todo el texto a español**
-- Labels de dimensiones: "Diameter" → "Diámetro", "Length" → "Largo", "Width" → "Ancho", "Depth" → "Profundidad"
-- Hints: traducir todos al español (ej. "Measure across the girdle at the widest point" → "Medir a lo ancho del filetín en el punto más amplio")
-- Leyenda del diagrama: "Diameter/Length/Width/Depth" → "Diámetro/Largo/Ancho/Profundidad"
-- Notas SVG: "Measure straight sides, not cut corners" → "Medir lados rectos, no esquinas cortadas"
-- "Depth %" → "Profundidad %"
-- Nombres de cortes se mantienen en inglés (son términos técnicos universales)
+### Cambios en `OrderDialogStep5.tsx`
 
-**4. Cards de resultados**
-- Seguir el patrón de stats cards de WorkConcepts: `CardHeader` con icono + título, `CardContent` con valor `text-3xl font-bold`
+**Eliminar completamente:**
+- Los estados `showUpload`, `uploading`, `stlFile`, `stlNombre`, `stlDescripcion`
+- Las funciones `resetUpload` y `handleUpload`
+- Todo el bloque JSX del panel de subida (el `div` con la clase `rounded-lg border border-dashed`)
+- Los imports de `Upload`, `Loader2`, `X`, `ChevronDown`, `ChevronUp` de lucide-react (si ya no se usan)
+- La prop `onSTLUploaded` de la interfaz y del componente
 
-### Archivo modificado
-- `src/pages/DiamondWeightCalculator.tsx` — reescritura del layout y textos
+**Reemplazar el `<Select>` por un buscador con `Command`:**
 
+El proyecto ya tiene instalado `cmdk` y el componente `Command` disponible en `src/components/ui/command.tsx`. Se usará para crear un combo de búsqueda tipo "popover + command" que:
+- Muestra un campo de texto con placeholder "Buscar STL por nombre..."
+- Al escribir, filtra la lista de `availableSTLFiles` por nombre en tiempo real
+- Al seleccionar un resultado, actualiza `selectedSTLFileId`
+- Muestra el nombre del STL seleccionado en el trigger del popover
+- Incluye una opción "Ninguno" para deseleccionar
+
+**Patrón a usar:** `Popover` + `Command` + `CommandInput` + `CommandList` + `CommandItem` (patrón combobox estándar de shadcn/ui, que ya está completamente disponible en el proyecto).
+
+```
+[Trigger: Popover]
+  "Buscar STL por nombre..."  ← campo de búsqueda
+  ─────────────────────────
+  Ninguno
+  Anillo solitario clásico
+  Solitario 6 uñas          ← filtrado en tiempo real
+  ...
+```
+
+**Interfaz de props actualizada:**
+```typescript
+interface OrderDialogStep5Props {
+  notas: string;
+  setNotas: (value: string) => void;
+  selectedSTLFileId: string;
+  setSelectedSTLFileId: (value: string) => void;
+  availableSTLFiles: STLFile[];
+  loading: boolean;
+  // onSTLUploaded ← eliminada
+}
+```
+
+---
+
+### Cambio en `OrderDialog.tsx`
+
+Quitar la prop `onSTLUploaded` que se pasa al componente `OrderDialogStep5` en el JSX del diálogo principal. Esta prop ya no existe en la interfaz del componente.
+
+---
+
+### Resultado visual esperado
+
+```
+Paso 5 — Notas y Diseño STL
+─────────────────────────────────────────────────────
+
+[Notas Adicionales]
+  [ Textarea para notas... ]
+
+Archivo STL (Opcional)
+  Selecciona un diseño existente del repositorio.
+
+  [🔍 Buscar archivo STL por nombre...  ▼]
+       ← popover con búsqueda reactiva →
+
+  [Vista previa del STL seleccionado]
+
+─────────────────────────────────────────────────────
+```
+
+---
+
+### Archivos a modificar
+
+1. **`src/components/orders/OrderDialogStep5.tsx`** — Eliminar toda la lógica y UI de subida, reemplazar el `<Select>` por un combobox `Popover + Command`.
+2. **`src/components/orders/OrderDialog.tsx`** — Quitar la prop `onSTLUploaded` del lugar donde se renderiza `<OrderDialogStep5 ... />`.

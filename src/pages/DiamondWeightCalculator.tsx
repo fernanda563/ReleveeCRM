@@ -1,12 +1,7 @@
 import { useState, useMemo } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
-import { Gem } from "lucide-react";
-
-// ── Colors for measurement arrows ──
-const BLUE = "#378ADD";
-const GREEN = "#1D9E75";
-const RED = "#E24B4A";
+import { Gem, Weight, Percent, ArrowLeftRight } from "lucide-react";
 
 // ── Cut definitions ──
 interface DimensionDef {
@@ -16,7 +11,7 @@ interface DimensionDef {
   max: number;
   default: number;
   hint: string;
-  color: string;
+  style: "solid" | "dashed" | "dotted";
 }
 
 interface CutDef {
@@ -32,80 +27,83 @@ const CUTS: CutDef[] = [
   {
     id: "round", name: "Round", factor: 0.0061, isRound: true,
     dimensions: [
-      { key: "diameter", label: "Diameter", min: 2, max: 15, default: 6.5, hint: "Measure across the girdle at the widest point", color: BLUE },
-      { key: "depth", label: "Depth", min: 1, max: 12, default: 4.0, hint: "From table (top) to culet (bottom)", color: RED },
+      { key: "diameter", label: "Diámetro", min: 2, max: 15, default: 6.5, hint: "Medir a lo ancho del filetín en el punto más amplio", style: "solid" },
+      { key: "depth", label: "Profundidad", min: 1, max: 12, default: 4.0, hint: "Desde la tabla (arriba) hasta el culet (abajo)", style: "dashed" },
     ],
   },
   {
     id: "princess", name: "Princess", factor: 0.0083, isRound: false,
     dimensions: [
-      { key: "length", label: "Length", min: 2, max: 15, default: 5.5, hint: "Longer side measured at the girdle", color: BLUE },
-      { key: "width", label: "Width", min: 2, max: 15, default: 5.5, hint: "Shorter side measured at the girdle", color: GREEN },
-      { key: "depth", label: "Depth", min: 1, max: 12, default: 3.9, hint: "From table to culet", color: RED },
+      { key: "length", label: "Largo", min: 2, max: 15, default: 5.5, hint: "Lado más largo medido en el filetín", style: "solid" },
+      { key: "width", label: "Ancho", min: 2, max: 15, default: 5.5, hint: "Lado más corto medido en el filetín", style: "dotted" },
+      { key: "depth", label: "Profundidad", min: 1, max: 12, default: 3.9, hint: "Desde la tabla hasta el culet", style: "dashed" },
     ],
   },
   {
     id: "oval", name: "Oval", factor: 0.0062, isRound: false,
     dimensions: [
-      { key: "length", label: "Length", min: 3, max: 20, default: 8.0, hint: "Major axis: tip to tip", color: BLUE },
-      { key: "width", label: "Width", min: 2, max: 15, default: 5.5, hint: "Minor axis: widest perpendicular point", color: GREEN },
-      { key: "depth", label: "Depth", min: 1, max: 12, default: 3.8, hint: "From table to culet", color: RED },
+      { key: "length", label: "Largo", min: 3, max: 20, default: 8.0, hint: "Eje mayor: de punta a punta", style: "solid" },
+      { key: "width", label: "Ancho", min: 2, max: 15, default: 5.5, hint: "Eje menor: punto perpendicular más ancho", style: "dotted" },
+      { key: "depth", label: "Profundidad", min: 1, max: 12, default: 3.8, hint: "Desde la tabla hasta el culet", style: "dashed" },
     ],
   },
   {
     id: "marquise", name: "Marquise", factor: 0.00565, isRound: false,
     dimensions: [
-      { key: "length", label: "Length", min: 4, max: 25, default: 10.0, hint: "Tip to tip along the long axis", color: BLUE },
-      { key: "width", label: "Width", min: 2, max: 12, default: 5.0, hint: "Widest point perpendicular to length", color: GREEN },
-      { key: "depth", label: "Depth", min: 1, max: 10, default: 3.5, hint: "From table to culet", color: RED },
+      { key: "length", label: "Largo", min: 4, max: 25, default: 10.0, hint: "De punta a punta a lo largo del eje mayor", style: "solid" },
+      { key: "width", label: "Ancho", min: 2, max: 12, default: 5.0, hint: "Punto más ancho perpendicular al largo", style: "dotted" },
+      { key: "depth", label: "Profundidad", min: 1, max: 10, default: 3.5, hint: "Desde la tabla hasta el culet", style: "dashed" },
     ],
   },
   {
     id: "pear", name: "Pear", factor: 0.0059, isRound: false,
     dimensions: [
-      { key: "length", label: "Length", min: 4, max: 20, default: 9.0, hint: "From the pointed tip to the top of the rounded end", color: BLUE },
-      { key: "width", label: "Width", min: 3, max: 14, default: 5.5, hint: "Widest point of the rounded section", color: GREEN },
-      { key: "depth", label: "Depth", min: 1, max: 10, default: 3.6, hint: "From table to culet", color: RED },
+      { key: "length", label: "Largo", min: 4, max: 20, default: 9.0, hint: "Desde la punta hasta la parte superior del extremo redondeado", style: "solid" },
+      { key: "width", label: "Ancho", min: 3, max: 14, default: 5.5, hint: "Punto más ancho de la sección redondeada", style: "dotted" },
+      { key: "depth", label: "Profundidad", min: 1, max: 10, default: 3.6, hint: "Desde la tabla hasta el culet", style: "dashed" },
     ],
   },
   {
     id: "heart", name: "Heart", factor: 0.0059, isRound: false,
     dimensions: [
-      { key: "length", label: "Length", min: 4, max: 18, default: 8.0, hint: "From bottom tip to the center of the cleft at top", color: BLUE },
-      { key: "width", label: "Width", min: 4, max: 18, default: 8.0, hint: "Lobe to lobe at the widest point", color: GREEN },
-      { key: "depth", label: "Depth", min: 1, max: 10, default: 4.8, hint: "From table to culet", color: RED },
+      { key: "length", label: "Largo", min: 4, max: 18, default: 8.0, hint: "Desde la punta inferior hasta el centro de la hendidura superior", style: "solid" },
+      { key: "width", label: "Ancho", min: 4, max: 18, default: 8.0, hint: "De lóbulo a lóbulo en el punto más ancho", style: "dotted" },
+      { key: "depth", label: "Profundidad", min: 1, max: 10, default: 4.8, hint: "Desde la tabla hasta el culet", style: "dashed" },
     ],
   },
   {
     id: "cushion", name: "Cushion", factor: 0.0082, isRound: false,
     dimensions: [
-      { key: "length", label: "Length", min: 3, max: 18, default: 6.5, hint: "Longer side measured at the girdle", color: BLUE },
-      { key: "width", label: "Width", min: 3, max: 15, default: 6.0, hint: "Shorter side measured at the girdle", color: GREEN },
-      { key: "depth", label: "Depth", min: 1, max: 12, default: 4.1, hint: "From table to culet", color: RED },
+      { key: "length", label: "Largo", min: 3, max: 18, default: 6.5, hint: "Lado más largo medido en el filetín", style: "solid" },
+      { key: "width", label: "Ancho", min: 3, max: 15, default: 6.0, hint: "Lado más corto medido en el filetín", style: "dotted" },
+      { key: "depth", label: "Profundidad", min: 1, max: 12, default: 4.1, hint: "Desde la tabla hasta el culet", style: "dashed" },
     ],
   },
   {
     id: "emerald", name: "Emerald", factor: 0.0092, isRound: false,
+    note: "Medir lados rectos, no esquinas cortadas",
     dimensions: [
-      { key: "length", label: "Length", min: 4, max: 22, default: 8.0, hint: "Long side of the rectangle measured at the girdle (not the corners)", color: BLUE },
-      { key: "width", label: "Width", min: 3, max: 16, default: 6.0, hint: "Short side measured at the girdle", color: GREEN },
-      { key: "depth", label: "Depth", min: 1, max: 12, default: 4.0, hint: "From table to culet", color: RED },
+      { key: "length", label: "Largo", min: 4, max: 22, default: 8.0, hint: "Lado largo del rectángulo medido en el filetín (no las esquinas)", style: "solid" },
+      { key: "width", label: "Ancho", min: 3, max: 16, default: 6.0, hint: "Lado corto medido en el filetín", style: "dotted" },
+      { key: "depth", label: "Profundidad", min: 1, max: 12, default: 4.0, hint: "Desde la tabla hasta el culet", style: "dashed" },
     ],
   },
   {
     id: "radiant", name: "Radiant", factor: 0.0083, isRound: false,
+    note: "Medir lados rectos, no esquinas cortadas",
     dimensions: [
-      { key: "length", label: "Length", min: 4, max: 18, default: 7.5, hint: "Longer straight side at the girdle — do NOT measure across the cut corners", color: BLUE },
-      { key: "width", label: "Width", min: 3, max: 15, default: 6.0, hint: "Shorter straight side at the girdle", color: GREEN },
-      { key: "depth", label: "Depth", min: 1, max: 12, default: 4.4, hint: "From table to culet", color: RED },
+      { key: "length", label: "Largo", min: 4, max: 18, default: 7.5, hint: "Lado recto más largo en el filetín — NO medir a través de las esquinas cortadas", style: "solid" },
+      { key: "width", label: "Ancho", min: 3, max: 15, default: 6.0, hint: "Lado recto más corto en el filetín", style: "dotted" },
+      { key: "depth", label: "Profundidad", min: 1, max: 12, default: 4.4, hint: "Desde la tabla hasta el culet", style: "dashed" },
     ],
   },
   {
     id: "asscher", name: "Asscher", factor: 0.0080, isRound: false,
+    note: "Medir lados rectos, no esquinas cortadas",
     dimensions: [
-      { key: "length", label: "Length", min: 3, max: 16, default: 6.0, hint: "One straight side of the octagon (between two cut corners)", color: BLUE },
-      { key: "width", label: "Width", min: 3, max: 16, default: 6.0, hint: "Opposite parallel side — should be nearly equal to length", color: GREEN },
-      { key: "depth", label: "Depth", min: 1, max: 12, default: 4.2, hint: "From table to culet", color: RED },
+      { key: "length", label: "Largo", min: 3, max: 16, default: 6.0, hint: "Un lado recto del octágono (entre dos esquinas cortadas)", style: "solid" },
+      { key: "width", label: "Ancho", min: 3, max: 16, default: 6.0, hint: "Lado paralelo opuesto — debe ser casi igual al largo", style: "dotted" },
+      { key: "depth", label: "Profundidad", min: 1, max: 12, default: 4.2, hint: "Desde la tabla hasta el culet", style: "dashed" },
     ],
   },
 ];
@@ -134,13 +132,12 @@ function CutIcon({ cutId, size = 28 }: { cutId: string; size?: number }) {
         </svg>
       );
     }
-    case "heart": {
+    case "heart":
       return (
         <svg width={s} height={s} viewBox="0 0 28 28">
           <path d="M14,25 Q2,16 4,9 Q6,3 14,8 Q22,3 24,9 Q26,16 14,25Z" fill="none" stroke={stroke} strokeWidth={sw} />
         </svg>
       );
-    }
     case "cushion":
       return <svg width={s} height={s} viewBox={`0 0 ${s} ${s}`}><rect x={2} y={3} width={s - 4} height={s - 6} rx={5} fill="none" stroke={stroke} strokeWidth={sw} /></svg>;
     case "emerald":
@@ -166,7 +163,11 @@ function CutIcon({ cutId, size = 28 }: { cutId: string; size?: number }) {
   }
 }
 
-// ── Arrow helpers ──
+// ── Arrow helpers (monochromatic) ──
+const ARROW_DARK = "#404040";
+const ARROW_MID = "#808080";
+const ARROW_LIGHT = "#a0a0a0";
+
 function arrowHead(x: number, y: number, dir: "up" | "down" | "left" | "right", color: string) {
   const s = 5;
   let points = "";
@@ -179,26 +180,24 @@ function arrowHead(x: number, y: number, dir: "up" | "down" | "left" | "right", 
   return <polygon points={points} fill={color} />;
 }
 
-// ── Measurement diagram SVGs ──
+// ── Measurement diagram SVGs (monochromatic) ──
 function MeasurementDiagram({ cutId }: { cutId: string }) {
   const W = 280;
   const H = 280;
   const cx = 120;
   const cy = 130;
   const sw = 1.5;
-  const fillTable = "rgba(200,200,220,0.15)";
+  const fillTable = "rgba(160,160,160,0.12)";
   const strokeShape = "#9ca3af";
 
-  // Common depth arrow on the right
   const depthArrow = (top: number, bottom: number) => (
     <g>
-      <line x1={230} y1={top} x2={230} y2={bottom} stroke={RED} strokeWidth={1.5} strokeDasharray="4 3" />
-      {arrowHead(230, top, "up", RED)}
-      {arrowHead(230, bottom, "down", RED)}
-      <text x={245} y={(top + bottom) / 2 + 4} fill={RED} fontSize={11} fontWeight={600}>D</text>
-      {/* tick marks */}
-      <line x1={226} y1={top} x2={234} y2={top} stroke={RED} strokeWidth={1.5} />
-      <line x1={226} y1={bottom} x2={234} y2={bottom} stroke={RED} strokeWidth={1.5} />
+      <line x1={230} y1={top} x2={230} y2={bottom} stroke={ARROW_LIGHT} strokeWidth={1.5} strokeDasharray="4 3" />
+      {arrowHead(230, top, "up", ARROW_LIGHT)}
+      {arrowHead(230, bottom, "down", ARROW_LIGHT)}
+      <text x={245} y={(top + bottom) / 2 + 4} fill={ARROW_LIGHT} fontSize={11} fontWeight={600}>D</text>
+      <line x1={226} y1={top} x2={234} y2={top} stroke={ARROW_LIGHT} strokeWidth={1.5} />
+      <line x1={226} y1={bottom} x2={234} y2={bottom} stroke={ARROW_LIGHT} strokeWidth={1.5} />
     </g>
   );
 
@@ -208,15 +207,13 @@ function MeasurementDiagram({ cutId }: { cutId: string }) {
       return (
         <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} className="mx-auto">
           <circle cx={cx} cy={cy} r={r} fill="none" stroke={strokeShape} strokeWidth={sw} />
-          {/* table facet - octagon */}
           <polygon points={`${cx},${cy - 35} ${cx + 25},${cy - 25} ${cx + 35},${cy} ${cx + 25},${cy + 25} ${cx},${cy + 35} ${cx - 25},${cy + 25} ${cx - 35},${cy} ${cx - 25},${cy - 25}`} fill={fillTable} stroke={strokeShape} strokeWidth={0.8} />
-          {/* diameter arrow (blue) */}
-          <line x1={cx - r} y1={cy + r + 18} x2={cx + r} y2={cy + r + 18} stroke={BLUE} strokeWidth={1.5} />
-          {arrowHead(cx - r, cy + r + 18, "left", BLUE)}
-          {arrowHead(cx + r, cy + r + 18, "right", BLUE)}
-          <text x={cx - 5} y={cy + r + 32} fill={BLUE} fontSize={11} fontWeight={600}>∅</text>
+          <line x1={cx - r} y1={cy + r + 18} x2={cx + r} y2={cy + r + 18} stroke={ARROW_DARK} strokeWidth={1.5} />
+          {arrowHead(cx - r, cy + r + 18, "left", ARROW_DARK)}
+          {arrowHead(cx + r, cy + r + 18, "right", ARROW_DARK)}
+          <text x={cx - 5} y={cy + r + 32} fill={ARROW_DARK} fontSize={11} fontWeight={600}>∅</text>
           {depthArrow(cy - r, cy + r)}
-          <text x={cx - 40} y={H - 8} fill="#6b7280" fontSize={10} textAnchor="middle">Girdle</text>
+          <text x={cx - 40} y={H - 8} fill="#6b7280" fontSize={10} textAnchor="middle">Filetín</text>
         </svg>
       );
     }
@@ -228,16 +225,14 @@ function MeasurementDiagram({ cutId }: { cutId: string }) {
         <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} className="mx-auto">
           <rect x={x0} y={y0} width={sz * 2} height={sz * 2} fill="none" stroke={strokeShape} strokeWidth={sw} />
           <rect x={x0 + 25} y={y0 + 25} width={sz * 2 - 50} height={sz * 2 - 50} fill={fillTable} stroke={strokeShape} strokeWidth={0.8} />
-          {/* length */}
-          <line x1={x0} y1={cy + sz + 18} x2={x0 + sz * 2} y2={cy + sz + 18} stroke={BLUE} strokeWidth={1.5} />
-          {arrowHead(x0, cy + sz + 18, "left", BLUE)}
-          {arrowHead(x0 + sz * 2, cy + sz + 18, "right", BLUE)}
-          <text x={cx - 3} y={cy + sz + 32} fill={BLUE} fontSize={11} fontWeight={600}>L</text>
-          {/* width */}
-          <line x1={x0 - 18} y1={y0} x2={x0 - 18} y2={y0 + sz * 2} stroke={GREEN} strokeWidth={1.5} />
-          {arrowHead(x0 - 18, y0, "up", GREEN)}
-          {arrowHead(x0 - 18, y0 + sz * 2, "down", GREEN)}
-          <text x={x0 - 30} y={cy + 4} fill={GREEN} fontSize={11} fontWeight={600}>W</text>
+          <line x1={x0} y1={cy + sz + 18} x2={x0 + sz * 2} y2={cy + sz + 18} stroke={ARROW_DARK} strokeWidth={1.5} />
+          {arrowHead(x0, cy + sz + 18, "left", ARROW_DARK)}
+          {arrowHead(x0 + sz * 2, cy + sz + 18, "right", ARROW_DARK)}
+          <text x={cx - 3} y={cy + sz + 32} fill={ARROW_DARK} fontSize={11} fontWeight={600}>L</text>
+          <line x1={x0 - 18} y1={y0} x2={x0 - 18} y2={y0 + sz * 2} stroke={ARROW_MID} strokeWidth={1.5} strokeDasharray="2 2" />
+          {arrowHead(x0 - 18, y0, "up", ARROW_MID)}
+          {arrowHead(x0 - 18, y0 + sz * 2, "down", ARROW_MID)}
+          <text x={x0 - 30} y={cy + 4} fill={ARROW_MID} fontSize={11} fontWeight={600}>W</text>
           {depthArrow(y0, y0 + sz * 2)}
         </svg>
       );
@@ -249,14 +244,14 @@ function MeasurementDiagram({ cutId }: { cutId: string }) {
         <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} className="mx-auto">
           <ellipse cx={cx} cy={cy} rx={rx} ry={ry} fill="none" stroke={strokeShape} strokeWidth={sw} />
           <ellipse cx={cx} cy={cy} rx={rx * 0.55} ry={ry * 0.55} fill={fillTable} stroke={strokeShape} strokeWidth={0.8} />
-          <line x1={cx - rx} y1={cy + ry + 18} x2={cx + rx} y2={cy + ry + 18} stroke={BLUE} strokeWidth={1.5} />
-          {arrowHead(cx - rx, cy + ry + 18, "left", BLUE)}
-          {arrowHead(cx + rx, cy + ry + 18, "right", BLUE)}
-          <text x={cx - 3} y={cy + ry + 32} fill={BLUE} fontSize={11} fontWeight={600}>L</text>
-          <line x1={cx - rx - 18} y1={cy - ry} x2={cx - rx - 18} y2={cy + ry} stroke={GREEN} strokeWidth={1.5} />
-          {arrowHead(cx - rx - 18, cy - ry, "up", GREEN)}
-          {arrowHead(cx - rx - 18, cy + ry, "down", GREEN)}
-          <text x={cx - rx - 30} y={cy + 4} fill={GREEN} fontSize={11} fontWeight={600}>W</text>
+          <line x1={cx - rx} y1={cy + ry + 18} x2={cx + rx} y2={cy + ry + 18} stroke={ARROW_DARK} strokeWidth={1.5} />
+          {arrowHead(cx - rx, cy + ry + 18, "left", ARROW_DARK)}
+          {arrowHead(cx + rx, cy + ry + 18, "right", ARROW_DARK)}
+          <text x={cx - 3} y={cy + ry + 32} fill={ARROW_DARK} fontSize={11} fontWeight={600}>L</text>
+          <line x1={cx - rx - 18} y1={cy - ry} x2={cx - rx - 18} y2={cy + ry} stroke={ARROW_MID} strokeWidth={1.5} strokeDasharray="2 2" />
+          {arrowHead(cx - rx - 18, cy - ry, "up", ARROW_MID)}
+          {arrowHead(cx - rx - 18, cy + ry, "down", ARROW_MID)}
+          <text x={cx - rx - 30} y={cy + 4} fill={ARROW_MID} fontSize={11} fontWeight={600}>W</text>
           {depthArrow(cy - ry, cy + ry)}
         </svg>
       );
@@ -268,52 +263,50 @@ function MeasurementDiagram({ cutId }: { cutId: string }) {
         <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} className="mx-auto">
           <ellipse cx={cx} cy={cy} rx={rx} ry={ry} fill="none" stroke={strokeShape} strokeWidth={sw} />
           <ellipse cx={cx} cy={cy} rx={rx * 0.5} ry={ry * 0.45} fill={fillTable} stroke={strokeShape} strokeWidth={0.8} />
-          <line x1={cx - rx} y1={cy + ry + 18} x2={cx + rx} y2={cy + ry + 18} stroke={BLUE} strokeWidth={1.5} />
-          {arrowHead(cx - rx, cy + ry + 18, "left", BLUE)}
-          {arrowHead(cx + rx, cy + ry + 18, "right", BLUE)}
-          <text x={cx - 3} y={cy + ry + 32} fill={BLUE} fontSize={11} fontWeight={600}>L</text>
-          <line x1={cx - rx - 18} y1={cy - ry} x2={cx - rx - 18} y2={cy + ry} stroke={GREEN} strokeWidth={1.5} />
-          {arrowHead(cx - rx - 18, cy - ry, "up", GREEN)}
-          {arrowHead(cx - rx - 18, cy + ry, "down", GREEN)}
-          <text x={cx - rx - 30} y={cy + 4} fill={GREEN} fontSize={11} fontWeight={600}>W</text>
+          <line x1={cx - rx} y1={cy + ry + 18} x2={cx + rx} y2={cy + ry + 18} stroke={ARROW_DARK} strokeWidth={1.5} />
+          {arrowHead(cx - rx, cy + ry + 18, "left", ARROW_DARK)}
+          {arrowHead(cx + rx, cy + ry + 18, "right", ARROW_DARK)}
+          <text x={cx - 3} y={cy + ry + 32} fill={ARROW_DARK} fontSize={11} fontWeight={600}>L</text>
+          <line x1={cx - rx - 18} y1={cy - ry} x2={cx - rx - 18} y2={cy + ry} stroke={ARROW_MID} strokeWidth={1.5} strokeDasharray="2 2" />
+          {arrowHead(cx - rx - 18, cy - ry, "up", ARROW_MID)}
+          {arrowHead(cx - rx - 18, cy + ry, "down", ARROW_MID)}
+          <text x={cx - rx - 30} y={cy + 4} fill={ARROW_MID} fontSize={11} fontWeight={600}>W</text>
           {depthArrow(cy - ry, cy + ry)}
         </svg>
       );
     }
-    case "pear": {
+    case "pear":
       return (
         <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} className="mx-auto">
           <path d={`M${cx},${cy + 80} Q${cx - 65},${cy} ${cx},${cy - 70} Q${cx + 65},${cy} ${cx},${cy + 80}Z`} fill="none" stroke={strokeShape} strokeWidth={sw} />
           <path d={`M${cx},${cy + 35} Q${cx - 25},${cy + 5} ${cx},${cy - 25} Q${cx + 25},${cy + 5} ${cx},${cy + 35}Z`} fill={fillTable} stroke={strokeShape} strokeWidth={0.8} />
-          <line x1={cx + 75} y1={cy - 70} x2={cx + 75} y2={cy + 80} stroke={BLUE} strokeWidth={1.5} />
-          {arrowHead(cx + 75, cy - 70, "up", BLUE)}
-          {arrowHead(cx + 75, cy + 80, "down", BLUE)}
-          <text x={cx + 85} y={cy + 8} fill={BLUE} fontSize={11} fontWeight={600}>L</text>
-          <line x1={cx - 55} y1={cy + 90} x2={cx + 55} y2={cy + 90} stroke={GREEN} strokeWidth={1.5} />
-          {arrowHead(cx - 55, cy + 90, "left", GREEN)}
-          {arrowHead(cx + 55, cy + 90, "right", GREEN)}
-          <text x={cx - 3} y={cy + 104} fill={GREEN} fontSize={11} fontWeight={600}>W</text>
+          <line x1={cx + 75} y1={cy - 70} x2={cx + 75} y2={cy + 80} stroke={ARROW_DARK} strokeWidth={1.5} />
+          {arrowHead(cx + 75, cy - 70, "up", ARROW_DARK)}
+          {arrowHead(cx + 75, cy + 80, "down", ARROW_DARK)}
+          <text x={cx + 85} y={cy + 8} fill={ARROW_DARK} fontSize={11} fontWeight={600}>L</text>
+          <line x1={cx - 55} y1={cy + 90} x2={cx + 55} y2={cy + 90} stroke={ARROW_MID} strokeWidth={1.5} strokeDasharray="2 2" />
+          {arrowHead(cx - 55, cy + 90, "left", ARROW_MID)}
+          {arrowHead(cx + 55, cy + 90, "right", ARROW_MID)}
+          <text x={cx - 3} y={cy + 104} fill={ARROW_MID} fontSize={11} fontWeight={600}>W</text>
           {depthArrow(cy - 70, cy + 80)}
         </svg>
       );
-    }
-    case "heart": {
+    case "heart":
       return (
         <svg width={W} height={H} viewBox="0 0 280 280" className="mx-auto">
           <path d={`M${cx},${cy + 75} Q${cx - 90},${cy + 10} ${cx - 55},${cy - 45} Q${cx - 20},${cy - 75} ${cx},${cy - 40} Q${cx + 20},${cy - 75} ${cx + 55},${cy - 45} Q${cx + 90},${cy + 10} ${cx},${cy + 75}Z`} fill="none" stroke={strokeShape} strokeWidth={sw} />
           <path d={`M${cx},${cy + 25} Q${cx - 35},${cy} ${cx - 20},${cy - 20} Q${cx - 8},${cy - 32} ${cx},${cy - 18} Q${cx + 8},${cy - 32} ${cx + 20},${cy - 20} Q${cx + 35},${cy} ${cx},${cy + 25}Z`} fill={fillTable} stroke={strokeShape} strokeWidth={0.8} />
-          <line x1={cx + 80} y1={cy - 55} x2={cx + 80} y2={cy + 75} stroke={BLUE} strokeWidth={1.5} />
-          {arrowHead(cx + 80, cy - 55, "up", BLUE)}
-          {arrowHead(cx + 80, cy + 75, "down", BLUE)}
-          <text x={cx + 90} y={cy + 12} fill={BLUE} fontSize={11} fontWeight={600}>L</text>
-          <line x1={cx - 60} y1={cy + 85} x2={cx + 60} y2={cy + 85} stroke={GREEN} strokeWidth={1.5} />
-          {arrowHead(cx - 60, cy + 85, "left", GREEN)}
-          {arrowHead(cx + 60, cy + 85, "right", GREEN)}
-          <text x={cx - 3} y={cy + 99} fill={GREEN} fontSize={11} fontWeight={600}>W</text>
+          <line x1={cx + 80} y1={cy - 55} x2={cx + 80} y2={cy + 75} stroke={ARROW_DARK} strokeWidth={1.5} />
+          {arrowHead(cx + 80, cy - 55, "up", ARROW_DARK)}
+          {arrowHead(cx + 80, cy + 75, "down", ARROW_DARK)}
+          <text x={cx + 90} y={cy + 12} fill={ARROW_DARK} fontSize={11} fontWeight={600}>L</text>
+          <line x1={cx - 60} y1={cy + 85} x2={cx + 60} y2={cy + 85} stroke={ARROW_MID} strokeWidth={1.5} strokeDasharray="2 2" />
+          {arrowHead(cx - 60, cy + 85, "left", ARROW_MID)}
+          {arrowHead(cx + 60, cy + 85, "right", ARROW_MID)}
+          <text x={cx - 3} y={cy + 99} fill={ARROW_MID} fontSize={11} fontWeight={600}>W</text>
           {depthArrow(cy - 55, cy + 75)}
         </svg>
       );
-    }
     case "cushion": {
       const w2 = 65;
       const h2 = 60;
@@ -322,14 +315,14 @@ function MeasurementDiagram({ cutId }: { cutId: string }) {
         <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} className="mx-auto">
           <rect x={cx - w2} y={cy - h2} width={w2 * 2} height={h2 * 2} rx={r} fill="none" stroke={strokeShape} strokeWidth={sw} />
           <rect x={cx - w2 + 22} y={cy - h2 + 22} width={(w2 - 22) * 2} height={(h2 - 22) * 2} rx={8} fill={fillTable} stroke={strokeShape} strokeWidth={0.8} />
-          <line x1={cx - w2} y1={cy + h2 + 18} x2={cx + w2} y2={cy + h2 + 18} stroke={BLUE} strokeWidth={1.5} />
-          {arrowHead(cx - w2, cy + h2 + 18, "left", BLUE)}
-          {arrowHead(cx + w2, cy + h2 + 18, "right", BLUE)}
-          <text x={cx - 3} y={cy + h2 + 32} fill={BLUE} fontSize={11} fontWeight={600}>L</text>
-          <line x1={cx - w2 - 18} y1={cy - h2} x2={cx - w2 - 18} y2={cy + h2} stroke={GREEN} strokeWidth={1.5} />
-          {arrowHead(cx - w2 - 18, cy - h2, "up", GREEN)}
-          {arrowHead(cx - w2 - 18, cy + h2, "down", GREEN)}
-          <text x={cx - w2 - 30} y={cy + 4} fill={GREEN} fontSize={11} fontWeight={600}>W</text>
+          <line x1={cx - w2} y1={cy + h2 + 18} x2={cx + w2} y2={cy + h2 + 18} stroke={ARROW_DARK} strokeWidth={1.5} />
+          {arrowHead(cx - w2, cy + h2 + 18, "left", ARROW_DARK)}
+          {arrowHead(cx + w2, cy + h2 + 18, "right", ARROW_DARK)}
+          <text x={cx - 3} y={cy + h2 + 32} fill={ARROW_DARK} fontSize={11} fontWeight={600}>L</text>
+          <line x1={cx - w2 - 18} y1={cy - h2} x2={cx - w2 - 18} y2={cy + h2} stroke={ARROW_MID} strokeWidth={1.5} strokeDasharray="2 2" />
+          {arrowHead(cx - w2 - 18, cy - h2, "up", ARROW_MID)}
+          {arrowHead(cx - w2 - 18, cy + h2, "down", ARROW_MID)}
+          <text x={cx - w2 - 30} y={cy + 4} fill={ARROW_MID} fontSize={11} fontWeight={600}>W</text>
           {depthArrow(cy - h2, cy + h2)}
         </svg>
       );
@@ -343,16 +336,16 @@ function MeasurementDiagram({ cutId }: { cutId: string }) {
         <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} className="mx-auto">
           <polygon points={pts} fill="none" stroke={strokeShape} strokeWidth={sw} />
           <polygon points={ptsI} fill={fillTable} stroke={strokeShape} strokeWidth={0.8} />
-          <line x1={cx - 60} y1={cy + 55 + 18} x2={cx + 60} y2={cy + 55 + 18} stroke={BLUE} strokeWidth={1.5} />
-          {arrowHead(cx - 60, cy + 55 + 18, "left", BLUE)}
-          {arrowHead(cx + 60, cy + 55 + 18, "right", BLUE)}
-          <text x={cx - 3} y={cy + 55 + 32} fill={BLUE} fontSize={11} fontWeight={600}>L</text>
-          <line x1={cx - 60 - 18} y1={cy - 55} x2={cx - 60 - 18} y2={cy + 55} stroke={GREEN} strokeWidth={1.5} />
-          {arrowHead(cx - 60 - 18, cy - 55, "up", GREEN)}
-          {arrowHead(cx - 60 - 18, cy + 55, "down", GREEN)}
-          <text x={cx - 60 - 30} y={cy + 4} fill={GREEN} fontSize={11} fontWeight={600}>W</text>
+          <line x1={cx - 60} y1={cy + 55 + 18} x2={cx + 60} y2={cy + 55 + 18} stroke={ARROW_DARK} strokeWidth={1.5} />
+          {arrowHead(cx - 60, cy + 55 + 18, "left", ARROW_DARK)}
+          {arrowHead(cx + 60, cy + 55 + 18, "right", ARROW_DARK)}
+          <text x={cx - 3} y={cy + 55 + 32} fill={ARROW_DARK} fontSize={11} fontWeight={600}>L</text>
+          <line x1={cx - 60 - 18} y1={cy - 55} x2={cx - 60 - 18} y2={cy + 55} stroke={ARROW_MID} strokeWidth={1.5} strokeDasharray="2 2" />
+          {arrowHead(cx - 60 - 18, cy - 55, "up", ARROW_MID)}
+          {arrowHead(cx - 60 - 18, cy + 55, "down", ARROW_MID)}
+          <text x={cx - 60 - 30} y={cy + 4} fill={ARROW_MID} fontSize={11} fontWeight={600}>W</text>
           {depthArrow(cy - 55, cy + 55)}
-          <text x={cx} y={H - 4} fill="#6b7280" fontSize={9} textAnchor="middle">Measure straight sides, not cut corners</text>
+          <text x={cx} y={H - 4} fill="#6b7280" fontSize={9} textAnchor="middle">Medir lados rectos, no esquinas cortadas</text>
         </svg>
       );
     }
@@ -365,16 +358,16 @@ function MeasurementDiagram({ cutId }: { cutId: string }) {
         <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} className="mx-auto">
           <polygon points={pts} fill="none" stroke={strokeShape} strokeWidth={sw} />
           <polygon points={ptsI} fill={fillTable} stroke={strokeShape} strokeWidth={0.8} />
-          <line x1={cx - 55} y1={cy + 55 + 18} x2={cx + 55} y2={cy + 55 + 18} stroke={BLUE} strokeWidth={1.5} />
-          {arrowHead(cx - 55, cy + 55 + 18, "left", BLUE)}
-          {arrowHead(cx + 55, cy + 55 + 18, "right", BLUE)}
-          <text x={cx - 3} y={cy + 55 + 32} fill={BLUE} fontSize={11} fontWeight={600}>L</text>
-          <line x1={cx - 55 - 18} y1={cy - 55} x2={cx - 55 - 18} y2={cy + 55} stroke={GREEN} strokeWidth={1.5} />
-          {arrowHead(cx - 55 - 18, cy - 55, "up", GREEN)}
-          {arrowHead(cx - 55 - 18, cy + 55, "down", GREEN)}
-          <text x={cx - 55 - 30} y={cy + 4} fill={GREEN} fontSize={11} fontWeight={600}>W</text>
+          <line x1={cx - 55} y1={cy + 55 + 18} x2={cx + 55} y2={cy + 55 + 18} stroke={ARROW_DARK} strokeWidth={1.5} />
+          {arrowHead(cx - 55, cy + 55 + 18, "left", ARROW_DARK)}
+          {arrowHead(cx + 55, cy + 55 + 18, "right", ARROW_DARK)}
+          <text x={cx - 3} y={cy + 55 + 32} fill={ARROW_DARK} fontSize={11} fontWeight={600}>L</text>
+          <line x1={cx - 55 - 18} y1={cy - 55} x2={cx - 55 - 18} y2={cy + 55} stroke={ARROW_MID} strokeWidth={1.5} strokeDasharray="2 2" />
+          {arrowHead(cx - 55 - 18, cy - 55, "up", ARROW_MID)}
+          {arrowHead(cx - 55 - 18, cy + 55, "down", ARROW_MID)}
+          <text x={cx - 55 - 30} y={cy + 4} fill={ARROW_MID} fontSize={11} fontWeight={600}>W</text>
           {depthArrow(cy - 55, cy + 55)}
-          <text x={cx} y={H - 4} fill="#6b7280" fontSize={9} textAnchor="middle">Measure straight sides, not cut corners</text>
+          <text x={cx} y={H - 4} fill="#6b7280" fontSize={9} textAnchor="middle">Medir lados rectos, no esquinas cortadas</text>
         </svg>
       );
     }
@@ -389,16 +382,16 @@ function MeasurementDiagram({ cutId }: { cutId: string }) {
         <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} className="mx-auto">
           <polygon points={pts} fill="none" stroke={strokeShape} strokeWidth={sw} />
           <polygon points={ptsI} fill={fillTable} stroke={strokeShape} strokeWidth={0.8} />
-          <line x1={cx - sz} y1={cy + sz + 18} x2={cx + sz} y2={cy + sz + 18} stroke={BLUE} strokeWidth={1.5} />
-          {arrowHead(cx - sz, cy + sz + 18, "left", BLUE)}
-          {arrowHead(cx + sz, cy + sz + 18, "right", BLUE)}
-          <text x={cx - 3} y={cy + sz + 32} fill={BLUE} fontSize={11} fontWeight={600}>L</text>
-          <line x1={cx - sz - 18} y1={cy - sz} x2={cx - sz - 18} y2={cy + sz} stroke={GREEN} strokeWidth={1.5} />
-          {arrowHead(cx - sz - 18, cy - sz, "up", GREEN)}
-          {arrowHead(cx - sz - 18, cy + sz, "down", GREEN)}
-          <text x={cx - sz - 30} y={cy + 4} fill={GREEN} fontSize={11} fontWeight={600}>W</text>
+          <line x1={cx - sz} y1={cy + sz + 18} x2={cx + sz} y2={cy + sz + 18} stroke={ARROW_DARK} strokeWidth={1.5} />
+          {arrowHead(cx - sz, cy + sz + 18, "left", ARROW_DARK)}
+          {arrowHead(cx + sz, cy + sz + 18, "right", ARROW_DARK)}
+          <text x={cx - 3} y={cy + sz + 32} fill={ARROW_DARK} fontSize={11} fontWeight={600}>L</text>
+          <line x1={cx - sz - 18} y1={cy - sz} x2={cx - sz - 18} y2={cy + sz} stroke={ARROW_MID} strokeWidth={1.5} strokeDasharray="2 2" />
+          {arrowHead(cx - sz - 18, cy - sz, "up", ARROW_MID)}
+          {arrowHead(cx - sz - 18, cy + sz, "down", ARROW_MID)}
+          <text x={cx - sz - 30} y={cy + 4} fill={ARROW_MID} fontSize={11} fontWeight={600}>W</text>
           {depthArrow(cy - sz, cy + sz)}
-          <text x={cx} y={H - 4} fill="#6b7280" fontSize={9} textAnchor="middle">Measure straight sides, not cut corners</text>
+          <text x={cx} y={H - 4} fill="#6b7280" fontSize={9} textAnchor="middle">Medir lados rectos, no esquinas cortadas</text>
         </svg>
       );
     }
@@ -412,7 +405,6 @@ const DiamondWeightCalculator = () => {
   const [selectedCut, setSelectedCut] = useState("round");
   const cut = CUTS.find((c) => c.id === selectedCut)!;
 
-  // Initialize dimension values from defaults
   const [values, setValues] = useState<Record<string, Record<string, number>>>(() => {
     const init: Record<string, Record<string, number>> = {};
     CUTS.forEach((c) => {
@@ -463,119 +455,159 @@ const DiamondWeightCalculator = () => {
     }
   }, [dims, cut]);
 
+  const stats = [
+    {
+      title: "Quilates Estimados",
+      value: `${result.carats.toFixed(3)} ct`,
+      icon: Gem,
+    },
+    {
+      title: "Miligramos",
+      value: `${result.mg} mg`,
+      icon: Weight,
+    },
+    {
+      title: "Rango ±10%",
+      value: `${result.rangeLow.toFixed(2)} – ${result.rangeHigh.toFixed(2)} ct`,
+      icon: ArrowLeftRight,
+    },
+    {
+      title: "Profundidad %",
+      value: `${result.depthPct.toFixed(1)}%`,
+      icon: Percent,
+    },
+  ];
+
   return (
-    <div className="p-4 md:p-6 space-y-6 max-w-5xl mx-auto">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Gem className="h-6 w-6 text-primary" />
-          Calculadora de Diamante
-        </h1>
-        <p className="text-muted-foreground text-sm mt-1">
-          Selecciona un corte e ingresa las dimensiones para estimar el peso en quilates.
-        </p>
-      </div>
+    <div className="min-h-full bg-background">
+      <main className="container mx-auto px-6 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-2">
+            <Gem className="h-8 w-8 text-primary" />
+            <h1 className="text-3xl font-bold text-foreground">
+              Calculadora de Peso de Diamante
+            </h1>
+          </div>
+          <p className="text-muted-foreground">
+            Selecciona un corte e ingresa las dimensiones para estimar el peso en quilates
+          </p>
+        </div>
 
-      {/* Cut selector */}
-      <div className="grid grid-cols-5 gap-2">
-        {CUTS.map((c) => (
-          <button
-            key={c.id}
-            onClick={() => setSelectedCut(c.id)}
-            className={`flex flex-col items-center gap-1 rounded-lg border-2 p-2 md:p-3 transition-all text-xs md:text-sm font-medium hover:shadow-sm ${
-              selectedCut === c.id
-                ? "border-[#378ADD] bg-[#378ADD]/5 text-[#378ADD]"
-                : "border-border bg-card text-muted-foreground hover:border-muted-foreground/40"
-            }`}
-          >
-            <CutIcon cutId={c.id} size={24} />
-            <span className="leading-tight">{c.name}</span>
-          </button>
-        ))}
-      </div>
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          {stats.map((stat) => (
+            <Card key={stat.title} className="border-border">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                  <stat.icon className="h-4 w-4" />
+                  {stat.title}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-foreground tabular-nums">{stat.value}</div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
 
-      {/* Main area: diagram + sliders */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Diagram */}
-        <Card>
-          <CardContent className="pt-6 flex flex-col items-center">
-            <MeasurementDiagram cutId={selectedCut} />
-            <div className="mt-3 flex gap-4 text-[10px] text-muted-foreground">
-              <span className="flex items-center gap-1">
-                <span className="inline-block w-3 h-0.5 rounded" style={{ background: BLUE }} />
-                {cut.isRound ? "Diameter" : "Length"}
-              </span>
-              {!cut.isRound && (
-                <span className="flex items-center gap-1">
-                  <span className="inline-block w-3 h-0.5 rounded" style={{ background: GREEN }} />
-                  Width
-                </span>
-              )}
-              <span className="flex items-center gap-1">
-                <span className="inline-block w-3 h-0.5 rounded border-dashed" style={{ background: RED }} />
-                Depth
-              </span>
+        {/* Cut selector */}
+        <Card className="mb-6">
+          <CardContent className="pt-6">
+            <h3 className="font-semibold mb-4">Seleccionar corte</h3>
+            <div className="grid grid-cols-5 gap-2">
+              {CUTS.map((c) => (
+                <button
+                  key={c.id}
+                  onClick={() => setSelectedCut(c.id)}
+                  className={`flex flex-col items-center gap-1 rounded-lg border p-2 md:p-3 transition-all text-xs md:text-sm font-medium ${
+                    selectedCut === c.id
+                      ? "border-foreground bg-primary text-primary-foreground"
+                      : "border-border bg-card text-muted-foreground hover:border-foreground/40"
+                  }`}
+                >
+                  <CutIcon cutId={c.id} size={24} />
+                  <span className="leading-tight">{c.name}</span>
+                </button>
+              ))}
             </div>
           </CardContent>
         </Card>
 
-        {/* Sliders */}
-        <Card>
-          <CardContent className="pt-6 space-y-5">
-            {cut.dimensions.map((dim) => (
-              <div key={dim.key} className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium flex items-center gap-2">
-                    <span className="inline-block w-2.5 h-2.5 rounded-full" style={{ background: dim.color }} />
-                    {dim.label}
-                  </label>
-                  <span className="text-sm font-semibold tabular-nums" style={{ color: dim.color }}>
-                    {dims[dim.key].toFixed(2)} mm
+        {/* Main area: diagram + sliders */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          {/* Diagram */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Diagrama de medición
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col items-center">
+              <MeasurementDiagram cutId={selectedCut} />
+              <div className="mt-3 flex gap-4 text-[10px] text-muted-foreground">
+                <span className="flex items-center gap-1">
+                  <span className="inline-block w-3 h-0.5 rounded bg-foreground" />
+                  {cut.isRound ? "Diámetro" : "Largo"}
+                </span>
+                {!cut.isRound && (
+                  <span className="flex items-center gap-1">
+                    <span className="inline-block w-3 h-0.5 rounded bg-muted-foreground border-b border-dotted" />
+                    Ancho
                   </span>
-                </div>
-                <Slider
-                  min={dim.min}
-                  max={dim.max}
-                  step={0.01}
-                  value={[dims[dim.key]]}
-                  onValueChange={([v]) => setDimValue(dim.key, v)}
-                  className="w-full"
-                />
-                <p className="text-[11px] text-muted-foreground leading-snug">{dim.hint}</p>
+                )}
+                <span className="flex items-center gap-1">
+                  <span className="inline-block w-3 h-0.5 rounded bg-muted-foreground/50 border-b border-dashed" />
+                  Profundidad
+                </span>
               </div>
-            ))}
+            </CardContent>
+          </Card>
+
+          {/* Sliders */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Dimensiones (mm)
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              {cut.dimensions.map((dim) => (
+                <div key={dim.key} className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium text-foreground">
+                      {dim.label}
+                    </label>
+                    <span className="text-sm font-semibold tabular-nums text-foreground">
+                      {dims[dim.key].toFixed(2)} mm
+                    </span>
+                  </div>
+                  <Slider
+                    min={dim.min}
+                    max={dim.max}
+                    step={0.01}
+                    value={[dims[dim.key]]}
+                    onValueChange={([v]) => setDimValue(dim.key, v)}
+                    className="w-full"
+                  />
+                  <p className="text-[11px] text-muted-foreground leading-snug">{dim.hint}</p>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Formula */}
+        <Card>
+          <CardContent className="pt-6">
+            <p className="text-sm text-muted-foreground">
+              Fórmula: <span className="font-mono text-foreground">{result.formula}</span> = <span className="font-semibold text-foreground">{result.carats.toFixed(3)} ct</span>
+            </p>
           </CardContent>
         </Card>
-      </div>
-
-      {/* Results */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <ResultBox label="Quilates estimados" value={`${result.carats.toFixed(3)} ct`} large />
-            <ResultBox label="Miligramos" value={`${result.mg} mg`} />
-            <ResultBox label="Rango ±10%" value={`${result.rangeLow.toFixed(2)} – ${result.rangeHigh.toFixed(2)} ct`} />
-            <ResultBox label="Depth %" value={`${result.depthPct.toFixed(1)}%`} />
-          </div>
-          <p className="text-[11px] text-muted-foreground mt-4">
-            Fórmula: <span className="font-mono">{result.formula}</span> = {result.carats.toFixed(3)} ct
-          </p>
-        </CardContent>
-      </Card>
+      </main>
     </div>
   );
 };
-
-function ResultBox({ label, value, large }: { label: string; value: string; large?: boolean }) {
-  return (
-    <div className="rounded-lg border bg-muted/30 p-4 text-center space-y-1">
-      <p className="text-xs text-muted-foreground">{label}</p>
-      <p className={`font-semibold tabular-nums flex items-center justify-center gap-1.5 ${large ? "text-xl" : "text-base"}`}>
-        {large && <Gem className="h-4 w-4 text-primary" />}
-        {value}
-      </p>
-    </div>
-  );
-}
 
 export default DiamondWeightCalculator;
