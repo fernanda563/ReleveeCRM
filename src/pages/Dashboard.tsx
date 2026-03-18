@@ -252,13 +252,6 @@ const Dashboard = () => {
       </main>
 
       {/* Dialogs */}
-      <ProspectDialog
-        open={prospectDialogOpen}
-        onOpenChange={setProspectDialogOpen}
-        onSuccess={() => {
-          setProspectDialogOpen(false);
-        }}
-      />
       <ClientDialog
         open={clientDialogOpen}
         onOpenChange={setClientDialogOpen}

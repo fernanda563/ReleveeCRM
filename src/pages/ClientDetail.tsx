@@ -250,16 +250,6 @@ const ClientDetail = () => {
           </TabsContent>
         </Tabs>
 
-        {/* Diálogo de nuevo proyecto */}
-        <ProspectDialog
-          open={showProspectDialog}
-          onOpenChange={setShowProspectDialog}
-          client={client}
-          onSuccess={() => {
-            setRefreshKey(prev => prev + 1);
-            toast.success("Cotización registrada exitosamente");
-          }}
-        />
       </div>
     </div>
   );

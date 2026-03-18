@@ -278,15 +278,6 @@ const CRM = () => {
         }}
       />
 
-      <ProspectDialog
-        open={isProspectDialogOpen}
-        onOpenChange={setIsProspectDialogOpen}
-        client={selectedClient}
-        onSuccess={() => {
-          toast.success("Cotización registrada exitosamente");
-          setIsProspectDialogOpen(false);
-        }}
-      />
 
       <ReminderDialog
         open={isReminderDialogOpen}
