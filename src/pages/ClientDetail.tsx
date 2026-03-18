@@ -238,12 +238,6 @@ const ClientDetail = () => {
           </TabsContent>
 
           <TabsContent value="prospects" className="mt-6">
-            <div className="flex justify-end mb-4">
-              <Button onClick={() => setShowProspectDialog(true)} className="gap-2">
-                <Plus className="h-4 w-4" />
-                Nueva Cotización
-              </Button>
-            </div>
             <ProspectsHistory key={refreshKey} clientId={client.id} />
           </TabsContent>
 
