@@ -193,9 +193,9 @@ export default function Projects() {
         {/* Header */}
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-foreground mb-2">Proyectos</h1>
+            <h1 className="text-3xl font-bold text-foreground mb-2">Cotizaciones</h1>
             <p className="text-muted-foreground">
-              Explora todos los proyectos de joyería de tus clientes
+              Explora todas las cotizaciones de joyería de tus clientes
             </p>
           </div>
         </div>
