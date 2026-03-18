@@ -133,6 +133,7 @@ export default function QuotationDialog({
   const [selectedClientId, setSelectedClientId] = useState(clientId || "");
   const [selectedType, setSelectedType] = useState("");
   const [fechaEntrega, setFechaEntrega] = useState("");
+  const [fechaVigencia, setFechaVigencia] = useState("");
   const [observaciones, setObservaciones] = useState("");
 
   // Step 2
