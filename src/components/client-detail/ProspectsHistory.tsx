@@ -168,7 +168,7 @@ export const ProspectsHistory = ({ clientId }: ProspectsHistoryProps) => {
 
       if (error) throw error;
 
-      toast.success("Proyecto eliminado exitosamente");
+      toast.success("Cotización eliminada exitosamente");
       setDeletingProspect(null);
       fetchProspects();
     } catch (error) {
