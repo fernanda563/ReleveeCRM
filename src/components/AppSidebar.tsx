@@ -76,6 +76,7 @@ const menuSections = [
       { title: "Gestión de Diseñadores", url: "/designers", icon: Palette, adminOnly: true },
       { title: "Gestión de Usuarios", url: "/users", icon: Shield, adminOnly: true },
       { title: "Gestión de Proveedores", url: "/suppliers", icon: Building2, adminOnly: true },
+      { title: "Gestión de Materiales", url: "/materials", icon: Package, adminOnly: true },
     ],
   },
   {

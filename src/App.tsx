@@ -59,6 +59,7 @@ const App = () => (
         <Route path="/settings/calendar" element={<CalendarAdmin />} />
         <Route path="/settings/system" element={<SystemSettings />} />
         <Route path="/settings/roles" element={<RolesManagement />} />
+        <Route path="/materials" element={<Materials />} />
       </Route>
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />

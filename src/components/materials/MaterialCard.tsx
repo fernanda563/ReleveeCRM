@@ -16,6 +16,8 @@ interface Material {
   redondeo_multiplo: number | null;
   activo: boolean;
   notas: string | null;
+  created_at?: string;
+  updated_at?: string;
 }
 
 interface MaterialCardProps {
