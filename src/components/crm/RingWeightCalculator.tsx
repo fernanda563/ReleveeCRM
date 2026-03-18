@@ -110,9 +110,9 @@ export default function RingWeightCalculator({ onUseWeight }: RingWeightCalculat
 
         {/* Band Width */}
         <div className="space-y-2">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1.5">
             <span className="text-sm font-medium text-foreground">Ancho de banda</span>
-            <span className="text-sm text-muted-foreground">{width} mm</span>
+            <span className="text-sm text-muted-foreground">({width} mm)</span>
           </div>
           <Slider
             value={[width]}
