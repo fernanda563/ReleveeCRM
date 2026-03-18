@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import ClientDialog from "@/components/crm/ClientDialog";
 import AppointmentDialog from "@/components/crm/AppointmentDialog";
-import ProspectDialog from "@/components/crm/ProspectDialog";
+
 import ReminderDialog from "@/components/crm/ReminderDialog";
 import ClientList from "@/components/crm/ClientList";
 
