@@ -243,6 +243,16 @@ export default function RingWeightCalculator({ onUseWeight }: RingWeightCalculat
         </div>
       </div>
 
+      {/* Use weight button */}
+      {onUseWeight && (
+        <Button
+          onClick={() => onUseWeight(parseFloat(weight.toFixed(2)))}
+          className="w-full"
+        >
+          Usar este peso ({weight.toFixed(2)} g)
+        </Button>
+      )}
+
       {/* Footnote */}
       <p className="text-xs text-muted-foreground text-center">
         Pesos aproximados para bandas planas comfort-fit. Anillos con piedras, grabados o diseños elaborados pueden variar ±15-30%.
