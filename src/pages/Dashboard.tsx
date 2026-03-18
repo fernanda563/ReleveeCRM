@@ -11,7 +11,7 @@ import {
 import { Users, ShoppingCart, Gem, TrendingUp, Plus, UserPlus, ShoppingBag } from "lucide-react";
 import ClientDialog from "@/components/crm/ClientDialog";
 import OrderDialog from "@/components/orders/OrderDialog";
-import ProspectDialog from "@/components/crm/ProspectDialog";
+
 
 const Dashboard = () => {
   const navigate = useNavigate();
