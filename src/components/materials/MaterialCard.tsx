@@ -87,6 +87,15 @@ export function MaterialCard({ material, onEdit, onDelete }: MaterialCardProps) 
           {material.categoria && (
             <Badge variant="secondary" className="text-xs">{material.categoria}</Badge>
           )}
+          {(material as any).tipo_material && (
+            <Badge variant="default" className="text-xs capitalize">{(material as any).tipo_material}</Badge>
+          )}
+          {(material as any).kilataje && (
+            <Badge variant="outline" className="text-xs">{(material as any).kilataje}</Badge>
+          )}
+          {(material as any).color && (
+            <Badge variant="outline" className="text-xs capitalize">{(material as any).color}</Badge>
+          )}
           {!material.activo && (
             <Badge variant="outline" className="text-muted-foreground text-xs">Inactivo</Badge>
           )}

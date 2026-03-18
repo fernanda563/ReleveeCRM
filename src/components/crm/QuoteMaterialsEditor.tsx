@@ -8,6 +8,8 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  SelectGroup,
+  SelectLabel,
 } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,6 +27,9 @@ interface Material {
   redondeo: string;
   redondeo_multiplo: number | null;
   activo: boolean | null;
+  tipo_material: string | null;
+  kilataje: string | null;
+  color: string | null;
 }
 
 export interface QuoteMaterialItem {
@@ -49,7 +54,7 @@ export const QuoteMaterialsEditor = ({
   const [selectedId, setSelectedId] = useState("");
 
   useEffect(() => {
-    const fetch = async () => {
+    const fetchMaterials = async () => {
       const { data } = await supabase
         .from("materials")
         .select("*")
@@ -58,7 +63,7 @@ export const QuoteMaterialsEditor = ({
         .order("nombre");
       if (data) setMaterials(data as Material[]);
     };
-    fetch();
+    fetchMaterials();
   }, []);
 
   const handleAdd = () => {
@@ -109,6 +114,21 @@ export const QuoteMaterialsEditor = ({
     return map[unit] || unit;
   };
 
+  const formatMaterialLabel = (m: Material) => {
+    const parts = [m.nombre];
+    if (m.kilataje) parts.push(m.kilataje);
+    if (m.color) parts.push(m.color);
+    return parts.join(" ");
+  };
+
+  // Group materials by categoria
+  const grouped = materials.reduce<Record<string, Material[]>>((acc, m) => {
+    const key = m.categoria || "Sin categoría";
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(m);
+    return acc;
+  }, {});
+
   return (
     <div className="space-y-3">
       <div className="flex gap-2">
@@ -117,15 +137,17 @@ export const QuoteMaterialsEditor = ({
             <SelectValue placeholder="Seleccionar material del catálogo" />
           </SelectTrigger>
           <SelectContent>
-            {materials.map((m) => (
-              <SelectItem key={m.id} value={m.id}>
-                <span className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground">
-                    [{m.categoria || "Sin cat."}]
-                  </span>
-                  {m.nombre} — ${m.costo_directo.toLocaleString("es-MX")}/{unitLabel(m.unidad_medida)}
-                </span>
-              </SelectItem>
+            {Object.entries(grouped).map(([cat, mats]) => (
+              <SelectGroup key={cat}>
+                <SelectLabel>{cat}</SelectLabel>
+                {mats.map((m) => (
+                  <SelectItem key={m.id} value={m.id}>
+                    <span className="flex items-center gap-2">
+                      {formatMaterialLabel(m)} — ${m.costo_directo.toLocaleString("es-MX")}/{unitLabel(m.unidad_medida)}
+                    </span>
+                  </SelectItem>
+                ))}
+              </SelectGroup>
             ))}
           </SelectContent>
         </Select>
