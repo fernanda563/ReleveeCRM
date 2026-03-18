@@ -82,10 +82,6 @@ const Dashboard = () => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48 bg-popover z-50">
-              <DropdownMenuItem onClick={() => setProspectDialogOpen(true)}>
-                <Gem className="h-4 w-4 mr-2" />
-                Nueva Cotización
-              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setClientDialogOpen(true)}>
                 <UserPlus className="h-4 w-4 mr-2" />
                 Nuevo Cliente
