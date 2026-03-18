@@ -19,9 +19,9 @@ interface MaterialFormData {
   unidad_medida: string;
   costo_directo: string;
   tipo_margen: string;
-  valor_margen: number;
+  valor_margen: string;
   redondeo: string;
-  redondeo_multiplo: number;
+  redondeo_multiplo: string;
   activo: boolean;
   notas: string;
 }
@@ -51,15 +51,31 @@ const unformatCurrency = (value: string): string => {
   return value.replace(/[^\d.]/g, '');
 };
 
+const formatPercentage = (value: string): string => {
+  const numericValue = value.replace(/[^\d.]/g, '');
+  const parts = numericValue.split('.');
+  if (parts.length > 2) {
+    return formatPercentage(parts[0] + '.' + parts.slice(1).join(''));
+  }
+  if (numericValue === '') return '';
+  const integerPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  const decimalPart = parts.length > 1 ? '.' + parts[1].slice(0, 2) : '';
+  return integerPart + decimalPart + '%';
+};
+
+const unformatPercentage = (value: string): string => {
+  return value.replace(/[^\d.]/g, '');
+};
+
 const defaultForm: MaterialFormData = {
   nombre: "",
   categoria: "",
   unidad_medida: "gramo",
   costo_directo: "",
   tipo_margen: "porcentaje",
-  valor_margen: 0,
+  valor_margen: "",
   redondeo: "ninguno",
-  redondeo_multiplo: 1,
+  redondeo_multiplo: "",
   activo: true,
   notas: "",
 };
@@ -73,10 +89,19 @@ export function MaterialDialog({
   useEffect(() => {
     if (open) {
       const raw = initialData ? { ...defaultForm, ...initialData } : defaultForm;
+      const tipoMargen = raw.tipo_margen || "porcentaje";
       const data = {
         ...raw,
         costo_directo: raw.costo_directo
           ? formatCurrency(String(raw.costo_directo))
+          : "",
+        valor_margen: raw.valor_margen
+          ? (tipoMargen === "porcentaje"
+              ? formatPercentage(String(raw.valor_margen))
+              : formatCurrency(String(raw.valor_margen)))
+          : "",
+        redondeo_multiplo: raw.redondeo_multiplo
+          ? formatCurrency(String(raw.redondeo_multiplo))
           : "",
       };
       setForm(data);
@@ -84,8 +109,10 @@ export function MaterialDialog({
   }, [open, initialData]);
 
   const costoNumerico = parseFloat(unformatCurrency(form.costo_directo)) || 0;
+  const margenNumerico = parseFloat(unformatPercentage(form.valor_margen)) || 0;
+  const multiploNumerico = parseFloat(unformatCurrency(form.redondeo_multiplo)) || 1;
   const precio = calcularPrecioMaterial(
-    costoNumerico, form.tipo_margen, form.valor_margen, form.redondeo, form.redondeo_multiplo
+    costoNumerico, form.tipo_margen, margenNumerico, form.redondeo, multiploNumerico
   );
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -93,6 +120,8 @@ export function MaterialDialog({
     onSubmit({
       ...form,
       costo_directo: parseFloat(unformatCurrency(form.costo_directo)) || 0,
+      valor_margen: parseFloat(unformatPercentage(form.valor_margen)) || 0,
+      redondeo_multiplo: parseFloat(unformatCurrency(form.redondeo_multiplo)) || 1,
     } as any);
   };
 
@@ -164,7 +193,16 @@ export function MaterialDialog({
           {/* Tipo de margen */}
           <div className="space-y-2">
             <Label>Tipo de margen</Label>
-            <Select value={form.tipo_margen} onValueChange={(v) => update("tipo_margen", v)}>
+            <Select
+              value={form.tipo_margen}
+              onValueChange={(v) => {
+                const rawVal = unformatPercentage(form.valor_margen);
+                const reformatted = rawVal
+                  ? (v === "porcentaje" ? formatPercentage(rawVal) : formatCurrency(rawVal))
+                  : "";
+                setForm((prev) => ({ ...prev, tipo_margen: v, valor_margen: reformatted }));
+              }}
+            >
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="porcentaje">Porcentaje (%)</SelectItem>
@@ -180,11 +218,17 @@ export function MaterialDialog({
             </Label>
             <Input
               id="margen"
-              type="number"
-              min={0}
-              step="0.01"
-              value={form.valor_margen || ""}
-              onChange={(e) => update("valor_margen", parseFloat(e.target.value) || 0)}
+              type="text"
+              value={form.valor_margen}
+              onChange={(e) =>
+                update(
+                  "valor_margen",
+                  form.tipo_margen === "porcentaje"
+                    ? formatPercentage(e.target.value)
+                    : formatCurrency(e.target.value)
+                )
+              }
+              placeholder={form.tipo_margen === "porcentaje" ? "0%" : "$0.00"}
             />
           </div>
 
@@ -209,14 +253,13 @@ export function MaterialDialog({
               <Label htmlFor="multiplo">Múltiplo de redondeo</Label>
               <Input
                 id="multiplo"
-                type="number"
-                min={1}
-                step="1"
-                value={form.redondeo_multiplo || ""}
-                onChange={(e) => update("redondeo_multiplo", parseFloat(e.target.value) || 1)}
+                type="text"
+                value={form.redondeo_multiplo}
+                onChange={(e) => update("redondeo_multiplo", formatCurrency(e.target.value))}
+                placeholder="$0.00"
               />
               <p className="text-xs text-muted-foreground">
-                Ej: 10 redondeará a múltiplos de 10 ($10, $20, $30...)
+                Ej: $10 redondeará a múltiplos de 10 ($10, $20, $30...)
               </p>
             </div>
           )}

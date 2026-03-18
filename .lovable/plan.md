@@ -1,31 +1,90 @@
 
+## Simplificar el Paso 5: Eliminar subida de STL y agregar búsqueda por nombre
 
-## Agregar máscaras de formato a campos de margen y redondeo
+### Qué hay que cambiar
 
-### Cambios en `src/components/materials/MaterialDialog.tsx`
+El archivo `src/components/orders/OrderDialogStep5.tsx` actualmente tiene dos mecanismos:
+1. Un `<Select>` para seleccionar STL existentes del repositorio.
+2. Un panel expandible (toggle) para subir un archivo STL nuevo directamente al repositorio.
 
-1. **Cambiar `valor_margen` y `redondeo_multiplo` de `number` a `string`** en `MaterialFormData` para manejar valores formateados.
+La petición es eliminar el mecanismo de subida y reemplazar el `<Select>` por un buscador por nombre.
 
-2. **Agregar función `formatPercentage`**: similar a `formatCurrency` pero con sufijo `%` en lugar de prefijo `$`.
+---
 
-3. **Campo "Valor de margen" (líneas 177-189)**:
-   - Si `tipo_margen === "porcentaje"`: aplicar máscara de porcentaje (`formatPercentage`) → muestra ej: `25.5%`
-   - Si `tipo_margen === "fijo"`: aplicar máscara de moneda (`formatCurrency`) → muestra ej: `$150.00`
-   - Cambiar `type="number"` a `type="text"`
+### Cambios en `OrderDialogStep5.tsx`
 
-4. **Campo "Múltiplo de redondeo" (líneas 209-217)**:
-   - Aplicar máscara de moneda (`formatCurrency`)
-   - Cambiar `type="number"` a `type="text"`
+**Eliminar completamente:**
+- Los estados `showUpload`, `uploading`, `stlFile`, `stlNombre`, `stlDescripcion`
+- Las funciones `resetUpload` y `handleUpload`
+- Todo el bloque JSX del panel de subida (el `div` con la clase `rounded-lg border border-dashed`)
+- Los imports de `Upload`, `Loader2`, `X`, `ChevronDown`, `ChevronUp` de lucide-react (si ya no se usan)
+- La prop `onSTLUploaded` de la interfaz y del componente
 
-5. **Lógica al cambiar `tipo_margen`**: cuando el usuario cambie entre porcentaje y fijo, reformatear el valor actual de `valor_margen` con la máscara correspondiente.
+**Reemplazar el `<Select>` por un buscador con `Command`:**
 
-6. **`handleSubmit`**: convertir `valor_margen` y `redondeo_multiplo` de string formateado a número con `parseFloat(unformat...)`.
+El proyecto ya tiene instalado `cmdk` y el componente `Command` disponible en `src/components/ui/command.tsx`. Se usará para crear un combo de búsqueda tipo "popover + command" que:
+- Muestra un campo de texto con placeholder "Buscar STL por nombre..."
+- Al escribir, filtra la lista de `availableSTLFiles` por nombre en tiempo real
+- Al seleccionar un resultado, actualiza `selectedSTLFileId`
+- Muestra el nombre del STL seleccionado en el trigger del popover
+- Incluye una opción "Ninguno" para deseleccionar
 
-7. **`useEffect` de inicialización**: formatear valores numéricos existentes al abrir el diálogo.
+**Patrón a usar:** `Popover` + `Command` + `CommandInput` + `CommandList` + `CommandItem` (patrón combobox estándar de shadcn/ui, que ya está completamente disponible en el proyecto).
 
-8. **Cálculo de precio preview**: usar `parseFloat(unformat...)` para ambos campos.
+```
+[Trigger: Popover]
+  "Buscar STL por nombre..."  ← campo de búsqueda
+  ─────────────────────────
+  Ninguno
+  Anillo solitario clásico
+  Solitario 6 uñas          ← filtrado en tiempo real
+  ...
+```
 
-### Regla general anotada
+**Interfaz de props actualizada:**
+```typescript
+interface OrderDialogStep5Props {
+  notas: string;
+  setNotas: (value: string) => void;
+  selectedSTLFileId: string;
+  setSelectedSTLFileId: (value: string) => void;
+  availableSTLFiles: STLFile[];
+  loading: boolean;
+  // onSTLUploaded ← eliminada
+}
+```
 
-Todo campo de moneda en el proyecto debe usar la máscara `formatCurrency`/`unformatCurrency`. Todo campo de porcentaje debe usar `formatPercentage`/`unformatPercentage`.
+---
 
+### Cambio en `OrderDialog.tsx`
+
+Quitar la prop `onSTLUploaded` que se pasa al componente `OrderDialogStep5` en el JSX del diálogo principal. Esta prop ya no existe en la interfaz del componente.
+
+---
+
+### Resultado visual esperado
+
+```
+Paso 5 — Notas y Diseño STL
+─────────────────────────────────────────────────────
+
+[Notas Adicionales]
+  [ Textarea para notas... ]
+
+Archivo STL (Opcional)
+  Selecciona un diseño existente del repositorio.
+
+  [🔍 Buscar archivo STL por nombre...  ▼]
+       ← popover con búsqueda reactiva →
+
+  [Vista previa del STL seleccionado]
+
+─────────────────────────────────────────────────────
+```
+
+---
+
+### Archivos a modificar
+
+1. **`src/components/orders/OrderDialogStep5.tsx`** — Eliminar toda la lógica y UI de subida, reemplazar el `<Select>` por un combobox `Popover + Command`.
+2. **`src/components/orders/OrderDialog.tsx`** — Quitar la prop `onSTLUploaded` del lugar donde se renderiza `<OrderDialogStep5 ... />`.
