@@ -378,7 +378,7 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
       setNotas(prospect.observaciones);
     }
 
-    toast.success("Datos del proyecto aplicados al formulario");
+    toast.success("Datos de la cotización aplicados al formulario");
   };
 
   const formatCurrency = (value: string): string => {
