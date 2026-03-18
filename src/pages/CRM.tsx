@@ -172,7 +172,7 @@ const CRM = () => {
             Gestión de Clientes
           </h1>
           <p className="text-muted-foreground">
-            Administra tu cartera de clientes, citas, proyectos y recordatorios
+            Administra tu cartera de clientes, citas, cotizaciones y recordatorios
           </p>
         </div>
 
@@ -215,7 +215,7 @@ const CRM = () => {
                 <div className="p-2 bg-secondary rounded-lg">
               <Gem className="h-4 w-4 text-secondary-foreground" />
             </div>
-            Añadir Proyecto
+            Añadir Cotización
               </CardTitle>
             </CardHeader>
           </Card>
@@ -294,7 +294,7 @@ const CRM = () => {
         onOpenChange={setIsProspectDialogOpen}
         client={selectedClient}
         onSuccess={() => {
-          toast.success("Proyecto registrado exitosamente");
+          toast.success("Cotización registrada exitosamente");
           setIsProspectDialogOpen(false);
         }}
       />

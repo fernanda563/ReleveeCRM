@@ -346,7 +346,7 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
       parts.push(`(${estiloFormatted})`);
     }
     
-    return parts.length > 0 ? parts.join(' - ') : "Proyecto sin título";
+    return parts.length > 0 ? parts.join(' - ') : "Cotización sin título";
   };
 
   const applyProspectData = (prospectId: string) => {
@@ -378,7 +378,7 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
       setNotas(prospect.observaciones);
     }
 
-    toast.success("Datos del proyecto aplicados al formulario");
+    toast.success("Datos de la cotización aplicados al formulario");
   };
 
   const formatCurrency = (value: string): string => {
@@ -1067,9 +1067,9 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
               {clientProspects.length > 0 && (
                 <div className="space-y-2 mt-4 p-4 bg-accent/5 border border-accent/20 rounded-md">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="prospect">¿Deseas usar un proyecto existente?</Label>
+                    <Label htmlFor="prospect">¿Deseas usar una cotización existente?</Label>
                     <Badge variant="secondary" className="text-xs">
-                      {clientProspects.length} {clientProspects.length === 1 ? "proyecto" : "proyectos"} activo{clientProspects.length > 1 ? "s" : ""}
+                      {clientProspects.length} {clientProspects.length === 1 ? "cotización" : "cotizaciones"} activa{clientProspects.length > 1 ? "s" : ""}
                     </Badge>
                   </div>
                   <div className="relative">
@@ -1084,7 +1084,7 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
                       disabled={loading || isLoadingProspects}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Selecciona un proyecto (opcional)" />
+                        <SelectValue placeholder="Selecciona una cotización (opcional)" />
                       </SelectTrigger>
                       <SelectContent>
                         {clientProspects.map((prospect) => (
@@ -1122,7 +1122,7 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
                     )}
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Al seleccionar un proyecto, se rellenarán automáticamente los campos relacionados (metal, piedra, precio sugerido y notas).
+                    Al seleccionar una cotización, se rellenarán automáticamente los campos relacionados (metal, piedra, precio sugerido y notas).
                   </p>
                 </div>
               )}

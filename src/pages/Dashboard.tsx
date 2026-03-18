@@ -84,7 +84,7 @@ const Dashboard = () => {
             <DropdownMenuContent align="end" className="w-48 bg-popover z-50">
               <DropdownMenuItem onClick={() => setProspectDialogOpen(true)}>
                 <Gem className="h-4 w-4 mr-2" />
-                Nuevo Proyecto
+                Nueva Cotización
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setClientDialogOpen(true)}>
                 <UserPlus className="h-4 w-4 mr-2" />
@@ -137,7 +137,7 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
           <p className="text-muted-foreground">
-            Administra tu cartera de clientes, agenda citas y realiza seguimiento de proyectos.
+            Administra tu cartera de clientes, agenda citas y realiza seguimiento de cotizaciones.
           </p>
               <div className="mt-4 pt-4 border-t border-border">
                 <div className="flex justify-between text-sm">
@@ -145,7 +145,7 @@ const Dashboard = () => {
                   <span className="font-semibold text-foreground">248</span>
                 </div>
                 <div className="flex justify-between text-sm mt-2">
-                  <span className="text-muted-foreground">Proyectos activos:</span>
+                  <span className="text-muted-foreground">Cotizaciones activas:</span>
                   <span className="font-semibold text-foreground">32</span>
                 </div>
               </div>

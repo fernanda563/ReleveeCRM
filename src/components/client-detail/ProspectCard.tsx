@@ -129,7 +129,7 @@ export const ProspectCard = ({
                           onEditStatus(prospect);
                         }}>
                           <Pencil className="mr-2 h-4 w-4" />
-                          Editar proyecto
+                          Editar cotización
                         </DropdownMenuItem>
                       )}
                       {prospect.estado === "activo" && onConvertToOrder && (
@@ -180,7 +180,7 @@ export const ProspectCard = ({
                         onEditStatus(prospect);
                       }}>
                         <Pencil className="mr-2 h-4 w-4" />
-                        Editar proyecto
+                        Editar cotización
                       </DropdownMenuItem>
                     )}
                     {prospect.estado === "activo" && onConvertToOrder && (

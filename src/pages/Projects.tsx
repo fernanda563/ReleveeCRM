@@ -75,8 +75,8 @@ export default function Projects() {
 
       setProspects(data as ProspectWithClient[]);
     } catch (error) {
-      console.error("Error al cargar proyectos:", error);
-      toast.error("Error al cargar los proyectos");
+      console.error("Error al cargar cotizaciones:", error);
+      toast.error("Error al cargar las cotizaciones");
     } finally {
       setLoading(false);
     }
@@ -144,13 +144,13 @@ export default function Projects() {
       
       if (error) throw error;
       
-      toast.success("Proyecto convertido exitosamente a orden");
+      toast.success("Cotización convertida exitosamente a orden");
       setShowOrderDialog(false);
       setConvertingProspect(null);
       fetchProspects();
     } catch (error) {
       console.error("Error:", error);
-      toast.error("Error al convertir proyecto");
+      toast.error("Error al convertir cotización");
     }
   };
 
@@ -169,12 +169,12 @@ export default function Projects() {
 
       if (error) throw error;
 
-      toast.success("Proyecto eliminado exitosamente");
+      toast.success("Cotización eliminada exitosamente");
       setDeletingProspect(null);
       fetchProspects();
     } catch (error) {
       console.error("Error deleting prospect:", error);
-      toast.error("Error al eliminar el proyecto");
+      toast.error("Error al eliminar la cotización");
     }
   };
 
@@ -193,9 +193,9 @@ export default function Projects() {
         {/* Header */}
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-foreground mb-2">Proyectos</h1>
+            <h1 className="text-3xl font-bold text-foreground mb-2">Cotizaciones</h1>
             <p className="text-muted-foreground">
-              Explora todos los proyectos de joyería de tus clientes
+              Explora todas las cotizaciones de joyería de tus clientes
             </p>
           </div>
         </div>
@@ -206,7 +206,7 @@ export default function Projects() {
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                 <FolderOpen className="h-4 w-4" />
-                Total proyectos
+                Total cotizaciones
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -314,8 +314,8 @@ export default function Projects() {
           <div className="text-center py-12">
             <p className="text-muted-foreground">
               {searchQuery || filterEstado !== "todos" 
-                ? "No se encontraron proyectos con esos filtros" 
-                : "No hay proyectos registrados"}
+                ? "No se encontraron cotizaciones con esos filtros" 
+                : "No hay cotizaciones registradas"}
             </p>
           </div>
         ) : (
@@ -370,9 +370,9 @@ export default function Projects() {
         >
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>¿Eliminar proyecto?</AlertDialogTitle>
+              <AlertDialogTitle>¿Eliminar cotización?</AlertDialogTitle>
               <AlertDialogDescription>
-                ¿Estás seguro de eliminar el proyecto "{deletingProspect ? generateProspectTitle(deletingProspect) : ""}"? 
+                ¿Estás seguro de eliminar la cotización "{deletingProspect ? generateProspectTitle(deletingProspect) : ""}"? 
                 Esta acción no se puede deshacer.
               </AlertDialogDescription>
             </AlertDialogHeader>

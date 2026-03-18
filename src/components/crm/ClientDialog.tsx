@@ -339,7 +339,7 @@ const ClientDialog = ({ open, onOpenChange, client, onSuccess }: ClientDialogPro
 
       if (error) throw error;
 
-      toast.success("Cliente eliminado exitosamente. Todas las órdenes, citas, proyectos y recordatorios asociados también fueron eliminados.");
+      toast.success("Cliente eliminado exitosamente. Todas las órdenes, citas, cotizaciones y recordatorios asociados también fueron eliminados.");
       onSuccess();
       onOpenChange(false);
       setShowDeleteAlert(false);

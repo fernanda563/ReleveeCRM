@@ -103,7 +103,7 @@ export const ProspectsHistory = ({ clientId }: ProspectsHistoryProps) => {
       }
     } catch (error) {
       console.error("Error fetching prospects:", error);
-      toast.error("Error al cargar los proyectos");
+      toast.error("Error al cargar las cotizaciones");
     } finally {
       setLoading(false);
     }
@@ -143,13 +143,13 @@ export const ProspectsHistory = ({ clientId }: ProspectsHistoryProps) => {
       
       if (error) throw error;
       
-      toast.success("Proyecto convertido exitosamente a orden");
+      toast.success("Cotización convertida exitosamente a orden");
       setShowOrderDialog(false);
       setConvertingProspect(null);
       fetchProspects();
     } catch (error) {
       console.error("Error:", error);
-      toast.error("Error al convertir proyecto");
+      toast.error("Error al convertir cotización");
     }
   };
 
@@ -168,12 +168,12 @@ export const ProspectsHistory = ({ clientId }: ProspectsHistoryProps) => {
 
       if (error) throw error;
 
-      toast.success("Proyecto eliminado exitosamente");
+      toast.success("Cotización eliminada exitosamente");
       setDeletingProspect(null);
       fetchProspects();
     } catch (error) {
       console.error("Error deleting prospect:", error);
-      toast.error("Error al eliminar el proyecto");
+      toast.error("Error al eliminar la cotización");
     }
   };
 
@@ -190,7 +190,7 @@ export const ProspectsHistory = ({ clientId }: ProspectsHistoryProps) => {
       <Card>
         <CardContent className="py-12 text-center">
           <Gem className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground">No hay proyectos registrados</p>
+          <p className="text-muted-foreground">No hay cotizaciones registradas</p>
         </CardContent>
       </Card>
     );
@@ -238,9 +238,9 @@ export const ProspectsHistory = ({ clientId }: ProspectsHistoryProps) => {
       <AlertDialog open={!!deletingProspect} onOpenChange={(open) => !open && setDeletingProspect(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>¿Eliminar proyecto?</AlertDialogTitle>
+            <AlertDialogTitle>¿Eliminar cotización?</AlertDialogTitle>
             <AlertDialogDescription>
-              ¿Estás seguro de eliminar el proyecto "{deletingProspect ? generateProspectTitle(deletingProspect) : ""}"? 
+              ¿Estás seguro de eliminar la cotización "{deletingProspect ? generateProspectTitle(deletingProspect) : ""}"? 
               Esta acción no se puede deshacer.
             </AlertDialogDescription>
           </AlertDialogHeader>

@@ -217,7 +217,7 @@ const ClientDetail = () => {
             </TabsTrigger>
             <TabsTrigger value="prospects" className="flex items-center gap-2">
               <Gem className="h-4 w-4" />
-              Proyectos
+              Cotizaciones
             </TabsTrigger>
             <TabsTrigger value="reminders" className="flex items-center gap-2">
               <Bell className="h-4 w-4" />
@@ -241,7 +241,7 @@ const ClientDetail = () => {
             <div className="flex justify-end mb-4">
               <Button onClick={() => setShowProspectDialog(true)} className="gap-2">
                 <Plus className="h-4 w-4" />
-                Nuevo Proyecto
+                Nueva Cotización
               </Button>
             </div>
             <ProspectsHistory key={refreshKey} clientId={client.id} />
@@ -263,7 +263,7 @@ const ClientDetail = () => {
           client={client}
           onSuccess={() => {
             setRefreshKey(prev => prev + 1);
-            toast.success("Proyecto registrado exitosamente");
+            toast.success("Cotización registrada exitosamente");
           }}
         />
       </div>

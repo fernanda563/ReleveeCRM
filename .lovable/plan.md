@@ -1,44 +1,90 @@
 
+## Simplificar el Paso 5: Eliminar subida de STL y agregar búsqueda por nombre
 
-## Renombrar "Proyecto(s)" a "Cotización(es)" en todo el sistema
+### Qué hay que cambiar
 
-### Alcance del cambio
+El archivo `src/components/orders/OrderDialogStep5.tsx` actualmente tiene dos mecanismos:
+1. Un `<Select>` para seleccionar STL existentes del repositorio.
+2. Un panel expandible (toggle) para subir un archivo STL nuevo directamente al repositorio.
 
-Es un cambio puramente de texto visible al usuario (labels, títulos, toasts, placeholders, comentarios JSX). No se modifican nombres de variables, props, tipos, tablas de base de datos ni rutas URL. Solo se reemplazan las cadenas de texto en español que dicen "proyecto/proyectos" por "cotización/cotizaciones".
+La petición es eliminar el mecanismo de subida y reemplazar el `<Select>` por un buscador por nombre.
 
-### Archivos afectados (15 archivos, ~80 reemplazos de texto)
+---
 
-| Archivo | Cambios principales |
-|---|---|
-| **`src/components/AppSidebar.tsx`** | `"Proyectos"` → `"Cotizaciones"` en el menú de navegación |
-| **`src/pages/Projects.tsx`** | Título `"Proyectos"` → `"Cotizaciones"`, descripción, toasts ("Proyecto convertido...", "Proyecto eliminado..."), stats label "Total proyectos", textos de filtros vacíos, título del AlertDialog |
-| **`src/pages/Dashboard.tsx`** | `"Nuevo Proyecto"` → `"Nueva Cotización"`, `"Proyectos activos"` → `"Cotizaciones activas"`, descripción del CRM |
-| **`src/pages/CRM.tsx`** | `"Añadir Proyecto"` → `"Añadir Cotización"`, descripción, toast de éxito |
-| **`src/pages/ClientDetail.tsx`** | Tab `"Proyectos"` → `"Cotizaciones"`, botón `"Nuevo Proyecto"` → `"Nueva Cotización"`, toast de éxito |
-| **`src/components/crm/ProspectDialog.tsx`** | DialogTitle `"Registrar Proyecto"` → `"Registrar Cotización"`, DialogDescription, botón submit, toasts |
-| **`src/components/crm/ClientDialog.tsx`** | Textos de eliminación: `"proyectos"` → `"cotizaciones"` en lista y toast |
-| **`src/components/client-detail/ProspectCard.tsx`** | `"Editar proyecto"` → `"Editar cotización"`, comentario JSX |
-| **`src/components/client-detail/ProspectsHistory.tsx`** | Toasts, comentarios, textos vacíos, títulos de AlertDialog |
-| **`src/components/client-detail/ProspectDetailDialog.tsx`** | Toasts de eliminar/actualizar, comentarios |
-| **`src/components/client-detail/ProspectStatusDialog.tsx`** | DialogTitle, DialogDescription, Label |
-| **`src/components/client-detail/ClientTimeline.tsx`** | `"Proyecto registrado"` → `"Cotización registrada"`, comentarios |
-| **`src/components/client-detail/prospect-utils.ts`** | Fallback title: `"proyecto"` → `"cotización"` |
-| **`src/components/orders/OrderDialog.tsx`** | Labels de prospect dropdown: `"proyecto"` → `"cotización"`, placeholders, toasts, textos descriptivos |
+### Cambios en `OrderDialogStep5.tsx`
 
-### Regla de reemplazo
+**Eliminar completamente:**
+- Los estados `showUpload`, `uploading`, `stlFile`, `stlNombre`, `stlDescripcion`
+- Las funciones `resetUpload` y `handleUpload`
+- Todo el bloque JSX del panel de subida (el `div` con la clase `rounded-lg border border-dashed`)
+- Los imports de `Upload`, `Loader2`, `X`, `ChevronDown`, `ChevronUp` de lucide-react (si ya no se usan)
+- La prop `onSTLUploaded` de la interfaz y del componente
 
-- "Proyecto" (singular) → "Cotización"
-- "Proyectos" (plural) → "Cotizaciones"  
-- "proyecto" (singular minúscula) → "cotización"
-- "proyectos" (plural minúscula) → "cotizaciones"
-- Ajustar concordancia de género: "Nuevo Proyecto" → "Nueva Cotización", "registrado" → "registrada", "eliminado" → "eliminada", "convertido" → "convertida", "activos" → "activas"
+**Reemplazar el `<Select>` por un buscador con `Command`:**
 
-### Lo que NO se modifica
+El proyecto ya tiene instalado `cmdk` y el componente `Command` disponible en `src/components/ui/command.tsx`. Se usará para crear un combo de búsqueda tipo "popover + command" que:
+- Muestra un campo de texto con placeholder "Buscar STL por nombre..."
+- Al escribir, filtra la lista de `availableSTLFiles` por nombre en tiempo real
+- Al seleccionar un resultado, actualiza `selectedSTLFileId`
+- Muestra el nombre del STL seleccionado en el trigger del popover
+- Incluye una opción "Ninguno" para deseleccionar
 
-- Nombres de variables/funciones (`prospect`, `fetchProspects`, `ProspectCard`, etc.)
-- Nombres de archivos (`Projects.tsx`, `ProspectDialog.tsx`, etc.)
-- Rutas URL (`/projects`)
-- Tablas de base de datos (`prospects`)
-- Props e interfaces TypeScript
-- Comentarios puramente técnicos (solo los que son texto visible o contextual en español)
+**Patrón a usar:** `Popover` + `Command` + `CommandInput` + `CommandList` + `CommandItem` (patrón combobox estándar de shadcn/ui, que ya está completamente disponible en el proyecto).
 
+```
+[Trigger: Popover]
+  "Buscar STL por nombre..."  ← campo de búsqueda
+  ─────────────────────────
+  Ninguno
+  Anillo solitario clásico
+  Solitario 6 uñas          ← filtrado en tiempo real
+  ...
+```
+
+**Interfaz de props actualizada:**
+```typescript
+interface OrderDialogStep5Props {
+  notas: string;
+  setNotas: (value: string) => void;
+  selectedSTLFileId: string;
+  setSelectedSTLFileId: (value: string) => void;
+  availableSTLFiles: STLFile[];
+  loading: boolean;
+  // onSTLUploaded ← eliminada
+}
+```
+
+---
+
+### Cambio en `OrderDialog.tsx`
+
+Quitar la prop `onSTLUploaded` que se pasa al componente `OrderDialogStep5` en el JSX del diálogo principal. Esta prop ya no existe en la interfaz del componente.
+
+---
+
+### Resultado visual esperado
+
+```
+Paso 5 — Notas y Diseño STL
+─────────────────────────────────────────────────────
+
+[Notas Adicionales]
+  [ Textarea para notas... ]
+
+Archivo STL (Opcional)
+  Selecciona un diseño existente del repositorio.
+
+  [🔍 Buscar archivo STL por nombre...  ▼]
+       ← popover con búsqueda reactiva →
+
+  [Vista previa del STL seleccionado]
+
+─────────────────────────────────────────────────────
+```
+
+---
+
+### Archivos a modificar
+
+1. **`src/components/orders/OrderDialogStep5.tsx`** — Eliminar toda la lógica y UI de subida, reemplazar el `<Select>` por un combobox `Popover + Command`.
+2. **`src/components/orders/OrderDialog.tsx`** — Quitar la prop `onSTLUploaded` del lugar donde se renderiza `<OrderDialogStep5 ... />`.

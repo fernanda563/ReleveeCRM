@@ -80,17 +80,17 @@ export const ProspectStatusDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Editar Estatus del Proyecto</DialogTitle>
+          <DialogTitle>Editar Estatus de la Cotización</DialogTitle>
           <DialogDescription>
             {isConverted
-              ? "Este proyecto ya ha sido convertido a orden y no puede modificarse."
-              : "Selecciona el nuevo estatus para este proyecto."}
+              ? "Esta cotización ya ha sido convertida a orden y no puede modificarse."
+              : "Selecciona el nuevo estatus para esta cotización."}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="status-select">Estatus del proyecto</Label>
+            <Label htmlFor="status-select">Estatus de la cotización</Label>
             <Select
               value={selectedStatus}
               onValueChange={setSelectedStatus}

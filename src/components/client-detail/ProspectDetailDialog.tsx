@@ -119,11 +119,11 @@ export const ProspectDetailDialog = ({
 
     if (error) {
       console.error(error);
-      toast.error("No se pudo eliminar el proyecto");
+      toast.error("No se pudo eliminar la cotización");
       return;
     }
 
-    toast.success("Proyecto eliminado");
+    toast.success("Cotización eliminada");
     setShowDeleteDialog(false);
     onOpenChange(false);
     if (onSaved) {
@@ -162,11 +162,11 @@ export const ProspectDetailDialog = ({
 
     if (error) {
       console.error(error);
-      toast.error("No se pudo actualizar el proyecto");
+      toast.error("No se pudo actualizar la cotización");
       return;
     }
 
-    toast.success("Proyecto actualizado");
+    toast.success("Cotización actualizada");
     setIsEditing(false);
     if (onSaved && data) {
       onSaved(data);
