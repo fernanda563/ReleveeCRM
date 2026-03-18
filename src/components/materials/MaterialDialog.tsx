@@ -135,7 +135,6 @@ export function MaterialDialog({
               </SelectContent>
             </Select>
           </div>
-          </div>
 
           {/* Unidad de medida */}
           <div className="space-y-2">
