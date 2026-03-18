@@ -163,17 +163,17 @@ export default function RingWeightCalculator({ onUseWeight }: RingWeightCalculat
               <ToggleGroupItem
                 key={key}
                 value={key}
-                className={`flex flex-col items-center gap-0.5 py-3 rounded-md border ${
+                className={`flex flex-col items-center gap-0.5 py-4 rounded-md border ${
                   isActive
-                    ? "bg-primary text-primary-foreground border-primary"
+                    ? "!bg-primary !text-primary-foreground border-primary"
                     : "bg-background text-foreground border-border"
                 }`}
               >
                 <span className="font-semibold text-sm">{key}</span>
-                <span className={`text-xs ${isActive ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
+                <span className={`text-xs ${isActive ? "!text-primary-foreground/70" : "text-muted-foreground"}`}>
                   {(a.purity * 100).toFixed(1)}% oro
                 </span>
-                <span className={`text-xs ${isActive ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
+                <span className={`text-xs ${isActive ? "!text-primary-foreground/70" : "text-muted-foreground"}`}>
                   {a.density} g/cm³
                 </span>
               </ToggleGroupItem>
