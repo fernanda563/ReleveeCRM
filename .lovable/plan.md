@@ -1,90 +1,86 @@
 
-## Simplificar el Paso 5: Eliminar subida de STL y agregar búsqueda por nombre
 
-### Qué hay que cambiar
+## Plan: Módulo de Materiales
 
-El archivo `src/components/orders/OrderDialogStep5.tsx` actualmente tiene dos mecanismos:
-1. Un `<Select>` para seleccionar STL existentes del repositorio.
-2. Un panel expandible (toggle) para subir un archivo STL nuevo directamente al repositorio.
+### 1. Base de datos
 
-La petición es eliminar el mecanismo de subida y reemplazar el `<Select>` por un buscador por nombre.
+Crear tabla `materials` con las siguientes columnas:
 
----
+| Columna | Tipo | Descripción |
+|---|---|---|
+| id | uuid PK | |
+| nombre | text NOT NULL | Nombre del material (ej: "Oro 14k Amarillo") |
+| categoria | text | Categoría libre (ej: "Metales", "Piedras", "Insumos") |
+| unidad_medida | text NOT NULL default 'gramo' | gramo, quilate, pieza, etc. |
+| costo_directo | numeric NOT NULL default 0 | Costo base por unidad |
+| tipo_margen | text NOT NULL default 'porcentaje' | 'porcentaje' o 'fijo' |
+| valor_margen | numeric NOT NULL default 0 | % de utilidad o monto fijo |
+| redondeo | text NOT NULL default 'ninguno' | 'ninguno', 'superior', 'inferior', 'mas_cercano' |
+| redondeo_multiplo | numeric default 1 | A qué múltiplo redondear (ej: 10, 50, 100) |
+| precio_calculado | numeric generated always as (computed) | No usar generated column; se calcula en frontend |
+| activo | boolean default true | |
+| notas | text | |
+| created_at | timestamptz default now() | |
+| updated_at | timestamptz default now() | |
 
-### Cambios en `OrderDialogStep5.tsx`
+RLS: Solo admins pueden CRUD; authenticated pueden SELECT.
 
-**Eliminar completamente:**
-- Los estados `showUpload`, `uploading`, `stlFile`, `stlNombre`, `stlDescripcion`
-- Las funciones `resetUpload` y `handleUpload`
-- Todo el bloque JSX del panel de subida (el `div` con la clase `rounded-lg border border-dashed`)
-- Los imports de `Upload`, `Loader2`, `X`, `ChevronDown`, `ChevronUp` de lucide-react (si ya no se usan)
-- La prop `onSTLUploaded` de la interfaz y del componente
+Trigger `update_updated_at_column` para updated_at.
 
-**Reemplazar el `<Select>` por un buscador con `Command`:**
+### 2. Matriz de permisos
 
-El proyecto ya tiene instalado `cmdk` y el componente `Command` disponible en `src/components/ui/command.tsx`. Se usará para crear un combo de búsqueda tipo "popover + command" que:
-- Muestra un campo de texto con placeholder "Buscar STL por nombre..."
-- Al escribir, filtra la lista de `availableSTLFiles` por nombre en tiempo real
-- Al seleccionar un resultado, actualiza `selectedSTLFileId`
-- Muestra el nombre del STL seleccionado en el trigger del popover
-- Incluye una opción "Ninguno" para deseleccionar
+En `RolesManagement.tsx`, agregar entrada "Materiales" al array `permissions` con `administrador: true` y el resto `false`.
 
-**Patrón a usar:** `Popover` + `Command` + `CommandInput` + `CommandList` + `CommandItem` (patrón combobox estándar de shadcn/ui, que ya está completamente disponible en el proyecto).
+### 3. Navegación
 
+En `AppSidebar.tsx`, agregar "Gestión de Materiales" en la sección "Administración" (adminOnly: true), con icono `Package` y ruta `/materials`.
+
+### 4. Página Materials.tsx
+
+Nueva página `src/pages/Materials.tsx` siguiendo el layout estandarizado de páginas de administración:
+- Título 3xl, botón "Nuevo Material"
+- Stats cards: Total materiales, Activos, Categorías distintas
+- Filtros: búsqueda por nombre, filtro por categoría, filtro por estado activo/inactivo
+- Lista de materiales en cards mostrando: nombre, categoría, costo directo, tipo de margen, valor margen, precio resultante calculado, unidad de medida
+
+### 5. MaterialDialog.tsx
+
+Diálogo para crear/editar material con campos:
+- Nombre, Categoría (input con sugerencias de categorías existentes), Unidad de medida (select)
+- Costo directo (numérico)
+- Tipo de margen: toggle entre "Porcentaje" y "Cantidad fija"
+- Valor de margen (% o $)
+- Redondeo: select con opciones (Ninguno, Superior, Inferior, Más cercano)
+- Múltiplo de redondeo (numérico, visible solo si redondeo != ninguno)
+- Preview en tiempo real del precio resultante calculado
+- Notas, toggle Activo/Inactivo
+
+**Lógica de cálculo del precio (frontend):**
 ```
-[Trigger: Popover]
-  "Buscar STL por nombre..."  ← campo de búsqueda
-  ─────────────────────────
-  Ninguno
-  Anillo solitario clásico
-  Solitario 6 uñas          ← filtrado en tiempo real
-  ...
-```
+Si tipo_margen = 'porcentaje':
+  precio = costo_directo * (1 + valor_margen / 100)
+Si tipo_margen = 'fijo':
+  precio = costo_directo + valor_margen
 
-**Interfaz de props actualizada:**
-```typescript
-interface OrderDialogStep5Props {
-  notas: string;
-  setNotas: (value: string) => void;
-  selectedSTLFileId: string;
-  setSelectedSTLFileId: (value: string) => void;
-  availableSTLFiles: STLFile[];
-  loading: boolean;
-  // onSTLUploaded ← eliminada
-}
-```
-
----
-
-### Cambio en `OrderDialog.tsx`
-
-Quitar la prop `onSTLUploaded` que se pasa al componente `OrderDialogStep5` en el JSX del diálogo principal. Esta prop ya no existe en la interfaz del componente.
-
----
-
-### Resultado visual esperado
-
-```
-Paso 5 — Notas y Diseño STL
-─────────────────────────────────────────────────────
-
-[Notas Adicionales]
-  [ Textarea para notas... ]
-
-Archivo STL (Opcional)
-  Selecciona un diseño existente del repositorio.
-
-  [🔍 Buscar archivo STL por nombre...  ▼]
-       ← popover con búsqueda reactiva →
-
-  [Vista previa del STL seleccionado]
-
-─────────────────────────────────────────────────────
+Aplicar redondeo según configuración:
+  'superior': Math.ceil(precio / multiplo) * multiplo
+  'inferior': Math.floor(precio / multiplo) * multiplo
+  'mas_cercano': Math.round(precio / multiplo) * multiplo
 ```
 
----
+### 6. Ruta
 
-### Archivos a modificar
+En `App.tsx`, agregar `<Route path="/materials" element={<Materials />} />` dentro del DashboardLayout.
 
-1. **`src/components/orders/OrderDialogStep5.tsx`** — Eliminar toda la lógica y UI de subida, reemplazar el `<Select>` por un combobox `Popover + Command`.
-2. **`src/components/orders/OrderDialog.tsx`** — Quitar la prop `onSTLUploaded` del lugar donde se renderiza `<OrderDialogStep5 ... />`.
+### 7. Archivos nuevos/modificados
+
+| Archivo | Acción |
+|---|---|
+| DB migration | Crear tabla `materials` + RLS + trigger |
+| `src/pages/Materials.tsx` | Nuevo |
+| `src/components/materials/MaterialDialog.tsx` | Nuevo |
+| `src/components/materials/MaterialCard.tsx` | Nuevo |
+| `src/App.tsx` | Agregar ruta |
+| `src/components/AppSidebar.tsx` | Agregar enlace de navegación |
+| `src/pages/RolesManagement.tsx` | Agregar permiso "Materiales" |
+
