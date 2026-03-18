@@ -182,12 +182,19 @@ export default function Projects() {
   };
 
   // Calcular estadísticas
+  const now = new Date();
+  const vencidasCount = prospects.filter(p => {
+    if (p.estado !== "activo" || !p.fecha_vigencia) return false;
+    return new Date(p.fecha_vigencia + "T23:59:59") < now;
+  }).length;
+
   const stats = {
     total: prospects.length,
-    activo: prospects.filter(p => p.estado === "activo").length,
+    activo: prospects.filter(p => p.estado === "activo").length - vencidasCount,
     convertido: prospects.filter(p => p.estado === "convertido").length,
     en_pausa: prospects.filter(p => p.estado === "en_pausa").length,
     inactivo: prospects.filter(p => p.estado === "inactivo").length,
+    vencidas: vencidasCount,
   };
 
   return (

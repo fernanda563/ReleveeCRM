@@ -468,6 +468,18 @@ export default function QuotationDialog({
             </div>
 
             <div className="space-y-2">
+              <Label>Vigencia de la cotización</Label>
+              <Input
+                type="date"
+                value={fechaVigencia}
+                onChange={(e) => setFechaVigencia(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">
+                Fecha hasta la cual esta cotización es válida
+              </p>
+            </div>
+
+            <div className="space-y-2">
               <Label>Observaciones</Label>
               <Textarea
                 placeholder="Notas adicionales sobre la cotización..."
