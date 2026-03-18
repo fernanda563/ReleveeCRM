@@ -86,7 +86,7 @@ const WorkConcepts = () => {
 
   const stats = [
     {
-      title: "Total Conceptos",
+      title: "Total Mano de Obra",
       value: concepts.filter((c) => c.activo).length,
       icon: Layers,
     },
@@ -109,7 +109,7 @@ const WorkConcepts = () => {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-2">
             <h1 className="text-3xl font-bold text-foreground">
-              Gestión de Conceptos
+              Gestión de Mano de Obra
             </h1>
             <Button onClick={handleNewConcept}>
               <Plus className="h-4 w-4 mr-2" />
@@ -117,7 +117,7 @@ const WorkConcepts = () => {
             </Button>
           </div>
           <p className="text-muted-foreground">
-            Administra los conceptos de trabajo para diseño y taller
+            Administra los conceptos de mano de obra para diseño y taller
           </p>
         </div>
 
@@ -185,7 +185,7 @@ const WorkConcepts = () => {
               <p className="text-muted-foreground text-center">
                 No se encontraron conceptos.
                 <br />
-                {concepts.length === 0 && "Comienza creando tu primer concepto de trabajo."}
+                {concepts.length === 0 && "Comienza creando tu primer concepto de mano de obra."}
               </p>
             </CardContent>
           </Card>

@@ -123,7 +123,7 @@ export const WorkConceptCard = ({
             </Badge>
           )}
           {concept.es_precio_variable && (
-            <Badge variant="outline" className="text-blue-600 border-blue-200">
+            <Badge variant="outline" className="text-primary border-primary/20">
               Precio variable
             </Badge>
           )}
@@ -151,7 +151,7 @@ export const WorkConceptCard = ({
             <Ruler className="h-3 w-3" />
             {unitLabel}
           </div>
-          <div className={`font-medium ${margin >= 0 ? "text-green-600" : "text-red-600"}`}>
+          <div className={`font-medium ${margin >= 0 ? "text-primary" : "text-destructive"}`}>
             Margen: {marginPercentage}%
           </div>
         </div>
