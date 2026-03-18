@@ -24,7 +24,7 @@ import { AppointmentsHistory } from "@/components/client-detail/AppointmentsHist
 import { ProspectsHistory } from "@/components/client-detail/ProspectsHistory";
 import { RemindersHistory } from "@/components/client-detail/RemindersHistory";
 import { OrdersHistory } from "@/components/client-detail/OrdersHistory";
-import ProspectDialog from "@/components/crm/ProspectDialog";
+
 
 interface Client {
   id: string;
