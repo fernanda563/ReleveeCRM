@@ -85,7 +85,7 @@ export default function RingWeightCalculator({ onUseWeight }: RingWeightCalculat
   const sizeIndex = (size - 4) * 2;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pt-4">
       {/* Sliders */}
       <div className="space-y-5">
         {/* Ring Size */}
