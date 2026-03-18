@@ -96,9 +96,17 @@ All colors MUST be HSL.
     --accent: 0 0% 100%;
     --accent-foreground: 0 0% 0%;
 
-    /* Destructive - White */
-    --destructive: 0 0% 100%;
-    --destructive-foreground: 0 0% 0%;
+    /* Destructive - Red */
+    --destructive: 0 84% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Success - Green */
+    --success: 142 76% 56%;
+    --success-foreground: 0 0% 0%;
+
+    /* Warning - Amber */
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 0%;
 
     /* Borders and inputs */
     --border: 0 0% 100%;
