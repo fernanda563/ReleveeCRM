@@ -128,10 +128,10 @@ export default function RingWeightCalculator({ onUseWeight }: RingWeightCalculat
 
         {/* Wall Thickness */}
         <div className="space-y-2">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1.5">
             <span className="text-sm font-medium text-foreground">Grosor de pared</span>
             <span className="text-sm text-muted-foreground">
-              {thickness} mm — {THICKNESS_LABELS[thickness]}
+              ({thickness} mm — {THICKNESS_LABELS[thickness]})
             </span>
           </div>
           <Slider
