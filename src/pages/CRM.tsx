@@ -196,9 +196,7 @@ const CRM = () => {
           >
             <CardHeader className="flex items-center py-4">
               <CardTitle className="text-base flex items-center gap-2">
-                <div className="p-2 bg-secondary rounded-lg">
-                  <Calendar className="h-4 w-4 text-secondary-foreground" />
-                </div>
+                <Calendar className="h-5 w-5 text-foreground" />
                 Agendar Cita
               </CardTitle>
             </CardHeader>
