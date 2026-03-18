@@ -19,9 +19,9 @@ interface MaterialFormData {
   unidad_medida: string;
   costo_directo: string;
   tipo_margen: string;
-  valor_margen: number;
+  valor_margen: string;
   redondeo: string;
-  redondeo_multiplo: number;
+  redondeo_multiplo: string;
   activo: boolean;
   notas: string;
 }
