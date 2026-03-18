@@ -12,6 +12,13 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { calcularPrecioMaterial } from "@/lib/material-utils";
+import {
+  getTiposMaterialPorCategoria,
+  getKilatajes,
+  tieneColor,
+  generarNombreMaterial,
+  COLORES_ORO,
+} from "@/lib/material-types";
 
 interface MaterialFormData {
   nombre: string;
@@ -24,6 +31,9 @@ interface MaterialFormData {
   redondeo_multiplo: string;
   activo: boolean;
   notas: string;
+  tipo_material: string;
+  kilataje: string;
+  color: string;
 }
 
 interface MaterialDialogProps {
@@ -78,6 +88,9 @@ const defaultForm: MaterialFormData = {
   redondeo_multiplo: "",
   activo: true,
   notas: "",
+  tipo_material: "",
+  kilataje: "",
+  color: "",
 };
 
 export function MaterialDialog({
@@ -103,6 +116,9 @@ export function MaterialDialog({
         redondeo_multiplo: raw.redondeo_multiplo
           ? formatCurrency(String(raw.redondeo_multiplo))
           : "",
+        tipo_material: raw.tipo_material || "",
+        kilataje: raw.kilataje || "",
+        color: raw.color || "",
       };
       setForm(data);
     }
@@ -114,6 +130,10 @@ export function MaterialDialog({
   const precio = calcularPrecioMaterial(
     costoNumerico, form.tipo_margen, margenNumerico, form.redondeo, multiploNumerico
   );
+
+  const tiposMaterial = getTiposMaterialPorCategoria(form.categoria);
+  const kilatajes = getKilatajes(form.tipo_material);
+  const mostrarColor = tieneColor(form.tipo_material);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -128,6 +148,48 @@ export function MaterialDialog({
   const update = (field: keyof MaterialFormData, value: any) =>
     setForm((prev) => ({ ...prev, [field]: value }));
 
+  const handleCategoriaChange = (v: string) => {
+    const cat = v === "__none__" ? "" : v;
+    setForm((prev) => ({
+      ...prev,
+      categoria: cat,
+      tipo_material: "",
+      kilataje: "",
+      color: "",
+    }));
+  };
+
+  const handleTipoMaterialChange = (v: string) => {
+    const tipo = v === "__none__" ? "" : v;
+    const newForm = { ...form, tipo_material: tipo, kilataje: "", color: "" };
+    // Auto-generate name
+    if (tipo) {
+      const tipos = getTiposMaterialPorCategoria(form.categoria);
+      newForm.nombre = generarNombreMaterial(tipo, "", "", tipos);
+    }
+    setForm(newForm);
+  };
+
+  const handleKilatajeChange = (v: string) => {
+    const kil = v === "__none__" ? "" : v;
+    const newForm = { ...form, kilataje: kil };
+    if (form.tipo_material) {
+      const tipos = getTiposMaterialPorCategoria(form.categoria);
+      newForm.nombre = generarNombreMaterial(form.tipo_material, kil, form.color, tipos);
+    }
+    setForm(newForm);
+  };
+
+  const handleColorChange = (v: string) => {
+    const col = v === "__none__" ? "" : v;
+    const newForm = { ...form, color: col };
+    if (form.tipo_material) {
+      const tipos = getTiposMaterialPorCategoria(form.categoria);
+      newForm.nombre = generarNombreMaterial(form.tipo_material, form.kilataje, col, tipos);
+    }
+    setForm(newForm);
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
@@ -139,18 +201,12 @@ export function MaterialDialog({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Nombre */}
-          <div className="space-y-2">
-            <Label htmlFor="nombre">Nombre *</Label>
-            <Input id="nombre" value={form.nombre} onChange={(e) => update("nombre", e.target.value)} required />
-          </div>
-
           {/* Categoría */}
           <div className="space-y-2">
-            <Label>Categoría</Label>
+            <Label>Categoría *</Label>
             <Select
               value={form.categoria || "__none__"}
-              onValueChange={(v) => update("categoria", v === "__none__" ? "" : v)}
+              onValueChange={handleCategoriaChange}
             >
               <SelectTrigger><SelectValue placeholder="Selecciona una categoría" /></SelectTrigger>
               <SelectContent>
@@ -159,6 +215,70 @@ export function MaterialDialog({
                 <SelectItem value="Piedras Preciosas">Piedras Preciosas</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          {/* Tipo de material (condicional) */}
+          {tiposMaterial.length > 0 && (
+            <div className="space-y-2">
+              <Label>Tipo de material *</Label>
+              <Select
+                value={form.tipo_material || "__none__"}
+                onValueChange={handleTipoMaterialChange}
+              >
+                <SelectTrigger><SelectValue placeholder="Selecciona tipo" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">Seleccionar...</SelectItem>
+                  {tiposMaterial.map((t) => (
+                    <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {/* Kilataje/Pureza (condicional) */}
+          {kilatajes.length > 0 && (
+            <div className="space-y-2">
+              <Label>Kilataje / Pureza</Label>
+              <Select
+                value={form.kilataje || "__none__"}
+                onValueChange={handleKilatajeChange}
+              >
+                <SelectTrigger><SelectValue placeholder="Seleccionar..." /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">Seleccionar...</SelectItem>
+                  {kilatajes.map((k) => (
+                    <SelectItem key={k.value} value={k.value}>{k.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {/* Color (solo para oro) */}
+          {mostrarColor && (
+            <div className="space-y-2">
+              <Label>Color</Label>
+              <Select
+                value={form.color || "__none__"}
+                onValueChange={handleColorChange}
+              >
+                <SelectTrigger><SelectValue placeholder="Seleccionar..." /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">Seleccionar...</SelectItem>
+                  {COLORES_ORO.map((c) => (
+                    <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {/* Nombre (auto-generado pero editable) */}
+          <div className="space-y-2">
+            <Label htmlFor="nombre">Nombre *</Label>
+            <Input id="nombre" value={form.nombre} onChange={(e) => update("nombre", e.target.value)} required />
+            <p className="text-xs text-muted-foreground">Se genera automáticamente según el tipo, kilataje y color</p>
           </div>
 
           {/* Unidad de medida */}
