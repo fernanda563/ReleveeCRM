@@ -87,8 +87,9 @@ export function MaterialDialog({
     }
   }, [open, initialData]);
 
+  const costoNumerico = parseFloat(unformatCurrency(form.costo_directo)) || 0;
   const precio = calcularPrecioMaterial(
-    form.costo_directo, form.tipo_margen, form.valor_margen, form.redondeo, form.redondeo_multiplo
+    costoNumerico, form.tipo_margen, form.valor_margen, form.redondeo, form.redondeo_multiplo
   );
 
   const handleSubmit = (e: React.FormEvent) => {
