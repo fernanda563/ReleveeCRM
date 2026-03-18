@@ -89,10 +89,19 @@ export function MaterialDialog({
   useEffect(() => {
     if (open) {
       const raw = initialData ? { ...defaultForm, ...initialData } : defaultForm;
+      const tipoMargen = raw.tipo_margen || "porcentaje";
       const data = {
         ...raw,
         costo_directo: raw.costo_directo
           ? formatCurrency(String(raw.costo_directo))
+          : "",
+        valor_margen: raw.valor_margen
+          ? (tipoMargen === "porcentaje"
+              ? formatPercentage(String(raw.valor_margen))
+              : formatCurrency(String(raw.valor_margen)))
+          : "",
+        redondeo_multiplo: raw.redondeo_multiplo
+          ? formatCurrency(String(raw.redondeo_multiplo))
           : "",
       };
       setForm(data);
