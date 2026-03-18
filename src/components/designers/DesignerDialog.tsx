@@ -279,12 +279,28 @@ export function DesignerDialog({ open, onOpenChange, designer, onSaved }: Design
 
               <div className="space-y-2">
                 <Label htmlFor="ubicacion_estado">Estado</Label>
-                <Input
-                  id="ubicacion_estado"
-                  value={formData.ubicacion_estado}
-                  onChange={(e) => setFormData(prev => ({ ...prev, ubicacion_estado: e.target.value }))}
-                  placeholder="Estado o provincia"
-                />
+                {formData.ubicacion_pais === "México" ? (
+                  <Select
+                    value={formData.ubicacion_estado}
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, ubicacion_estado: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar estado" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {MEXICAN_STATES.map((state) => (
+                        <SelectItem key={state} value={state}>{state}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Input
+                    id="ubicacion_estado"
+                    value={formData.ubicacion_estado}
+                    onChange={(e) => setFormData(prev => ({ ...prev, ubicacion_estado: e.target.value }))}
+                    placeholder="Estado o provincia"
+                  />
+                )}
               </div>
 
               <div className="space-y-2">

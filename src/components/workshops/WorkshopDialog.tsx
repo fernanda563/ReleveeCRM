@@ -374,13 +374,31 @@ export const WorkshopDialog = ({
 
                 <div className="space-y-2">
                   <Label htmlFor="ubicacion_estado">Estado / Provincia</Label>
-                  <Input
-                    id="ubicacion_estado"
-                    value={formData.ubicacion_estado}
-                    onChange={(e) =>
-                      setFormData({ ...formData, ubicacion_estado: e.target.value })
-                    }
-                  />
+                  {formData.ubicacion_pais === "México" ? (
+                    <Select
+                      value={formData.ubicacion_estado}
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, ubicacion_estado: value })
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar estado" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {MEXICAN_STATES.map((state) => (
+                          <SelectItem key={state} value={state}>{state}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <Input
+                      id="ubicacion_estado"
+                      value={formData.ubicacion_estado}
+                      onChange={(e) =>
+                        setFormData({ ...formData, ubicacion_estado: e.target.value })
+                      }
+                    />
+                  )}
                 </div>
 
                 <div className="space-y-2">
