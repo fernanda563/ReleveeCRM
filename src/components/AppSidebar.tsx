@@ -71,7 +71,7 @@ const menuSections = [
   {
     label: "Administración",
     items: [
-      { title: "Gestión de Conceptos", url: "/work-concepts", icon: Layers, adminOnly: true },
+      { title: "Gestión de Mano de Obra", url: "/work-concepts", icon: Layers, adminOnly: true },
       { title: "Gestión de Talleres", url: "/workshops", icon: Factory, adminOnly: true },
       { title: "Gestión de Diseñadores", url: "/designers", icon: Palette, adminOnly: true },
       { title: "Gestión de Usuarios", url: "/users", icon: Shield, adminOnly: true },

@@ -151,7 +151,7 @@ export const WorkConceptCard = ({
             <Ruler className="h-3 w-3" />
             {unitLabel}
           </div>
-          <div className={`font-medium ${margin >= 0 ? "text-green-600" : "text-red-600"}`}>
+          <div className={`font-medium ${margin >= 0 ? "text-primary" : "text-destructive"}`}>
             Margen: {marginPercentage}%
           </div>
         </div>

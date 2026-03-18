@@ -185,7 +185,7 @@ const WorkConcepts = () => {
               <p className="text-muted-foreground text-center">
                 No se encontraron conceptos.
                 <br />
-                {concepts.length === 0 && "Comienza creando tu primer concepto de trabajo."}
+                {concepts.length === 0 && "Comienza creando tu primer concepto de mano de obra."}
               </p>
             </CardContent>
           </Card>

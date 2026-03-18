@@ -174,7 +174,7 @@ export const WorkshopProcessesDialog = ({
           <div className="py-8 text-center text-muted-foreground">
             No hay conceptos de trabajo de tipo "taller" registrados.
             <br />
-            Primero crea conceptos en Gestión de Conceptos.
+            Primero crea conceptos en Gestión de Mano de Obra.
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
