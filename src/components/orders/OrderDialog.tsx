@@ -346,7 +346,7 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
       parts.push(`(${estiloFormatted})`);
     }
     
-    return parts.length > 0 ? parts.join(' - ') : "Proyecto sin título";
+    return parts.length > 0 ? parts.join(' - ') : "Cotización sin título";
   };
 
   const applyProspectData = (prospectId: string) => {
