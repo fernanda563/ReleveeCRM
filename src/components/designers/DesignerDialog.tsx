@@ -35,9 +35,9 @@ const ESPECIALIDADES = [
 
 export function DesignerDialog({ open, onOpenChange, designer, onSaved }: DesignerDialogProps) {
   const [loading, setLoading] = useState(false);
+  const [especialidades, setEspecialidades] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     nombre: "",
-    especialidad: "",
     email: "",
     telefono: "",
     telefono_codigo_pais: "+52",
