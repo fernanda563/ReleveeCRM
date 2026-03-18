@@ -253,14 +253,13 @@ export function MaterialDialog({
               <Label htmlFor="multiplo">Múltiplo de redondeo</Label>
               <Input
                 id="multiplo"
-                type="number"
-                min={1}
-                step="1"
-                value={form.redondeo_multiplo || ""}
-                onChange={(e) => update("redondeo_multiplo", parseFloat(e.target.value) || 1)}
+                type="text"
+                value={form.redondeo_multiplo}
+                onChange={(e) => update("redondeo_multiplo", formatCurrency(e.target.value))}
+                placeholder="$0.00"
               />
               <p className="text-xs text-muted-foreground">
-                Ej: 10 redondeará a múltiplos de 10 ($10, $20, $30...)
+                Ej: $10 redondeará a múltiplos de 10 ($10, $20, $30...)
               </p>
             </div>
           )}
