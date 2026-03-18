@@ -70,6 +70,13 @@ const menuSections = [
     ],
   },
   {
+    label: "Calculadoras",
+    items: [
+      { title: "Peso de Montura", url: "/calculators/ring-weight", icon: Scale, adminOnly: false },
+      { title: "Peso de Diamante", url: "/calculators/diamond-weight", icon: Gem, adminOnly: false },
+    ],
+  },
+  {
     label: "Administración",
     items: [
       { title: "Gestión de Mano de Obra", url: "/work-concepts", icon: Layers, adminOnly: true },

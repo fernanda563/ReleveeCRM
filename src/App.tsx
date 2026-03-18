@@ -26,6 +26,8 @@ import CalendarAdmin from "./pages/CalendarAdmin";
 import SystemSettings from "./pages/SystemSettings";
 import RolesManagement from "./pages/RolesManagement";
 import Materials from "./pages/Materials";
+import RingWeightCalculatorPage from "./pages/RingWeightCalculatorPage";
+import DiamondWeightCalculator from "./pages/DiamondWeightCalculator";
 import NotFound from "./pages/NotFound";
 import { DashboardLayout } from "./components/DashboardLayout";
 
