@@ -36,6 +36,7 @@ import {
 import { COUNTRIES } from "@/lib/countries";
 import { PRODUCT_TYPES } from "@/lib/product-types";
 import { COUNTRY_PHONE_CODES } from "@/lib/country-phone-codes";
+import { MEXICAN_STATES } from "@/lib/mexican-states";
 
 interface Supplier {
   id: string;
@@ -45,6 +46,7 @@ interface Supplier {
   telefono: string | null;
   telefono_codigo_pais: string | null;
   pais: string | null;
+  estado: string | null;
   notas: string | null;
   activo: boolean;
   tipos_productos: string[];
@@ -73,6 +75,7 @@ export const SupplierDialog = ({
     telefono: "",
     telefono_codigo_pais: "+52",
     pais: "México",
+    estado: "",
     notas: "",
     activo: true,
     tipos_productos: [] as string[],
@@ -91,6 +94,7 @@ export const SupplierDialog = ({
         telefono: fullPhone,
         telefono_codigo_pais: supplier.telefono_codigo_pais || "+52",
         pais: supplier.pais || "",
+        estado: supplier.estado || "",
         notas: supplier.notas || "",
         activo: supplier.activo,
         tipos_productos: supplier.tipos_productos || [],
@@ -103,6 +107,7 @@ export const SupplierDialog = ({
         telefono: "",
         telefono_codigo_pais: "+52",
         pais: "México",
+        estado: "",
         notas: "",
         activo: true,
         tipos_productos: [],
@@ -124,17 +129,16 @@ export const SupplierDialog = ({
   const handleCountryChange = (selectedCountry: string) => {
     const phoneCode = COUNTRY_PHONE_CODES[selectedCountry] || "+52";
     
-    // Extraer solo el número del teléfono actual (sin código de país)
     const currentPhone = formData.telefono;
     const phoneMatch = currentPhone.match(/^(\+\d{1,4})(\d+)$/);
     const phoneNumber = phoneMatch ? phoneMatch[2] : currentPhone.replace(/^\+\d{1,4}/, "");
     
-    // Actualizar país y código de país
     setFormData({
       ...formData,
       pais: selectedCountry,
       telefono_codigo_pais: phoneCode,
       telefono: phoneNumber ? `${phoneCode}${phoneNumber}` : phoneCode,
+      estado: "",
     });
   };
 
@@ -143,7 +147,6 @@ export const SupplierDialog = ({
     setLoading(true);
 
     try {
-      // Separar código de país y número
       const phoneMatch = formData.telefono.match(/^(\+\d{1,4})(\d+)$/);
       const countryCode = phoneMatch ? phoneMatch[1] : "+52";
       const phoneNumber = phoneMatch ? phoneMatch[2] : formData.telefono;
@@ -155,13 +158,13 @@ export const SupplierDialog = ({
         telefono: phoneNumber || null,
         telefono_codigo_pais: phoneNumber ? countryCode : null,
         pais: formData.pais.trim() || null,
+        estado: formData.estado.trim() || null,
         notas: formData.notas.trim() || null,
         activo: formData.activo,
         tipos_productos: formData.tipos_productos,
       };
 
       if (supplier) {
-        // Actualizar proveedor existente
         const { error } = await supabase
           .from("suppliers")
           .update(supplierData)
@@ -170,7 +173,6 @@ export const SupplierDialog = ({
         if (error) throw error;
         toast.success("Proveedor actualizado exitosamente");
       } else {
-        // Crear nuevo proveedor
         const { error } = await supabase
           .from("suppliers")
           .insert([supplierData]);
@@ -265,6 +267,38 @@ export const SupplierDialog = ({
                       ))}
                     </SelectContent>
                   </Select>
+                </div>
+
+                <div className="col-span-2 space-y-2">
+                  <Label htmlFor="estado">Estado / Región</Label>
+                  {formData.pais === "México" ? (
+                    <Select
+                      value={formData.estado}
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, estado: value })
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecciona un estado" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-[300px]">
+                        {MEXICAN_STATES.map((state) => (
+                          <SelectItem key={state} value={state}>
+                            {state}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <Input
+                      id="estado"
+                      value={formData.estado}
+                      onChange={(e) =>
+                        setFormData({ ...formData, estado: e.target.value })
+                      }
+                      placeholder="Estado o región"
+                    />
+                  )}
                 </div>
               </div>
             </div>
