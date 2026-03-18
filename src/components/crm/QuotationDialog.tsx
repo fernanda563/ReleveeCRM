@@ -29,10 +29,30 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
-import { Plus, Trash2, ArrowLeft, ArrowRight, Loader2, Calculator, ChevronDown } from "lucide-react";
+import { Plus, Trash2, ArrowLeft, ArrowRight, Loader2, Calculator, ChevronDown, AlertCircle } from "lucide-react";
 import { calcularPrecioMaterial } from "@/lib/material-utils";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import RingWeightCalculator from "@/components/crm/RingWeightCalculator";
+import { Checkbox } from "@/components/ui/checkbox";
+
+// Requirement map: which piece types need metal and/or stone
+const MATERIAL_REQUIREMENTS: Record<string, { requiresMetal: boolean; requiresStone: boolean }> = {
+  // Default: most pieces require metal only
+};
+
+function getPieceRequirements(tipo: string): { requiresMetal: boolean; requiresStone: boolean } {
+  const lower = tipo.toLowerCase();
+  // Check explicit map first
+  if (MATERIAL_REQUIREMENTS[lower]) return MATERIAL_REQUIREMENTS[lower];
+  // Pieces that require both metal and stone
+  if (lower.includes("compromiso") || lower.includes("churumbela")) {
+    return { requiresMetal: true, requiresStone: true };
+  }
+  // "otro" has no requirements
+  if (lower === "otro") return { requiresMetal: false, requiresStone: false };
+  // Default: requires metal
+  return { requiresMetal: true, requiresStone: false };
+}
 
 interface Client {
   id: string;
