@@ -298,14 +298,17 @@ export type Database = {
         Row: {
           activo: boolean | null
           categoria: string | null
+          color: string | null
           costo_directo: number
           created_at: string | null
           id: string
+          kilataje: string | null
           nombre: string
           notas: string | null
           redondeo: string
           redondeo_multiplo: number | null
           tipo_margen: string
+          tipo_material: string | null
           unidad_medida: string
           updated_at: string | null
           valor_margen: number
@@ -313,14 +316,17 @@ export type Database = {
         Insert: {
           activo?: boolean | null
           categoria?: string | null
+          color?: string | null
           costo_directo?: number
           created_at?: string | null
           id?: string
+          kilataje?: string | null
           nombre: string
           notas?: string | null
           redondeo?: string
           redondeo_multiplo?: number | null
           tipo_margen?: string
+          tipo_material?: string | null
           unidad_medida?: string
           updated_at?: string | null
           valor_margen?: number
@@ -328,14 +334,17 @@ export type Database = {
         Update: {
           activo?: boolean | null
           categoria?: string | null
+          color?: string | null
           costo_directo?: number
           created_at?: string | null
           id?: string
+          kilataje?: string | null
           nombre?: string
           notas?: string | null
           redondeo?: string
           redondeo_multiplo?: number | null
           tipo_margen?: string
+          tipo_material?: string | null
           unidad_medida?: string
           updated_at?: string | null
           valor_margen?: number
