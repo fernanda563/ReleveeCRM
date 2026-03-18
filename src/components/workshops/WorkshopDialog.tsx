@@ -43,6 +43,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { COUNTRIES } from "@/lib/countries";
 import { COUNTRY_PHONE_CODES } from "@/lib/country-phone-codes";
+import { MEXICAN_STATES } from "@/lib/mexican-states";
 import { Workshop } from "@/types/workshops";
 import { Loader2 } from "lucide-react";
 
