@@ -149,7 +149,7 @@ export const ProspectsHistory = ({ clientId }: ProspectsHistoryProps) => {
       fetchProspects();
     } catch (error) {
       console.error("Error:", error);
-      toast.error("Error al convertir proyecto");
+      toast.error("Error al convertir cotización");
     }
   };
 
