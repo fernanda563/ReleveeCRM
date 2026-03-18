@@ -119,7 +119,7 @@ export const ProspectDetailDialog = ({
 
     if (error) {
       console.error(error);
-      toast.error("No se pudo eliminar el proyecto");
+      toast.error("No se pudo eliminar la cotización");
       return;
     }
 
