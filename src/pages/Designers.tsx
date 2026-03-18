@@ -207,86 +207,24 @@ export default function Designers() {
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredDesigners.map((designer) => {
               const processes = designerProcesses[designer.id] || [];
               const orderCount = workOrderCounts[designer.id] || 0;
 
               return (
-                <Card key={designer.id} className="hover:shadow-md transition-shadow">
-                  <CardContent className="pt-6">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1 space-y-3">
-                        {/* Header */}
-                        <div className="flex items-center gap-3">
-                          <h3 className="text-xl font-semibold">{designer.nombre}</h3>
-                          <Badge variant={designer.activo ? "default" : "secondary"}>
-                            {designer.activo ? "Activo" : "Inactivo"}
-                          </Badge>
-                          {designer.especialidad && (
-                            <Badge variant="outline">{designer.especialidad}</Badge>
-                          )}
-                        </div>
-
-                        {/* Contact Info */}
-                        <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-                          {designer.email && (
-                            <span className="flex items-center gap-1">
-                              <Mail className="h-4 w-4" />
-                              {designer.email}
-                            </span>
-                          )}
-                          {designer.telefono && (
-                            <span className="flex items-center gap-1">
-                              <Phone className="h-4 w-4" />
-                              {designer.telefono_codigo_pais} {designer.telefono}
-                            </span>
-                          )}
-                          {(designer.ubicacion_ciudad || designer.ubicacion_pais) && (
-                            <span className="flex items-center gap-1">
-                              <MapPin className="h-4 w-4" />
-                              {[designer.ubicacion_ciudad, designer.ubicacion_estado, designer.ubicacion_pais]
-                                .filter(Boolean)
-                                .join(", ")}
-                            </span>
-                          )}
-                          {designer.portafolio_url && (
-                            <a 
-                              href={designer.portafolio_url} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="flex items-center gap-1 text-primary hover:underline"
-                            >
-                              <ExternalLink className="h-4 w-4" />
-                              Portafolio
-                            </a>
-                          )}
-                        </div>
-
-                        {/* Processes */}
-                        {processes.length > 0 && (
-                          <div className="flex flex-wrap gap-2">
-                            {processes.map((process) => (
-                              <Badge key={process.id} variant="secondary" className="text-xs">
-                                {process.work_concept?.nombre} - ${process.costo_acordado.toLocaleString()}
-                              </Badge>
-                            ))}
-                          </div>
-                        )}
-
-                        {/* Order Count */}
-                        {orderCount > 0 && (
-                          <p className="text-sm text-muted-foreground">
-                            {orderCount} orden{orderCount !== 1 ? "es" : ""} de trabajo asignada{orderCount !== 1 ? "s" : ""}
-                          </p>
-                        )}
+                <Card key={designer.id} className={`hover:shadow-md transition-shadow ${!designer.activo ? "opacity-60" : ""}`}>
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between">
+                      <div className="space-y-1 flex-1 min-w-0">
+                        <CardTitle className="text-base font-semibold truncate">
+                          {designer.nombre}
+                        </CardTitle>
                       </div>
-
-                      {/* Actions */}
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="outline" size="sm">
-                            Acciones
+                          <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
+                            <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
@@ -305,6 +243,65 @@ export default function Designers() {
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
+                    <div className="flex flex-wrap gap-2">
+                      <Badge variant={designer.activo ? "default" : "secondary"} className="text-xs">
+                        {designer.activo ? "Activo" : "Inactivo"}
+                      </Badge>
+                      {designer.especialidad && (
+                        <Badge variant="outline" className="text-xs">{designer.especialidad}</Badge>
+                      )}
+                    </div>
+                  </CardHeader>
+                  <CardContent className="pt-0 space-y-3">
+                    <div className="space-y-2 text-sm">
+                      {designer.email && (
+                        <p className="flex items-center gap-2 text-muted-foreground">
+                          <Mail className="h-3.5 w-3.5" />
+                          <span className="truncate">{designer.email}</span>
+                        </p>
+                      )}
+                      {designer.telefono && (
+                        <p className="flex items-center gap-2 text-muted-foreground">
+                          <Phone className="h-3.5 w-3.5" />
+                          {designer.telefono_codigo_pais} {designer.telefono}
+                        </p>
+                      )}
+                      {(designer.ubicacion_ciudad || designer.ubicacion_pais) && (
+                        <p className="flex items-center gap-2 text-muted-foreground">
+                          <MapPin className="h-3.5 w-3.5" />
+                          {[designer.ubicacion_ciudad, designer.ubicacion_estado, designer.ubicacion_pais]
+                            .filter(Boolean)
+                            .join(", ")}
+                        </p>
+                      )}
+                      {designer.portafolio_url && (
+                        <a 
+                          href={designer.portafolio_url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 text-primary hover:underline text-sm"
+                        >
+                          <ExternalLink className="h-3.5 w-3.5" />
+                          Portafolio
+                        </a>
+                      )}
+                    </div>
+
+                    {processes.length > 0 && (
+                      <div className="flex flex-wrap gap-1 pt-2 border-t">
+                        {processes.map((process) => (
+                          <Badge key={process.id} variant="secondary" className="text-xs">
+                            {process.work_concept?.nombre}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+
+                    {orderCount > 0 && (
+                      <p className="text-xs text-muted-foreground">
+                        {orderCount} orden{orderCount !== 1 ? "es" : ""} de trabajo
+                      </p>
+                    )}
                   </CardContent>
                 </Card>
               );

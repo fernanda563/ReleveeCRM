@@ -4,7 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Search, Plus, Building2, Globe, Loader2, Mail, Phone } from "lucide-react";
+import { Search, Plus, Building2, Globe, Loader2, Mail, Phone, MoreHorizontal, Pencil } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useNavigate } from "react-router-dom";
@@ -218,64 +224,72 @@ const Suppliers = () => {
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredSuppliers.map((supplier) => (
-              <Card key={supplier.id} className="hover:shadow-md transition-shadow">
-                <CardContent className="pt-6">
+              <Card key={supplier.id} className={`hover:shadow-md transition-shadow ${!supplier.activo ? "opacity-60" : ""}`}>
+                <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-xl font-semibold">
-                          {supplier.nombre_empresa}
-                        </h3>
-                        <Badge variant={supplier.activo ? "default" : "secondary"}>
-                          {supplier.activo ? "Activo" : "Inactivo"}
-                        </Badge>
-                      </div>
-                      
-                      <div className="space-y-2 text-sm text-muted-foreground">
-                        <p className="font-medium text-foreground">
-                          Contacto: {supplier.nombre_contacto}
-                        </p>
-                        <p className="flex items-center gap-2">
-                          <Mail className="h-4 w-4" />
-                          {supplier.email}
-                        </p>
-                        {supplier.telefono && (
-                          <p className="flex items-center gap-2">
-                            <Phone className="h-4 w-4" />
-                            {supplier.telefono_codigo_pais || "+52"} {supplier.telefono}
-                          </p>
-                        )}
-                        {supplier.pais && (
-                          <p className="flex items-center gap-2">
-                            <Globe className="h-4 w-4" />
-                            {supplier.pais}
-                          </p>
-                        )}
-                      </div>
-
-                      {supplier.tipos_productos && supplier.tipos_productos.length > 0 && (
-                        <div className="mt-3 flex flex-wrap gap-1">
-                          {supplier.tipos_productos.map((tipo) => {
-                            const productType = PRODUCT_TYPES.find((p) => p.value === tipo);
-                            return (
-                              <Badge key={tipo} variant="secondary" className="text-xs">
-                                {productType?.label || tipo}
-                              </Badge>
-                            );
-                          })}
-                        </div>
-                      )}
+                    <div className="space-y-1 flex-1 min-w-0">
+                      <CardTitle className="text-base font-semibold truncate">
+                        {supplier.nombre_empresa}
+                      </CardTitle>
                     </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleEdit(supplier)}
-                    >
-                      Editar
-                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleEdit(supplier)}>
+                          <Pencil className="h-4 w-4 mr-2" />
+                          Editar
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Badge variant={supplier.activo ? "default" : "secondary"} className="text-xs">
+                      {supplier.activo ? "Activo" : "Inactivo"}
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-0 space-y-3">
+                  <div className="space-y-2 text-sm">
+                    <div className="space-y-1">
+                      <p className="text-xs text-muted-foreground">Contacto</p>
+                      <p className="font-medium">{supplier.nombre_contacto}</p>
+                    </div>
+                    <p className="flex items-center gap-2 text-muted-foreground">
+                      <Mail className="h-3.5 w-3.5" />
+                      <span className="truncate">{supplier.email}</span>
+                    </p>
+                    {supplier.telefono && (
+                      <p className="flex items-center gap-2 text-muted-foreground">
+                        <Phone className="h-3.5 w-3.5" />
+                        {supplier.telefono_codigo_pais || "+52"} {supplier.telefono}
+                      </p>
+                    )}
+                    {supplier.pais && (
+                      <p className="flex items-center gap-2 text-muted-foreground">
+                        <Globe className="h-3.5 w-3.5" />
+                        {supplier.pais}
+                      </p>
+                    )}
+                  </div>
+
+                  {supplier.tipos_productos && supplier.tipos_productos.length > 0 && (
+                    <div className="flex flex-wrap gap-1 pt-2 border-t">
+                      {supplier.tipos_productos.map((tipo) => {
+                        const productType = PRODUCT_TYPES.find((p) => p.value === tipo);
+                        return (
+                          <Badge key={tipo} variant="secondary" className="text-xs">
+                            {productType?.label || tipo}
+                          </Badge>
+                        );
+                      })}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             ))}

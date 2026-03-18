@@ -4,7 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Search, Plus, Users as UsersIcon, Shield, Loader2 } from "lucide-react";
+import { Search, Plus, Users as UsersIcon, Shield, Loader2, MoreHorizontal, Mail, Phone, CalendarDays } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useNavigate } from "react-router-dom";
@@ -217,47 +223,65 @@ const Users = () => {
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredProfiles.map((profile) => (
               <Card key={profile.id} className="hover:shadow-md transition-shadow">
-                <CardContent className="pt-6">
+                <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <h3 className="text-xl font-semibold mb-2">
-                        {profile.nombre} {profile.apellido_paterno}{" "}
-                        {profile.apellido_materno || ""}
-                      </h3>
-                      <div className="space-y-2 text-sm text-muted-foreground">
-                        <p>{profile.email}</p>
-                        {profile.telefono && <p>{profile.telefono}</p>}
-                        <p>Registrado el {formatDate(profile.created_at)}</p>
-                      </div>
-                      <div className="flex flex-wrap gap-2 mt-3">
-                        {profile.user_roles.length === 0 ? (
-                          <Badge variant="outline">Sin roles asignados</Badge>
-                        ) : (
-                          profile.user_roles.map((ur, idx) => (
-                            <Badge
-                              key={idx}
-                              className={getRoleBadgeColor(ur.role)}
-                            >
-                              {getRoleLabel(ur.role)}
-                            </Badge>
-                          ))
-                        )}
-                      </div>
+                    <div className="space-y-1 flex-1 min-w-0">
+                      <CardTitle className="text-base font-semibold truncate">
+                        {profile.nombre} {profile.apellido_paterno} {profile.apellido_materno || ""}
+                      </CardTitle>
                     </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setSelectedProfile(profile);
-                        setRoleDialogOpen(true);
-                      }}
-                    >
-                      <Shield className="h-4 w-4 mr-2" />
-                      Gestionar Roles
-                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => {
+                          setSelectedProfile(profile);
+                          setRoleDialogOpen(true);
+                        }}>
+                          <Shield className="h-4 w-4 mr-2" />
+                          Gestionar Roles
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-0 space-y-3">
+                  <div className="space-y-2 text-sm">
+                    <p className="flex items-center gap-2 text-muted-foreground">
+                      <Mail className="h-3.5 w-3.5" />
+                      <span className="truncate">{profile.email}</span>
+                    </p>
+                    {profile.telefono && (
+                      <p className="flex items-center gap-2 text-muted-foreground">
+                        <Phone className="h-3.5 w-3.5" />
+                        {profile.telefono}
+                      </p>
+                    )}
+                    <p className="flex items-center gap-2 text-muted-foreground">
+                      <CalendarDays className="h-3.5 w-3.5" />
+                      {formatDate(profile.created_at)}
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap gap-1 pt-2 border-t">
+                    {profile.user_roles.length === 0 ? (
+                      <Badge variant="outline" className="text-xs">Sin roles asignados</Badge>
+                    ) : (
+                      profile.user_roles.map((ur, idx) => (
+                        <Badge
+                          key={idx}
+                          className={`text-xs ${getRoleBadgeColor(ur.role)}`}
+                        >
+                          {getRoleLabel(ur.role)}
+                        </Badge>
+                      ))
+                    )}
                   </div>
                 </CardContent>
               </Card>
