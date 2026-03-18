@@ -206,7 +206,7 @@ export default function Projects() {
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                 <FolderOpen className="h-4 w-4" />
-                Total proyectos
+                Total cotizaciones
               </CardTitle>
             </CardHeader>
             <CardContent>
