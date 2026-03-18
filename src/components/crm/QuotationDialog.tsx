@@ -96,6 +96,7 @@ interface QuoteItem {
   referencia_id: string;
   nombre: string;
   tipo: "material" | "mano_de_obra";
+  categoria?: string;
   cantidad: number;
   costo_unitario: number;
   precio_unitario: number;
