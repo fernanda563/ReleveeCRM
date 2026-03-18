@@ -573,7 +573,28 @@ export default function QuotationDialog({
                 </CollapsibleTrigger>
                 <CollapsibleContent className="pt-2 pb-3 border border-border rounded-md p-4 mt-1">
                   <RingWeightCalculator
-                    onUseWeight={(w) => setMaterialCantidad(String(w))}
+                    onUseWeight={(w) => {
+                      if (!selectedMaterial) {
+                        toast.error("Selecciona un metal primero");
+                        return;
+                      }
+                      const precioUnit = getMaterialPrice(selectedMaterial);
+                      const item: QuoteItem = {
+                        id: crypto.randomUUID(),
+                        referencia_id: selectedMaterial.id,
+                        nombre: selectedMaterial.nombre,
+                        tipo: "material",
+                        categoria: selectedMaterial.categoria || undefined,
+                        cantidad: w,
+                        costo_unitario: selectedMaterial.costo_directo,
+                        precio_unitario: precioUnit,
+                        subtotal: precioUnit * w,
+                        unidad_medida: selectedMaterial.unidad_medida,
+                      };
+                      setMaterialItems((prev) => [...prev, item]);
+                      setSelectedMaterialId("");
+                      setMaterialCantidad("1");
+                    }}
                     alloy={
                       selectedMaterial?.kilataje === "10k" ? "10K" :
                       selectedMaterial?.kilataje === "18k" ? "18K" : "14K"
