@@ -43,6 +43,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { COUNTRIES } from "@/lib/countries";
 import { COUNTRY_PHONE_CODES } from "@/lib/country-phone-codes";
+import { MEXICAN_STATES } from "@/lib/mexican-states";
 import { Workshop } from "@/types/workshops";
 import { Loader2 } from "lucide-react";
 
@@ -200,6 +201,7 @@ export const WorkshopDialog = ({
     setFormData({
       ...formData,
       ubicacion_pais: selectedCountry,
+      ubicacion_estado: selectedCountry !== formData.ubicacion_pais ? "" : formData.ubicacion_estado,
       responsable_telefono_codigo_pais: phoneCode,
       responsable_telefono: phoneNumber ? `${phoneCode}${phoneNumber}` : phoneCode,
     });
@@ -372,13 +374,31 @@ export const WorkshopDialog = ({
 
                 <div className="space-y-2">
                   <Label htmlFor="ubicacion_estado">Estado / Provincia</Label>
-                  <Input
-                    id="ubicacion_estado"
-                    value={formData.ubicacion_estado}
-                    onChange={(e) =>
-                      setFormData({ ...formData, ubicacion_estado: e.target.value })
-                    }
-                  />
+                  {formData.ubicacion_pais === "México" ? (
+                    <Select
+                      value={formData.ubicacion_estado}
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, ubicacion_estado: value })
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar estado" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {MEXICAN_STATES.map((state) => (
+                          <SelectItem key={state} value={state}>{state}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <Input
+                      id="ubicacion_estado"
+                      value={formData.ubicacion_estado}
+                      onChange={(e) =>
+                        setFormData({ ...formData, ubicacion_estado: e.target.value })
+                      }
+                    />
+                  )}
                 </div>
 
                 <div className="space-y-2">
