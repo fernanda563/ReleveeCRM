@@ -126,8 +126,8 @@ export default function RingWeightCalculator({ onUseWeight, alloy: controlledAll
             value={[width]}
             min={2}
             max={8}
-            step={1}
-            onValueChange={([v]) => setWidth(v)}
+            step={0.1}
+            onValueChange={([v]) => setWidth(Math.round(v * 10) / 10)}
           />
           <div className="flex justify-between text-xs text-muted-foreground">
             <span>2 mm</span><span>8 mm</span>
