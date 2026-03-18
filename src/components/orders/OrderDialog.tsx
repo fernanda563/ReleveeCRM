@@ -1084,7 +1084,7 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
                       disabled={loading || isLoadingProspects}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Selecciona un proyecto (opcional)" />
+                        <SelectValue placeholder="Selecciona una cotización (opcional)" />
                       </SelectTrigger>
                       <SelectContent>
                         {clientProspects.map((prospect) => (
