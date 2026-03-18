@@ -322,7 +322,7 @@ export const ProspectDetailDialog = ({
                         <SelectItem value="arracada">Arracada</SelectItem>
                         <SelectItem value="boton">Botón</SelectItem>
                         <SelectItem value="colgante">Colgante</SelectItem>
-                        <SelectItem value="argolla">Argolla</SelectItem>
+                        
                       </>
                     )}
                   </SelectContent>
