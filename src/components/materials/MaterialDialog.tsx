@@ -35,11 +35,27 @@ interface MaterialDialogProps {
   loading?: boolean;
 }
 
+const formatCurrency = (value: string): string => {
+  const numericValue = value.replace(/[^\d.]/g, '');
+  const parts = numericValue.split('.');
+  if (parts.length > 2) {
+    return formatCurrency(parts[0] + '.' + parts.slice(1).join(''));
+  }
+  if (numericValue === '') return '';
+  const integerPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  const decimalPart = parts.length > 1 ? '.' + parts[1].slice(0, 2) : '';
+  return '$' + integerPart + decimalPart;
+};
+
+const unformatCurrency = (value: string): string => {
+  return value.replace(/[^\d.]/g, '');
+};
+
 const defaultForm: MaterialFormData = {
   nombre: "",
   categoria: "",
   unidad_medida: "gramo",
-  costo_directo: 0,
+  costo_directo: "",
   tipo_margen: "porcentaje",
   valor_margen: 0,
   redondeo: "ninguno",
