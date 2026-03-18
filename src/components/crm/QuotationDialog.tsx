@@ -508,6 +508,21 @@ export default function QuotationDialog({
                 <CollapsibleContent className="pt-2 pb-3 border border-border rounded-md p-4 mt-1">
                   <RingWeightCalculator
                     onUseWeight={(w) => setMaterialCantidad(String(w))}
+                    alloy={
+                      selectedMaterial?.kilataje === "10k" ? "10K" :
+                      selectedMaterial?.kilataje === "18k" ? "18K" : "14K"
+                    }
+                    onAlloyChange={(a) => {
+                      const targetKilataje = a.toLowerCase();
+                      const match = materials.find(
+                        (m) =>
+                          m.categoria === "Metales" &&
+                          m.kilataje === targetKilataje &&
+                          m.tipo_material === selectedMaterial?.tipo_material &&
+                          m.color === selectedMaterial?.color
+                      );
+                      if (match) setSelectedMaterialId(match.id);
+                    }}
                   />
                 </CollapsibleContent>
               </Collapsible>
