@@ -499,7 +499,7 @@ export default function QuotationDialog({
 
             {/* Ring Weight Calculator - only for metals */}
             {selectedMaterial?.categoria === "Metales" && (
-              <Collapsible>
+              <Collapsible defaultOpen>
                 <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors w-full py-2">
                   <Calculator className="h-4 w-4" />
                   Calculadora de peso de anillo
