@@ -48,7 +48,7 @@ export default function Projects() {
   const [convertingProspect, setConvertingProspect] = useState<ProspectWithClient | null>(null);
   const [showOrderDialog, setShowOrderDialog] = useState(false);
   const [deletingProspect, setDeletingProspect] = useState<ProspectWithClient | null>(null);
-  
+  const [showQuotationDialog, setShowQuotationDialog] = useState(false);
 
   useEffect(() => {
     fetchProspects();
