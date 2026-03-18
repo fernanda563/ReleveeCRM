@@ -28,13 +28,6 @@ import {
 import OrderDialog from "@/components/orders/OrderDialog";
 import { generateProspectTitle } from "@/components/client-detail/prospect-utils";
 import QuotationDialog from "@/components/crm/QuotationDialog";
-import RingWeightCalculator from "@/components/crm/RingWeightCalculator";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 
 interface ProspectWithClient extends Prospect {
   clients: {
