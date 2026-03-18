@@ -120,7 +120,7 @@ export default function Materials() {
         </Card>
         <Card>
           <CardContent className="p-4 flex items-center gap-3">
-            <CheckCircle2 className="h-8 w-8 text-green-600" />
+            <CheckCircle2 className="h-8 w-8 text-primary" />
             <div>
               <p className="text-sm text-muted-foreground">Activos</p>
               <p className="text-3xl font-bold">{stats.activos}</p>
