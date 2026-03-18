@@ -192,17 +192,11 @@ export default function Projects() {
     <div className="min-h-full bg-background">
       <main className="container mx-auto px-6 py-8">
         {/* Header */}
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground mb-2">Cotizaciones</h1>
-            <p className="text-muted-foreground">
-              Explora todas las cotizaciones de joyería de tus clientes
-            </p>
-          </div>
-          <Button onClick={() => setShowProspectDialog(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Nueva Cotización
-          </Button>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-foreground mb-2">Cotizaciones</h1>
+          <p className="text-muted-foreground">
+            Explora todas las cotizaciones de joyería de tus clientes
+          </p>
         </div>
 
         {/* Dashboard de estadísticas */}
