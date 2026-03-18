@@ -80,6 +80,14 @@ const permissions: Permission[] = [
     disenador: false,
     joyero: false,
   },
+  {
+    name: "Materiales",
+    administrador: true,
+    gerente_tienda: false,
+    contador: false,
+    disenador: false,
+    joyero: false,
+  },
 ];
 
 const roleDescriptions = {

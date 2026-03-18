@@ -25,6 +25,7 @@ import STLViewerFullscreen from "./pages/STLViewerFullscreen";
 import CalendarAdmin from "./pages/CalendarAdmin";
 import SystemSettings from "./pages/SystemSettings";
 import RolesManagement from "./pages/RolesManagement";
+import Materials from "./pages/Materials";
 import NotFound from "./pages/NotFound";
 import { DashboardLayout } from "./components/DashboardLayout";
 
@@ -58,6 +59,7 @@ const App = () => (
         <Route path="/settings/calendar" element={<CalendarAdmin />} />
         <Route path="/settings/system" element={<SystemSettings />} />
         <Route path="/settings/roles" element={<RolesManagement />} />
+        <Route path="/materials" element={<Materials />} />
       </Route>
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />
