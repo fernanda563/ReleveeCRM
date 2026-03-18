@@ -394,6 +394,16 @@ export default function Projects() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        {/* Dialog de Nueva Cotización */}
+        <ProspectDialog
+          open={showProspectDialog}
+          onOpenChange={setShowProspectDialog}
+          onSuccess={() => {
+            setShowProspectDialog(false);
+            fetchProspects();
+          }}
+        />
       </main>
     </div>
   );
