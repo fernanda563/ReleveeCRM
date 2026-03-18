@@ -12,6 +12,7 @@ import {
   BarChart3,
   FileText,
   Box,
+  Scale,
   Settings,
   Calendar,
   Cog,
