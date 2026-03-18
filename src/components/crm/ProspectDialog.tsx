@@ -3,9 +3,11 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -443,8 +445,7 @@ const ProspectDialog = ({
                   {(tipoAccesorio === "collar" || tipoAccesorio === "pulsera") && (
                     <div className="space-y-2">
                       <Label>Largo Aproximado</Label>
-                      <input
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      <Input
                         value={largoAprox}
                         onChange={(e) => setLargoAprox(e.target.value)}
                         placeholder="Ej: 45cm, 18 pulgadas..."
@@ -562,7 +563,7 @@ const ProspectDialog = ({
             </>
           )}
 
-          <div className="flex justify-end gap-3 pt-2">
+          <DialogFooter>
             <Button
               type="button"
               variant="outline"
@@ -574,7 +575,6 @@ const ProspectDialog = ({
             <Button
               type="submit"
               disabled={loading}
-              className="bg-warning hover:bg-warning/90 text-warning-foreground"
             >
               {loading ? (
                 <>
@@ -585,7 +585,7 @@ const ProspectDialog = ({
                 "Registrar Cotización"
               )}
             </Button>
-          </div>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
