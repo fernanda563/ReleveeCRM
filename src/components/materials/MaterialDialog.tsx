@@ -17,7 +17,7 @@ interface MaterialFormData {
   nombre: string;
   categoria: string;
   unidad_medida: string;
-  costo_directo: number;
+  costo_directo: string;
   tipo_margen: string;
   valor_margen: number;
   redondeo: string;
@@ -30,16 +30,32 @@ interface MaterialDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmit: (data: MaterialFormData) => void;
-  initialData?: Partial<MaterialFormData> | null;
+  initialData?: Record<string, any> | null;
   existingCategories: string[];
   loading?: boolean;
 }
+
+const formatCurrency = (value: string): string => {
+  const numericValue = value.replace(/[^\d.]/g, '');
+  const parts = numericValue.split('.');
+  if (parts.length > 2) {
+    return formatCurrency(parts[0] + '.' + parts.slice(1).join(''));
+  }
+  if (numericValue === '') return '';
+  const integerPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  const decimalPart = parts.length > 1 ? '.' + parts[1].slice(0, 2) : '';
+  return '$' + integerPart + decimalPart;
+};
+
+const unformatCurrency = (value: string): string => {
+  return value.replace(/[^\d.]/g, '');
+};
 
 const defaultForm: MaterialFormData = {
   nombre: "",
   categoria: "",
   unidad_medida: "gramo",
-  costo_directo: 0,
+  costo_directo: "",
   tipo_margen: "porcentaje",
   valor_margen: 0,
   redondeo: "ninguno",
@@ -57,7 +73,13 @@ export function MaterialDialog({
 
   useEffect(() => {
     if (open) {
-      const data = initialData ? { ...defaultForm, ...initialData } : defaultForm;
+      const raw = initialData ? { ...defaultForm, ...initialData } : defaultForm;
+      const data = {
+        ...raw,
+        costo_directo: raw.costo_directo
+          ? formatCurrency(String(raw.costo_directo))
+          : "",
+      };
       setForm(data);
       setShowCustomCategoria(
         !!data.categoria && !existingCategories.includes(data.categoria)
@@ -65,13 +87,17 @@ export function MaterialDialog({
     }
   }, [open, initialData]);
 
+  const costoNumerico = parseFloat(unformatCurrency(form.costo_directo)) || 0;
   const precio = calcularPrecioMaterial(
-    form.costo_directo, form.tipo_margen, form.valor_margen, form.redondeo, form.redondeo_multiplo
+    costoNumerico, form.tipo_margen, form.valor_margen, form.redondeo, form.redondeo_multiplo
   );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(form);
+    onSubmit({
+      ...form,
+      costo_directo: parseFloat(unformatCurrency(form.costo_directo)) || 0,
+    } as any);
   };
 
   const update = (field: keyof MaterialFormData, value: any) =>
@@ -150,11 +176,10 @@ export function MaterialDialog({
             <Label htmlFor="costo">Costo directo por unidad ($)</Label>
             <Input
               id="costo"
-              type="number"
-              min={0}
-              step="0.01"
-              value={form.costo_directo || ""}
-              onChange={(e) => update("costo_directo", parseFloat(e.target.value) || 0)}
+              type="text"
+              value={form.costo_directo}
+              onChange={(e) => update("costo_directo", formatCurrency(e.target.value))}
+              placeholder="$0.00"
             />
           </div>
 
