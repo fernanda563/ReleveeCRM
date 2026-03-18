@@ -86,7 +86,7 @@ const WorkConcepts = () => {
 
   const stats = [
     {
-      title: "Total Conceptos",
+      title: "Total Mano de Obra",
       value: concepts.filter((c) => c.activo).length,
       icon: Layers,
     },
