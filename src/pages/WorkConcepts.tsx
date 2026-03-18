@@ -117,7 +117,7 @@ const WorkConcepts = () => {
             </Button>
           </div>
           <p className="text-muted-foreground">
-            Administra los conceptos de trabajo para diseño y taller
+            Administra los conceptos de mano de obra para diseño y taller
           </p>
         </div>
 
