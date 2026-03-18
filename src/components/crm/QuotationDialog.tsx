@@ -29,10 +29,30 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
-import { Plus, Trash2, ArrowLeft, ArrowRight, Loader2, Calculator, ChevronDown } from "lucide-react";
+import { Plus, Trash2, ArrowLeft, ArrowRight, Loader2, Calculator, ChevronDown, AlertCircle } from "lucide-react";
 import { calcularPrecioMaterial } from "@/lib/material-utils";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import RingWeightCalculator from "@/components/crm/RingWeightCalculator";
+import { Checkbox } from "@/components/ui/checkbox";
+
+// Requirement map: which piece types need metal and/or stone
+const MATERIAL_REQUIREMENTS: Record<string, { requiresMetal: boolean; requiresStone: boolean }> = {
+  // Default: most pieces require metal only
+};
+
+function getPieceRequirements(tipo: string): { requiresMetal: boolean; requiresStone: boolean } {
+  const lower = tipo.toLowerCase();
+  // Check explicit map first
+  if (MATERIAL_REQUIREMENTS[lower]) return MATERIAL_REQUIREMENTS[lower];
+  // Pieces that require both metal and stone
+  if (lower.includes("compromiso") || lower.includes("churumbela")) {
+    return { requiresMetal: true, requiresStone: true };
+  }
+  // "otro" has no requirements
+  if (lower === "otro") return { requiresMetal: false, requiresStone: false };
+  // Default: requires metal
+  return { requiresMetal: true, requiresStone: false };
+}
 
 interface Client {
   id: string;
@@ -76,6 +96,7 @@ interface QuoteItem {
   referencia_id: string;
   nombre: string;
   tipo: "material" | "mano_de_obra";
+  categoria?: string;
   cantidad: number;
   costo_unitario: number;
   precio_unitario: number;
@@ -120,6 +141,10 @@ export default function QuotationDialog({
   const [materialCantidad, setMaterialCantidad] = useState("1");
   const [materialItems, setMaterialItems] = useState<QuoteItem[]>([]);
 
+  // Step 2 - skip overrides
+  const [skipMetal, setSkipMetal] = useState(false);
+  const [skipStone, setSkipStone] = useState(false);
+
   // Step 3
   const [workConcepts, setWorkConcepts] = useState<WorkConcept[]>([]);
   const [selectedConceptId, setSelectedConceptId] = useState("");
@@ -146,6 +171,8 @@ export default function QuotationDialog({
     setMaterialCantidad("1");
     setSelectedConceptId("");
     setConceptCantidad("1");
+    setSkipMetal(false);
+    setSkipStone(false);
   };
 
   const fetchData = async () => {
@@ -196,6 +223,7 @@ export default function QuotationDialog({
       referencia_id: selectedMaterial.id,
       nombre: selectedMaterial.nombre,
       tipo: "material",
+      categoria: selectedMaterial.categoria || undefined,
       cantidad: qty,
       costo_unitario: selectedMaterial.costo_directo,
       precio_unitario: precioUnit,
@@ -250,8 +278,17 @@ export default function QuotationDialog({
 
   const grandTotal = totalMaterials + totalLabor;
 
+  const pieceRequirements = useMemo(() => getPieceRequirements(selectedType), [selectedType]);
+
+  const hasMetal = materialItems.some((i) => i.categoria === "Metales");
+  const hasStone = materialItems.some((i) => i.categoria === "Piedras Preciosas");
+
+  const missingMetal = pieceRequirements.requiresMetal && !skipMetal && !hasMetal;
+  const missingStone = pieceRequirements.requiresStone && !skipStone && !hasStone;
+
   const canAdvance = () => {
     if (step === 0) return !!selectedClientId && !!selectedType;
+    if (step === 1) return !missingMetal && !missingStone;
     return true;
   };
 
@@ -442,6 +479,48 @@ export default function QuotationDialog({
         {/* Step 2: Materials */}
         {step === 1 && (
           <div className="space-y-4">
+            {/* Material requirements info & skip overrides */}
+            {(pieceRequirements.requiresMetal || pieceRequirements.requiresStone) && (
+              <div className="rounded-lg border border-border bg-muted/50 p-4 space-y-3">
+                <p className="text-sm font-medium text-foreground">
+                  Requisitos para: <span className="capitalize">{selectedType}</span>
+                </p>
+                {pieceRequirements.requiresMetal && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">
+                      {hasMetal ? "✓ Metal agregado" : "• Se requiere al menos un metal"}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        id="skipMetal"
+                        checked={skipMetal}
+                        onCheckedChange={(v) => setSkipMetal(!!v)}
+                      />
+                      <label htmlFor="skipMetal" className="text-xs text-muted-foreground cursor-pointer">
+                        El cliente proporciona su propio metal
+                      </label>
+                    </div>
+                  </div>
+                )}
+                {pieceRequirements.requiresStone && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">
+                      {hasStone ? "✓ Piedra agregada" : "• Se requiere al menos una piedra"}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        id="skipStone"
+                        checked={skipStone}
+                        onCheckedChange={(v) => setSkipStone(!!v)}
+                      />
+                      <label htmlFor="skipStone" className="text-xs text-muted-foreground cursor-pointer">
+                        El cliente proporciona su propia piedra
+                      </label>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
             <div className="grid grid-cols-12 gap-3 items-end">
               <div className="col-span-6 space-y-2">
                 <Label>Material</Label>
@@ -534,6 +613,17 @@ export default function QuotationDialog({
             {materialItems.length > 0 && (
               <div className="text-right text-sm font-semibold">
                 Subtotal materiales: {formatCurrency(totalMaterials)}
+              </div>
+            )}
+
+            {/* Validation messages */}
+            {(missingMetal || missingStone) && (
+              <div className="flex items-start gap-2 text-sm text-destructive bg-destructive/10 rounded-md p-3">
+                <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+                <div>
+                  {missingMetal && <p>Falta agregar un metal para continuar.</p>}
+                  {missingStone && <p>Falta agregar una piedra para continuar.</p>}
+                </div>
               </div>
             )}
           </div>
