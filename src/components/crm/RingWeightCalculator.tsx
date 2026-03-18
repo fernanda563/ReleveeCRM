@@ -95,7 +95,7 @@ export default function RingWeightCalculator({ onUseWeight, alloy: controlledAll
   );
 
   // Size slider: convert 0-18 index to 4-13 step 0.5
-  const sizeIndex = (size - 4) * 2;
+  const sizeIndex = (size - 4) * 4;
 
   return (
     <div className="space-y-6 pt-4">
