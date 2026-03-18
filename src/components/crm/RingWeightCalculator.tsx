@@ -53,8 +53,8 @@ interface RingWeightCalculatorProps {
 }
 
 export default function RingWeightCalculator({ onUseWeight, alloy: controlledAlloy, onAlloyChange }: RingWeightCalculatorProps = {}) {
-  const [size, setSize] = useState(7);
-  const [width, setWidth] = useState(4);
+  const [size, setSize] = useState(5);
+  const [width, setWidth] = useState(2);
   const [thickness, setThickness] = useState(2);
   const [internalAlloy, setInternalAlloy] = useState<AlloyKey>("14K");
 
