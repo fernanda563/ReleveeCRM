@@ -543,7 +543,7 @@ const ProspectDialog = ({
                   Guardando...
                 </>
               ) : (
-                "Registrar Proyecto"
+                "Registrar Cotización"
               )}
             </Button>
           </div>
