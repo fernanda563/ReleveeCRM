@@ -1,18 +1,14 @@
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { 
   DollarSign, 
   Calendar, 
   ShoppingCart, 
-  MoreVertical, 
+  MoreHorizontal, 
   Pencil, 
   Trash2,
-  Circle,
-  Gem,
-  Sparkles,
-  Ruler,
-  FileText
+  Circle
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -82,224 +78,113 @@ export const ProspectCard = ({
 }: ProspectCardProps) => {
   const title = generateProspectTitle(prospect);
 
+  const metalLine = [
+    prospect.metal_tipo,
+    prospect.metal_tipo === "Oro" && prospect.color_oro,
+    prospect.metal_tipo === "Oro" && prospect.pureza_oro,
+  ].filter(Boolean).join(" • ");
+
   return (
-      <Card
-        className={cn(
-          "hover:shadow-md transition-all cursor-pointer",
-          className
-        )}
-        onClick={() => onClick?.()}
-      >
-        <CardContent className="p-4">
-          {/* Fila 1: Cliente, estado, acciones (solo si showClientName) */}
-          {showClientName && (
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-3">
-                <p className="text-sm">
-                  Cliente: <span className="font-semibold">{clientName}</span>
-                </p>
-                <Badge className={getStatusColor(prospect.estado)}>
-                  {prospect.estado.replace(/_/g, " ")}
-                </Badge>
-              </div>
-              <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                {clientId && (
-                  <Button
-                    variant="outline"
-                    size="sm"
+    <Card
+      className={cn("hover:shadow-md transition-all cursor-pointer", className)}
+      onClick={() => onClick?.()}
+    >
+      <CardHeader className="pb-3">
+        <div className="flex items-start justify-between">
+          <div className="space-y-1 flex-1 min-w-0">
+            <CardTitle className="text-base font-semibold truncate capitalize">
+              {title}
+            </CardTitle>
+            {showClientName && clientName && (
+              <p className="text-sm text-muted-foreground truncate">
+                {clientName}
+              </p>
+            )}
+          </div>
+          {prospect.estado !== "convertido" && (onEditStatus || onConvertToOrder || onDelete) && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {onEditStatus && (
+                  <DropdownMenuItem onClick={(e) => {
+                    e.stopPropagation();
+                    onEditStatus(prospect);
+                  }}>
+                    <Pencil className="h-4 w-4 mr-2" />
+                    Editar cotización
+                  </DropdownMenuItem>
+                )}
+                {prospect.estado === "activo" && onConvertToOrder && (
+                  <DropdownMenuItem onClick={(e) => {
+                    e.stopPropagation();
+                    onConvertToOrder(prospect);
+                  }}>
+                    <ShoppingCart className="h-4 w-4 mr-2" />
+                    Convertir a orden
+                  </DropdownMenuItem>
+                )}
+                {showClientName && clientId && (
+                  <DropdownMenuItem onClick={(e) => {
+                    e.stopPropagation();
+                    window.location.href = `/crm/${clientId}`;
+                  }}>
+                    Ver cliente
+                  </DropdownMenuItem>
+                )}
+                {onDelete && (
+                  <DropdownMenuItem
                     onClick={(e) => {
                       e.stopPropagation();
-                      window.location.href = `/crm/${clientId}`;
+                      onDelete(prospect);
                     }}
+                    className="text-destructive"
                   >
-                    Ver cliente
-                  </Button>
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Eliminar
+                  </DropdownMenuItem>
                 )}
-                {prospect.estado !== "convertido" && (onEditStatus || onConvertToOrder || onDelete) && (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
-                        <MoreVertical className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      {onEditStatus && (
-                        <DropdownMenuItem onClick={(e) => {
-                          e.stopPropagation();
-                          onEditStatus(prospect);
-                        }}>
-                          <Pencil className="mr-2 h-4 w-4" />
-                          Editar cotización
-                        </DropdownMenuItem>
-                      )}
-                      {prospect.estado === "activo" && onConvertToOrder && (
-                        <DropdownMenuItem onClick={(e) => {
-                          e.stopPropagation();
-                          onConvertToOrder(prospect);
-                        }}>
-                          <ShoppingCart className="mr-2 h-4 w-4" />
-                          Convertir a orden
-                        </DropdownMenuItem>
-                      )}
-                      {onDelete && (
-                        <DropdownMenuItem
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onDelete(prospect);
-                          }}
-                          className="text-destructive"
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Eliminar
-                        </DropdownMenuItem>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                )}
-              </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Badge className={getStatusColor(prospect.estado)}>
+            {prospect.estado.replace(/_/g, " ")}
+          </Badge>
+        </div>
+      </CardHeader>
+      <CardContent className="pt-0 space-y-3">
+        <div className="space-y-2">
+          {metalLine && (
+            <div className="flex items-center gap-2 text-sm">
+              <Circle className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+              <span className="text-muted-foreground truncate">{metalLine}</span>
             </div>
           )}
-
-          {/* Fila 1b: Estado + acciones (cuando NO showClientName) */}
-          {!showClientName && (
-            <div className="flex items-center justify-between mb-3">
-              <Badge className={getStatusColor(prospect.estado)}>
-                {prospect.estado.replace(/_/g, " ")}
-              </Badge>
-              {prospect.estado !== "convertido" && (onEditStatus || onConvertToOrder || onDelete) && (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    {onEditStatus && (
-                      <DropdownMenuItem onClick={(e) => {
-                        e.stopPropagation();
-                        onEditStatus(prospect);
-                      }}>
-                        <Pencil className="mr-2 h-4 w-4" />
-                        Editar cotización
-                      </DropdownMenuItem>
-                    )}
-                    {prospect.estado === "activo" && onConvertToOrder && (
-                      <DropdownMenuItem onClick={(e) => {
-                        e.stopPropagation();
-                        onConvertToOrder(prospect);
-                      }}>
-                        <ShoppingCart className="mr-2 h-4 w-4" />
-                        Convertir a orden
-                      </DropdownMenuItem>
-                    )}
-                    {onDelete && (
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onDelete(prospect);
-                        }}
-                        className="text-destructive"
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Eliminar
-                      </DropdownMenuItem>
-                    )}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
+          {prospect.importe_previsto && (
+            <div className="flex items-center gap-2 text-sm">
+              <DollarSign className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+              <span className="font-semibold">{formatCurrency(prospect.importe_previsto)}</span>
             </div>
           )}
-
-          {/* Fila 2: Título del proyecto */}
-          <h3 className="text-lg font-semibold mb-3 capitalize">{title}</h3>
-
-          {/* Fila 3: Grid de 2 columnas - Detalles del producto + Info financiera */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-2">
-            {/* Columna Izquierda: Detalles del Producto */}
-            <div className="space-y-2">
-              {prospect.metal_tipo && (
-                <div className="flex items-center gap-2 text-sm">
-                  <Circle className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                  <div className="flex items-center gap-1 flex-wrap">
-                    <span className="text-muted-foreground">Metal:</span>
-                    <span className="font-medium">{prospect.metal_tipo}</span>
-                    {prospect.metal_tipo === "Oro" && prospect.color_oro && (
-                      <span className="text-muted-foreground">• {prospect.color_oro}</span>
-                    )}
-                    {prospect.metal_tipo === "Oro" && prospect.pureza_oro && (
-                      <span className="text-muted-foreground">• {prospect.pureza_oro}</span>
-                    )}
-                  </div>
-                </div>
-              )}
-              
-              <div className="flex items-center gap-2 text-sm">
-                <Gem className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                <div className="flex items-center gap-1 flex-wrap">
-                  <span className="text-muted-foreground">Piedra:</span>
-                  <span className="font-medium">{prospect.incluye_piedra || "No especificado"}</span>
-                  {prospect.incluye_piedra === "Sí" && prospect.tipo_piedra && (
-                    <span className="text-muted-foreground">• {prospect.tipo_piedra}</span>
-                  )}
-                </div>
-              </div>
-
-              {prospect.estilo_anillo && (
-                <div className="flex items-center gap-2 text-sm">
-                  <Sparkles className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                  <div className="flex items-center gap-1">
-                    <span className="text-muted-foreground">Estilo:</span>
-                    <span className="font-medium capitalize">{prospect.estilo_anillo.replace(/_/g, " ")}</span>
-                  </div>
-                </div>
-              )}
-
-              {prospect.largo_aprox && (
-                <div className="flex items-center gap-2 text-sm">
-                  <Ruler className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                  <div className="flex items-center gap-1">
-                    <span className="text-muted-foreground">Largo:</span>
-                    <span className="font-medium">{prospect.largo_aprox}</span>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Columna Derecha: Info Financiera y Temporal */}
-            <div className="space-y-2">
-              {prospect.importe_previsto && (
-                <div className="flex items-center gap-2 text-sm">
-                  <DollarSign className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                  <div className="flex items-center gap-1">
-                    <span className="text-muted-foreground">Importe previsto:</span>
-                    <span className="font-semibold">{formatCurrency(prospect.importe_previsto)}</span>
-                  </div>
-                </div>
-              )}
-              
-              {prospect.fecha_entrega_deseada && (
-                <div className="flex items-center gap-2 text-sm">
-                  <Calendar className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                  <div className="flex items-center gap-1">
-                    <span className="text-muted-foreground">Entrega deseada:</span>
-                    <span className="font-semibold">{formatDate(prospect.fecha_entrega_deseada)}</span>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Fila 4: Observaciones */}
-          {prospect.observaciones && (
-            <div className="flex items-start gap-2 mt-3 pt-3 border-t">
-              <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
-              <div className="flex-1">
-                <span className="text-sm text-muted-foreground font-medium">Observaciones: </span>
-                <span className="text-sm text-muted-foreground">{prospect.observaciones}</span>
-              </div>
+          {prospect.fecha_entrega_deseada && (
+            <div className="flex items-center gap-2 text-sm">
+              <Calendar className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+              <span className="text-muted-foreground">{formatDate(prospect.fecha_entrega_deseada)}</span>
             </div>
           )}
-        </CardContent>
-      </Card>
-    );
+        </div>
+
+        {prospect.observaciones && (
+          <p className="text-xs text-muted-foreground line-clamp-2 pt-2 border-t">
+            {prospect.observaciones}
+          </p>
+        )}
+      </CardContent>
+    </Card>
+  );
 };
