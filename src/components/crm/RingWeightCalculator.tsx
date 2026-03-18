@@ -45,7 +45,11 @@ function calcWeight(id: number, width: number, thickness: number, density: numbe
 
 const WHOLE_SIZES = [4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
 
-export default function RingWeightCalculator() {
+interface RingWeightCalculatorProps {
+  onUseWeight?: (weight: number) => void;
+}
+
+export default function RingWeightCalculator({ onUseWeight }: RingWeightCalculatorProps = {}) {
   const [size, setSize] = useState(7);
   const [width, setWidth] = useState(4);
   const [thickness, setThickness] = useState(2);
