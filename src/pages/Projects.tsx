@@ -201,6 +201,10 @@ export default function Projects() {
               Explora todas las cotizaciones de joyería de tus clientes
             </p>
           </div>
+          <Button onClick={() => setShowProspectDialog(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Nueva Cotización
+          </Button>
         </div>
 
         {/* Dashboard de estadísticas */}
