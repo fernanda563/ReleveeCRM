@@ -201,16 +201,10 @@ export default function Projects() {
               Explora todas las cotizaciones de joyería de tus clientes
             </p>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setShowCalculator(true)}>
-              <Calculator className="h-4 w-4 mr-2" />
-              Calculadora de Peso
-            </Button>
-            <Button onClick={() => setShowQuotationDialog(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Nueva Cotización
-            </Button>
-          </div>
+          <Button onClick={() => setShowQuotationDialog(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Nueva Cotización
+          </Button>
         </div>
 
         {/* Dashboard de estadísticas */}
