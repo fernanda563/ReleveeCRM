@@ -52,6 +52,7 @@ export function MaterialDialog({
   open, onOpenChange, onSubmit, initialData, existingCategories, loading,
 }: MaterialDialogProps) {
   const [form, setForm] = useState<MaterialFormData>(defaultForm);
+  const [showCustomCategoria, setShowCustomCategoria] = useState(false);
   const isEditing = !!initialData;
 
   useEffect(() => {
