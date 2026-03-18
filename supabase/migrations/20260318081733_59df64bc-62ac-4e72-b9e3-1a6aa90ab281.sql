@@ -1,0 +1,1 @@
+DELETE FROM accessory_type_config WHERE id = '4f801ed0-0b40-4f35-bcd7-8d4fdb894a01';
