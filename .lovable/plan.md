@@ -1,90 +1,29 @@
 
-## Simplificar el Paso 5: Eliminar subida de STL y agregar búsqueda por nombre
 
-### Qué hay que cambiar
+## Corrección de estilos monocromáticos en la vista de CRM
 
-El archivo `src/components/orders/OrderDialogStep5.tsx` actualmente tiene dos mecanismos:
-1. Un `<Select>` para seleccionar STL existentes del repositorio.
-2. Un panel expandible (toggle) para subir un archivo STL nuevo directamente al repositorio.
+### Problemas detectados
 
-La petición es eliminar el mecanismo de subida y reemplazar el `<Select>` por un buscador por nombre.
+Comparando CRM (`CRM.tsx` + `ClientList.tsx`) contra las vistas de referencia (Materials, etc.), hay 3 inconsistencias:
 
----
+1. **Tarjetas CTA de acción rápida** (líneas 181-236 de `CRM.tsx`): Los iconos están envueltos en un contenedor `bg-secondary rounded-lg` con `text-secondary-foreground`, creando un fondo gris que no existe en otras vistas. En Materials, los iconos de las stat cards usan directamente `text-primary` sin fondo decorativo.
 
-### Cambios en `OrderDialogStep5.tsx`
+2. **Badge de deuda** (línea 167 de `ClientList.tsx`): Usa `variant="destructive"` que, aunque en el CSS vars es monocromático, semánticamente transmite "rojo/error". Debe usar `variant="outline"` con estilo monocromático consistente.
 
-**Eliminar completamente:**
-- Los estados `showUpload`, `uploading`, `stlFile`, `stlNombre`, `stlDescripcion`
-- Las funciones `resetUpload` y `handleUpload`
-- Todo el bloque JSX del panel de subida (el `div` con la clase `rounded-lg border border-dashed`)
-- Los imports de `Upload`, `Loader2`, `X`, `ChevronDown`, `ChevronUp` de lucide-react (si ya no se usan)
-- La prop `onSTLUploaded` de la interfaz y del componente
+3. **Botón "Nuevo Cliente"** (línea 251-257 de `CRM.tsx`): Usa clases explícitas `bg-accent hover:bg-accent/90 text-accent-foreground` en vez del patrón estándar del sistema. En Materials, el botón equivalente usa simplemente `<Button>` sin clases de color adicionales (el variant `default` ya aplica `bg-primary text-primary-foreground`).
 
-**Reemplazar el `<Select>` por un buscador con `Command`:**
+### Cambios
 
-El proyecto ya tiene instalado `cmdk` y el componente `Command` disponible en `src/components/ui/command.tsx`. Se usará para crear un combo de búsqueda tipo "popover + command" que:
-- Muestra un campo de texto con placeholder "Buscar STL por nombre..."
-- Al escribir, filtra la lista de `availableSTLFiles` por nombre en tiempo real
-- Al seleccionar un resultado, actualiza `selectedSTLFileId`
-- Muestra el nombre del STL seleccionado en el trigger del popover
-- Incluye una opción "Ninguno" para deseleccionar
+**`src/pages/CRM.tsx`**:
+- Tarjetas CTA: Quitar el `<div className="p-2 bg-secondary rounded-lg">` que envuelve cada icono. Usar el icono directamente con `className="h-5 w-5 text-foreground"`, igual que en las stat cards de Materials.
+- Botón "Nuevo Cliente": Quitar las clases explícitas de color y dejarlo como `<Button>` con variant default (hereda `bg-primary text-primary-foreground` del sistema).
 
-**Patrón a usar:** `Popover` + `Command` + `CommandInput` + `CommandList` + `CommandItem` (patrón combobox estándar de shadcn/ui, que ya está completamente disponible en el proyecto).
+**`src/components/crm/ClientList.tsx`**:
+- Badge de deuda (línea 167): Cambiar `variant="destructive"` a `variant="outline"` con `className="flex items-center gap-1 whitespace-nowrap border-foreground text-foreground"` para mantener énfasis sin semántica de color.
+- Badge de órdenes activas (línea 158): Verificar que `variant="default"` (negro/blanco) sea consistente, se mantiene.
 
-```
-[Trigger: Popover]
-  "Buscar STL por nombre..."  ← campo de búsqueda
-  ─────────────────────────
-  Ninguno
-  Anillo solitario clásico
-  Solitario 6 uñas          ← filtrado en tiempo real
-  ...
-```
+| Archivo | Cambio |
+|---------|--------|
+| `src/pages/CRM.tsx` | Quitar fondos grises de iconos CTA; limpiar clases del botón |
+| `src/components/crm/ClientList.tsx` | Cambiar badge destructive a outline monocromático |
 
-**Interfaz de props actualizada:**
-```typescript
-interface OrderDialogStep5Props {
-  notas: string;
-  setNotas: (value: string) => void;
-  selectedSTLFileId: string;
-  setSelectedSTLFileId: (value: string) => void;
-  availableSTLFiles: STLFile[];
-  loading: boolean;
-  // onSTLUploaded ← eliminada
-}
-```
-
----
-
-### Cambio en `OrderDialog.tsx`
-
-Quitar la prop `onSTLUploaded` que se pasa al componente `OrderDialogStep5` en el JSX del diálogo principal. Esta prop ya no existe en la interfaz del componente.
-
----
-
-### Resultado visual esperado
-
-```
-Paso 5 — Notas y Diseño STL
-─────────────────────────────────────────────────────
-
-[Notas Adicionales]
-  [ Textarea para notas... ]
-
-Archivo STL (Opcional)
-  Selecciona un diseño existente del repositorio.
-
-  [🔍 Buscar archivo STL por nombre...  ▼]
-       ← popover con búsqueda reactiva →
-
-  [Vista previa del STL seleccionado]
-
-─────────────────────────────────────────────────────
-```
-
----
-
-### Archivos a modificar
-
-1. **`src/components/orders/OrderDialogStep5.tsx`** — Eliminar toda la lógica y UI de subida, reemplazar el `<Select>` por un combobox `Popover + Command`.
-2. **`src/components/orders/OrderDialog.tsx`** — Quitar la prop `onSTLUploaded` del lugar donde se renderiza `<OrderDialogStep5 ... />`.
