@@ -401,16 +401,6 @@ export default function Projects() {
           onSuccess={fetchProspects}
         />
 
-        {/* Calculadora de Peso */}
-        <Dialog open={showCalculator} onOpenChange={setShowCalculator}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Calculadora de Peso de Anillos</DialogTitle>
-            </DialogHeader>
-            <RingWeightCalculator />
-          </DialogContent>
-        </Dialog>
-
       </main>
     </div>
   );
