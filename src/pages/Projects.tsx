@@ -271,6 +271,17 @@ export default function Projects() {
               <div className="text-3xl font-bold text-muted-foreground">{stats.inactivo}</div>
             </CardContent>
           </Card>
+          <Card className="border-border">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4" />
+                Vencidas
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-destructive">{stats.vencidas}</div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Filtros Avanzados */}
