@@ -579,6 +579,50 @@ export type Database = {
         }
         Relationships: []
       }
+      prospect_items: {
+        Row: {
+          cantidad: number
+          costo_unitario: number
+          created_at: string
+          id: string
+          notas: string | null
+          precio_unitario: number
+          prospect_id: string
+          referencia_id: string
+          tipo: string
+        }
+        Insert: {
+          cantidad?: number
+          costo_unitario?: number
+          created_at?: string
+          id?: string
+          notas?: string | null
+          precio_unitario?: number
+          prospect_id: string
+          referencia_id: string
+          tipo: string
+        }
+        Update: {
+          cantidad?: number
+          costo_unitario?: number
+          created_at?: string
+          id?: string
+          notas?: string | null
+          precio_unitario?: number
+          prospect_id?: string
+          referencia_id?: string
+          tipo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prospect_items_prospect_id_fkey"
+            columns: ["prospect_id"]
+            isOneToOne: false
+            referencedRelation: "prospects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       prospects: {
         Row: {
           client_id: string
