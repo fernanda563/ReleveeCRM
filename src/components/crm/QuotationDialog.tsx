@@ -309,6 +309,7 @@ export default function QuotationDialog({
           tipo_accesorio: selectedType,
           importe_previsto: grandTotal,
           fecha_entrega_deseada: fechaEntrega || null,
+          fecha_vigencia: fechaVigencia || null,
           observaciones: observaciones || null,
           estado: "activo",
         })
