@@ -44,7 +44,7 @@ const CRM = () => {
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [isClientDialogOpen, setIsClientDialogOpen] = useState(false);
   const [isAppointmentDialogOpen, setIsAppointmentDialogOpen] = useState(false);
-  const [isProspectDialogOpen, setIsProspectDialogOpen] = useState(false);
+  
   const [isReminderDialogOpen, setIsReminderDialogOpen] = useState(false);
 
   useEffect(() => {
