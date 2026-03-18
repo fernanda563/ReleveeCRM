@@ -123,7 +123,7 @@ export const ProspectDetailDialog = ({
       return;
     }
 
-    toast.success("Proyecto eliminado");
+    toast.success("Cotización eliminada");
     setShowDeleteDialog(false);
     onOpenChange(false);
     if (onSaved) {
