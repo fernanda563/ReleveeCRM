@@ -193,7 +193,16 @@ export function MaterialDialog({
           {/* Tipo de margen */}
           <div className="space-y-2">
             <Label>Tipo de margen</Label>
-            <Select value={form.tipo_margen} onValueChange={(v) => update("tipo_margen", v)}>
+            <Select
+              value={form.tipo_margen}
+              onValueChange={(v) => {
+                const rawVal = unformatPercentage(form.valor_margen);
+                const reformatted = rawVal
+                  ? (v === "porcentaje" ? formatPercentage(rawVal) : formatCurrency(rawVal))
+                  : "";
+                setForm((prev) => ({ ...prev, tipo_margen: v, valor_margen: reformatted }));
+              }}
+            >
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="porcentaje">Porcentaje (%)</SelectItem>
@@ -209,11 +218,17 @@ export function MaterialDialog({
             </Label>
             <Input
               id="margen"
-              type="number"
-              min={0}
-              step="0.01"
-              value={form.valor_margen || ""}
-              onChange={(e) => update("valor_margen", parseFloat(e.target.value) || 0)}
+              type="text"
+              value={form.valor_margen}
+              onChange={(e) =>
+                update(
+                  "valor_margen",
+                  form.tipo_margen === "porcentaje"
+                    ? formatPercentage(e.target.value)
+                    : formatCurrency(e.target.value)
+                )
+              }
+              placeholder={form.tipo_margen === "porcentaje" ? "0%" : "$0.00"}
             />
           </div>
 
