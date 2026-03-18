@@ -1,90 +1,49 @@
 
-## Simplificar el Paso 5: Eliminar subida de STL y agregar búsqueda por nombre
 
-### Qué hay que cambiar
+## Vigencia de cotización y mejora de tarjeta
 
-El archivo `src/components/orders/OrderDialogStep5.tsx` actualmente tiene dos mecanismos:
-1. Un `<Select>` para seleccionar STL existentes del repositorio.
-2. Un panel expandible (toggle) para subir un archivo STL nuevo directamente al repositorio.
+### Problema
+- La tarjeta muestra un badge "activo" sin sentido porque no hay fecha de vigencia en el formulario
+- Falta mostrar fecha de creación y fecha de entrega en la tarjeta
+- No existe campo de vigencia/caducidad en el formulario de cotización
 
-La petición es eliminar el mecanismo de subida y reemplazar el `<Select>` por un buscador por nombre.
+### Cambios propuestos
 
----
-
-### Cambios en `OrderDialogStep5.tsx`
-
-**Eliminar completamente:**
-- Los estados `showUpload`, `uploading`, `stlFile`, `stlNombre`, `stlDescripcion`
-- Las funciones `resetUpload` y `handleUpload`
-- Todo el bloque JSX del panel de subida (el `div` con la clase `rounded-lg border border-dashed`)
-- Los imports de `Upload`, `Loader2`, `X`, `ChevronDown`, `ChevronUp` de lucide-react (si ya no se usan)
-- La prop `onSTLUploaded` de la interfaz y del componente
-
-**Reemplazar el `<Select>` por un buscador con `Command`:**
-
-El proyecto ya tiene instalado `cmdk` y el componente `Command` disponible en `src/components/ui/command.tsx`. Se usará para crear un combo de búsqueda tipo "popover + command" que:
-- Muestra un campo de texto con placeholder "Buscar STL por nombre..."
-- Al escribir, filtra la lista de `availableSTLFiles` por nombre en tiempo real
-- Al seleccionar un resultado, actualiza `selectedSTLFileId`
-- Muestra el nombre del STL seleccionado en el trigger del popover
-- Incluye una opción "Ninguno" para deseleccionar
-
-**Patrón a usar:** `Popover` + `Command` + `CommandInput` + `CommandList` + `CommandItem` (patrón combobox estándar de shadcn/ui, que ya está completamente disponible en el proyecto).
-
-```
-[Trigger: Popover]
-  "Buscar STL por nombre..."  ← campo de búsqueda
-  ─────────────────────────
-  Ninguno
-  Anillo solitario clásico
-  Solitario 6 uñas          ← filtrado en tiempo real
-  ...
+#### 1. Migración de base de datos
+Agregar columna `fecha_vigencia` (date, nullable) a la tabla `prospects`:
+```sql
+ALTER TABLE public.prospects ADD COLUMN fecha_vigencia date;
 ```
 
-**Interfaz de props actualizada:**
-```typescript
-interface OrderDialogStep5Props {
-  notas: string;
-  setNotas: (value: string) => void;
-  selectedSTLFileId: string;
-  setSelectedSTLFileId: (value: string) => void;
-  availableSTLFiles: STLFile[];
-  loading: boolean;
-  // onSTLUploaded ← eliminada
-}
-```
+#### 2. `src/components/crm/QuotationDialog.tsx` — Agregar campo de vigencia
+- Nuevo estado `fechaVigencia` en Step 1
+- Input tipo date con label "Vigencia de la cotización" después de "Fecha de entrega deseada"
+- Incluir `fecha_vigencia` en el insert a `prospects`
+- Agregar al `resetForm`
 
----
+#### 3. `src/components/client-detail/ProspectCard.tsx` — Rediseñar tarjeta
+- Agregar `fecha_vigencia` al tipo `Prospect`
+- Reemplazar el badge estático de estado por lógica dinámica:
+  - Si `estado === "convertido"` → badge "Convertido" (primary)
+  - Si `fecha_vigencia` existe y ya pasó → badge "Vencida" (destructive)
+  - Si `fecha_vigencia` existe y no ha pasado → badge "Vigente hasta [fecha]" (success)
+  - Si no hay `fecha_vigencia` → badge "Sin vigencia" (muted)
+- Mostrar en el cuerpo de la tarjeta:
+  - Fecha de creación (`created_at`) con icono de calendario
+  - Fecha de entrega deseada (si existe)
+  - Metal (como ya está)
+  - Importe previsto (como ya está)
+- Eliminar observaciones de la tarjeta (se ven en detalle)
 
-### Cambio en `OrderDialog.tsx`
+#### 4. `src/components/client-detail/prospect-utils.ts` — Actualizar `getStatusColor`
+- Agregar caso "vencida" para el color destructivo
+- Mantener los demás estados existentes
 
-Quitar la prop `onSTLUploaded` que se pasa al componente `OrderDialogStep5` en el JSX del diálogo principal. Esta prop ya no existe en la interfaz del componente.
+#### 5. `src/pages/Projects.tsx` — Actualizar estadísticas
+- Considerar "vencida" como un estado visual derivado (cotizaciones activas cuya vigencia ya pasó)
+- Opcionalmente agregar contador de vencidas en el dashboard
 
----
+### Detalle técnico
+- La vigencia se calcula en el frontend comparando `fecha_vigencia` con `new Date()` — no se modifica el campo `estado` en la BD
+- El estado "activo" sigue existiendo en la BD, pero en la tarjeta se muestra "Vigente" o "Vencida" según la fecha
 
-### Resultado visual esperado
-
-```
-Paso 5 — Notas y Diseño STL
-─────────────────────────────────────────────────────
-
-[Notas Adicionales]
-  [ Textarea para notas... ]
-
-Archivo STL (Opcional)
-  Selecciona un diseño existente del repositorio.
-
-  [🔍 Buscar archivo STL por nombre...  ▼]
-       ← popover con búsqueda reactiva →
-
-  [Vista previa del STL seleccionado]
-
-─────────────────────────────────────────────────────
-```
-
----
-
-### Archivos a modificar
-
-1. **`src/components/orders/OrderDialogStep5.tsx`** — Eliminar toda la lógica y UI de subida, reemplazar el `<Select>` por un combobox `Popover + Command`.
-2. **`src/components/orders/OrderDialog.tsx`** — Quitar la prop `onSTLUploaded` del lugar donde se renderiza `<OrderDialogStep5 ... />`.
