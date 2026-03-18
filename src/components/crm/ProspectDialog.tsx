@@ -150,10 +150,10 @@ const ProspectDialog = ({
 
       // Cerrar el modal inmediatamente
       onOpenChange(false);
-      toast.success("Proyecto registrado exitosamente");
+      toast.success("Cotización registrada exitosamente");
       onSuccess();
     } catch (error: any) {
-      toast.error(error.message || "Error al registrar proyecto");
+      toast.error(error.message || "Error al registrar cotización");
       console.error(error);
     } finally {
       setLoading(false);
