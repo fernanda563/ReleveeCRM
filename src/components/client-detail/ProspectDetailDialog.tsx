@@ -162,7 +162,7 @@ export const ProspectDetailDialog = ({
 
     if (error) {
       console.error(error);
-      toast.error("No se pudo actualizar el proyecto");
+      toast.error("No se pudo actualizar la cotización");
       return;
     }
 
