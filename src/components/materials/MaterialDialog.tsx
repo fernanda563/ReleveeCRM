@@ -176,11 +176,10 @@ export function MaterialDialog({
             <Label htmlFor="costo">Costo directo por unidad ($)</Label>
             <Input
               id="costo"
-              type="number"
-              min={0}
-              step="0.01"
-              value={form.costo_directo || ""}
-              onChange={(e) => update("costo_directo", parseFloat(e.target.value) || 0)}
+              type="text"
+              value={form.costo_directo}
+              onChange={(e) => update("costo_directo", formatCurrency(e.target.value))}
+              placeholder="$0.00"
             />
           </div>
 
