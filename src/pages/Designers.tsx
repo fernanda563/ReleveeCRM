@@ -247,9 +247,9 @@ export default function Designers() {
                       <Badge variant={designer.activo ? "default" : "secondary"} className="text-xs">
                         {designer.activo ? "Activo" : "Inactivo"}
                       </Badge>
-                      {designer.especialidad && (
-                        <Badge variant="outline" className="text-xs">{designer.especialidad}</Badge>
-                      )}
+                      {designer.especialidad && designer.especialidad.split(", ").filter(Boolean).map((esp) => (
+                        <Badge key={esp} variant="outline" className="text-xs">{esp}</Badge>
+                      ))}
                     </div>
                   </CardHeader>
                   <CardContent className="pt-0 space-y-3">
