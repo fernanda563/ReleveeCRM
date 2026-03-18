@@ -29,7 +29,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
-import { Plus, Trash2, ArrowLeft, ArrowRight, Loader2, Calculator, ChevronDown, AlertCircle } from "lucide-react";
+import { Plus, Trash2, ArrowLeft, ArrowRight, Loader2, Calculator, ChevronDown } from "lucide-react";
 import { calcularPrecioMaterial } from "@/lib/material-utils";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import RingWeightCalculator from "@/components/crm/RingWeightCalculator";
