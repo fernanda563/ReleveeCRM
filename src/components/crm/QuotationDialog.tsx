@@ -171,6 +171,8 @@ export default function QuotationDialog({
     setMaterialCantidad("1");
     setSelectedConceptId("");
     setConceptCantidad("1");
+    setSkipMetal(false);
+    setSkipStone(false);
   };
 
   const fetchData = async () => {
