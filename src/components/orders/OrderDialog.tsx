@@ -1067,9 +1067,9 @@ const OrderDialog = ({ open, onOpenChange, order, prospect, clientId, onSuccess,
               {clientProspects.length > 0 && (
                 <div className="space-y-2 mt-4 p-4 bg-accent/5 border border-accent/20 rounded-md">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="prospect">¿Deseas usar un proyecto existente?</Label>
+                    <Label htmlFor="prospect">¿Deseas usar una cotización existente?</Label>
                     <Badge variant="secondary" className="text-xs">
-                      {clientProspects.length} {clientProspects.length === 1 ? "proyecto" : "proyectos"} activo{clientProspects.length > 1 ? "s" : ""}
+                      {clientProspects.length} {clientProspects.length === 1 ? "cotización" : "cotizaciones"} activa{clientProspects.length > 1 ? "s" : ""}
                     </Badge>
                   </div>
                   <div className="relative">
