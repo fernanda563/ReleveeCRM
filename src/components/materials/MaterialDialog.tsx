@@ -51,15 +51,31 @@ const unformatCurrency = (value: string): string => {
   return value.replace(/[^\d.]/g, '');
 };
 
+const formatPercentage = (value: string): string => {
+  const numericValue = value.replace(/[^\d.]/g, '');
+  const parts = numericValue.split('.');
+  if (parts.length > 2) {
+    return formatPercentage(parts[0] + '.' + parts.slice(1).join(''));
+  }
+  if (numericValue === '') return '';
+  const integerPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  const decimalPart = parts.length > 1 ? '.' + parts[1].slice(0, 2) : '';
+  return integerPart + decimalPart + '%';
+};
+
+const unformatPercentage = (value: string): string => {
+  return value.replace(/[^\d.]/g, '');
+};
+
 const defaultForm: MaterialFormData = {
   nombre: "",
   categoria: "",
   unidad_medida: "gramo",
   costo_directo: "",
   tipo_margen: "porcentaje",
-  valor_margen: 0,
+  valor_margen: "",
   redondeo: "ninguno",
-  redondeo_multiplo: 1,
+  redondeo_multiplo: "",
   activo: true,
   notas: "",
 };
