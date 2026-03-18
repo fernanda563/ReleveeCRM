@@ -25,6 +25,7 @@ import STLViewerFullscreen from "./pages/STLViewerFullscreen";
 import CalendarAdmin from "./pages/CalendarAdmin";
 import SystemSettings from "./pages/SystemSettings";
 import RolesManagement from "./pages/RolesManagement";
+import Materials from "./pages/Materials";
 import NotFound from "./pages/NotFound";
 import { DashboardLayout } from "./components/DashboardLayout";
 
