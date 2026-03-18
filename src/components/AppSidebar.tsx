@@ -12,6 +12,7 @@ import {
   BarChart3,
   FileText,
   Box,
+  Scale,
   Settings,
   Calendar,
   Cog,
@@ -66,6 +67,13 @@ const menuSections = [
       { title: "Seguimiento de Producción", url: "/production", icon: Box, adminOnly: false },
       { title: "Órdenes de Trabajo", url: "/work-orders", icon: ClipboardList, adminOnly: false },
       { title: "Estadísticas de Producción", url: "/production/dashboard", icon: BarChart3, adminOnly: false },
+    ],
+  },
+  {
+    label: "Calculadoras",
+    items: [
+      { title: "Peso de Montura", url: "/calculators/ring-weight", icon: Scale, adminOnly: false },
+      { title: "Peso de Diamante", url: "/calculators/diamond-weight", icon: Gem, adminOnly: false },
     ],
   },
   {

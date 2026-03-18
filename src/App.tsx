@@ -26,6 +26,8 @@ import CalendarAdmin from "./pages/CalendarAdmin";
 import SystemSettings from "./pages/SystemSettings";
 import RolesManagement from "./pages/RolesManagement";
 import Materials from "./pages/Materials";
+import RingWeightCalculatorPage from "./pages/RingWeightCalculatorPage";
+import DiamondWeightCalculator from "./pages/DiamondWeightCalculator";
 import NotFound from "./pages/NotFound";
 import { DashboardLayout } from "./components/DashboardLayout";
 
@@ -60,6 +62,8 @@ const App = () => (
         <Route path="/settings/system" element={<SystemSettings />} />
         <Route path="/settings/roles" element={<RolesManagement />} />
         <Route path="/materials" element={<Materials />} />
+        <Route path="/calculators/ring-weight" element={<RingWeightCalculatorPage />} />
+        <Route path="/calculators/diamond-weight" element={<DiamondWeightCalculator />} />
       </Route>
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />
