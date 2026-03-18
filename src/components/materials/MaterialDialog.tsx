@@ -57,7 +57,11 @@ export function MaterialDialog({
 
   useEffect(() => {
     if (open) {
-      setForm(initialData ? { ...defaultForm, ...initialData } : defaultForm);
+      const data = initialData ? { ...defaultForm, ...initialData } : defaultForm;
+      setForm(data);
+      setShowCustomCategoria(
+        !!data.categoria && !existingCategories.includes(data.categoria)
+      );
     }
   }, [open, initialData]);
 
