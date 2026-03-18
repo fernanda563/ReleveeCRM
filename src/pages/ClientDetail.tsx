@@ -45,6 +45,7 @@ const ClientDetail = () => {
   const [client, setClient] = useState<Client | null>(null);
   const [loading, setLoading] = useState(true);
   const [downloadingINE, setDownloadingINE] = useState(false);
+  const [showQuotationDialog, setShowQuotationDialog] = useState(false);
   
   const [refreshKey, setRefreshKey] = useState(0);
 
