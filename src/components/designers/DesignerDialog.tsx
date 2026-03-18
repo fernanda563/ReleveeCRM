@@ -6,11 +6,15 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Designer } from "@/types/designers";
 import { COUNTRIES } from "@/lib/countries";
 import { COUNTRY_PHONE_CODES } from "@/lib/country-phone-codes";
+import { ChevronsUpDown, X } from "lucide-react";
 
 interface DesignerDialogProps {
   open: boolean;
