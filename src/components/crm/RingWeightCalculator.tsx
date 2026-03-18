@@ -192,7 +192,7 @@ export default function RingWeightCalculator({ onUseWeight }: RingWeightCalculat
           </CardContent>
         </Card>
         <Card className="border-border">
-          <CardContent className="pt-4 pb-3 text-center">
+          <CardContent className="pt-6 pb-3 text-center">
             <p className="text-xs text-muted-foreground mb-1">Oro puro</p>
             <p className="text-2xl font-bold text-foreground">{pureGold.toFixed(2)}</p>
             <p className="text-xs text-muted-foreground">gramos</p>
