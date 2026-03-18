@@ -153,8 +153,8 @@ const CRM = () => {
   };
 
   const handleProspectAction = (client?: Client) => {
-    setSelectedClient(client || null);
-    setIsProspectDialogOpen(true);
+    // TODO: Implement new quotation flow
+    toast.info("El nuevo flujo de cotización se implementará próximamente");
   };
 
   const handleReminderAction = (client?: Client) => {
