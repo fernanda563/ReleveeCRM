@@ -150,36 +150,32 @@ export default function RingWeightCalculator({ onUseWeight }: RingWeightCalculat
       {/* Alloy Toggle */}
       <div className="space-y-2">
         <span className="text-sm font-medium text-foreground">Quilataje</span>
-        <ToggleGroup
-          type="single"
-          value={alloy}
-          onValueChange={(v) => v && setAlloy(v as AlloyKey)}
-          className="grid grid-cols-3 gap-2"
-        >
+        <div className="grid grid-cols-3 gap-2">
           {(Object.keys(ALLOYS) as AlloyKey[]).map((key) => {
             const a = ALLOYS[key];
             const isActive = alloy === key;
             return (
-              <ToggleGroupItem
+              <button
                 key={key}
-                value={key}
-                className={`flex flex-col items-center gap-0.5 py-4 rounded-md border ${
+                type="button"
+                onClick={() => setAlloy(key)}
+                className={`flex flex-col items-center gap-0.5 py-5 px-3 rounded-md border transition-colors ${
                   isActive
-                    ? "!bg-primary !text-primary-foreground border-primary"
-                    : "bg-background text-foreground border-border"
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-background text-foreground border-border hover:bg-accent"
                 }`}
               >
                 <span className="font-semibold text-sm">{key}</span>
-                <span className={`text-xs ${isActive ? "!text-primary-foreground/70" : "text-muted-foreground"}`}>
+                <span className={`text-xs ${isActive ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
                   {(a.purity * 100).toFixed(1)}% oro
                 </span>
-                <span className={`text-xs ${isActive ? "!text-primary-foreground/70" : "text-muted-foreground"}`}>
+                <span className={`text-xs ${isActive ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
                   {a.density} g/cm³
                 </span>
-              </ToggleGroupItem>
+              </button>
             );
           })}
-        </ToggleGroup>
+        </div>
       </div>
 
       {/* Result Cards */}
