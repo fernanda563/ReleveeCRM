@@ -90,10 +90,10 @@ export default function RingWeightCalculator({ onUseWeight }: RingWeightCalculat
       <div className="space-y-5">
         {/* Ring Size */}
         <div className="space-y-2">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1.5">
             <span className="text-sm font-medium text-foreground">Talla US</span>
             <span className="text-sm text-muted-foreground">
-              {size} — ⌀ {id.toFixed(2)} mm
+              ({size} — ⌀ {id.toFixed(2)} mm)
             </span>
           </div>
           <Slider
@@ -110,9 +110,9 @@ export default function RingWeightCalculator({ onUseWeight }: RingWeightCalculat
 
         {/* Band Width */}
         <div className="space-y-2">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1.5">
             <span className="text-sm font-medium text-foreground">Ancho de banda</span>
-            <span className="text-sm text-muted-foreground">{width} mm</span>
+            <span className="text-sm text-muted-foreground">({width} mm)</span>
           </div>
           <Slider
             value={[width]}
@@ -128,10 +128,10 @@ export default function RingWeightCalculator({ onUseWeight }: RingWeightCalculat
 
         {/* Wall Thickness */}
         <div className="space-y-2">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1.5">
             <span className="text-sm font-medium text-foreground">Grosor de pared</span>
             <span className="text-sm text-muted-foreground">
-              {thickness} mm — {THICKNESS_LABELS[thickness]}
+              ({thickness} mm — {THICKNESS_LABELS[thickness]})
             </span>
           </div>
           <Slider
