@@ -153,20 +153,52 @@ export function DesignerDialog({ open, onOpenChange, designer, onSaved }: Design
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="especialidad">Especialidad</Label>
-                <Select
-                  value={formData.especialidad}
-                  onValueChange={(value) => setFormData(prev => ({ ...prev, especialidad: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar especialidad" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {ESPECIALIDADES.map((esp) => (
-                      <SelectItem key={esp} value={esp}>{esp}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label>Especialidades</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="w-full justify-between font-normal h-auto min-h-10">
+                      {especialidades.length > 0 ? (
+                        <div className="flex flex-wrap gap-1">
+                          {especialidades.map((esp) => (
+                            <Badge key={esp} variant="secondary" className="text-xs">
+                              {esp}
+                              <X
+                                className="ml-1 h-3 w-3 cursor-pointer"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEspecialidades(prev => prev.filter(s => s !== esp));
+                                }}
+                              />
+                            </Badge>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground">Seleccionar especialidades</span>
+                      )}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[300px] p-2" align="start">
+                    <div className="space-y-1">
+                      {ESPECIALIDADES.map((esp) => (
+                        <label
+                          key={esp}
+                          className="flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm cursor-pointer hover:bg-accent"
+                        >
+                          <Checkbox
+                            checked={especialidades.includes(esp)}
+                            onCheckedChange={(checked) => {
+                              setEspecialidades(prev =>
+                                checked ? [...prev, esp] : prev.filter(s => s !== esp)
+                              );
+                            }}
+                          />
+                          {esp}
+                        </label>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
               </div>
             </div>
 
