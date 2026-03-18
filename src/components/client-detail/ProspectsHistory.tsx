@@ -103,7 +103,7 @@ export const ProspectsHistory = ({ clientId }: ProspectsHistoryProps) => {
       }
     } catch (error) {
       console.error("Error fetching prospects:", error);
-      toast.error("Error al cargar los proyectos");
+      toast.error("Error al cargar las cotizaciones");
     } finally {
       setLoading(false);
     }
