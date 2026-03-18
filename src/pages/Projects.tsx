@@ -2,7 +2,9 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
-import { Search, Loader2, FolderOpen, CheckCircle, ArrowRightCircle, PauseCircle, XCircle } from "lucide-react";
+import { Search, Loader2, FolderOpen, CheckCircle, ArrowRightCircle, PauseCircle, XCircle, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import ProspectDialog from "@/components/crm/ProspectDialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProspectCard, type Prospect } from "@/components/client-detail/ProspectCard";
 import { ProspectDetailDialog } from "@/components/client-detail/ProspectDetailDialog";
@@ -47,6 +49,7 @@ export default function Projects() {
   const [convertingProspect, setConvertingProspect] = useState<ProspectWithClient | null>(null);
   const [showOrderDialog, setShowOrderDialog] = useState(false);
   const [deletingProspect, setDeletingProspect] = useState<ProspectWithClient | null>(null);
+  const [showProspectDialog, setShowProspectDialog] = useState(false);
 
   useEffect(() => {
     fetchProspects();
@@ -198,6 +201,10 @@ export default function Projects() {
               Explora todas las cotizaciones de joyería de tus clientes
             </p>
           </div>
+          <Button onClick={() => setShowProspectDialog(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Nueva Cotización
+          </Button>
         </div>
 
         {/* Dashboard de estadísticas */}
@@ -387,6 +394,16 @@ export default function Projects() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        {/* Dialog de Nueva Cotización */}
+        <ProspectDialog
+          open={showProspectDialog}
+          onOpenChange={setShowProspectDialog}
+          onSuccess={() => {
+            setShowProspectDialog(false);
+            fetchProspects();
+          }}
+        />
       </main>
     </div>
   );
