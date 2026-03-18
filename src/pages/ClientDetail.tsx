@@ -24,7 +24,7 @@ import { AppointmentsHistory } from "@/components/client-detail/AppointmentsHist
 import { ProspectsHistory } from "@/components/client-detail/ProspectsHistory";
 import { RemindersHistory } from "@/components/client-detail/RemindersHistory";
 import { OrdersHistory } from "@/components/client-detail/OrdersHistory";
-import ProspectDialog from "@/components/crm/ProspectDialog";
+
 
 interface Client {
   id: string;
@@ -44,7 +44,7 @@ const ClientDetail = () => {
   const [client, setClient] = useState<Client | null>(null);
   const [loading, setLoading] = useState(true);
   const [downloadingINE, setDownloadingINE] = useState(false);
-  const [showProspectDialog, setShowProspectDialog] = useState(false);
+  
   const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
@@ -238,12 +238,6 @@ const ClientDetail = () => {
           </TabsContent>
 
           <TabsContent value="prospects" className="mt-6">
-            <div className="flex justify-end mb-4">
-              <Button onClick={() => setShowProspectDialog(true)} className="gap-2">
-                <Plus className="h-4 w-4" />
-                Nueva Cotización
-              </Button>
-            </div>
             <ProspectsHistory key={refreshKey} clientId={client.id} />
           </TabsContent>
 
@@ -256,16 +250,6 @@ const ClientDetail = () => {
           </TabsContent>
         </Tabs>
 
-        {/* Diálogo de nuevo proyecto */}
-        <ProspectDialog
-          open={showProspectDialog}
-          onOpenChange={setShowProspectDialog}
-          client={client}
-          onSuccess={() => {
-            setRefreshKey(prev => prev + 1);
-            toast.success("Cotización registrada exitosamente");
-          }}
-        />
       </div>
     </div>
   );

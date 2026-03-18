@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import ClientDialog from "@/components/crm/ClientDialog";
 import AppointmentDialog from "@/components/crm/AppointmentDialog";
-import ProspectDialog from "@/components/crm/ProspectDialog";
+
 import ReminderDialog from "@/components/crm/ReminderDialog";
 import ClientList from "@/components/crm/ClientList";
 
@@ -44,7 +44,7 @@ const CRM = () => {
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [isClientDialogOpen, setIsClientDialogOpen] = useState(false);
   const [isAppointmentDialogOpen, setIsAppointmentDialogOpen] = useState(false);
-  const [isProspectDialogOpen, setIsProspectDialogOpen] = useState(false);
+  
   const [isReminderDialogOpen, setIsReminderDialogOpen] = useState(false);
 
   useEffect(() => {
@@ -153,8 +153,8 @@ const CRM = () => {
   };
 
   const handleProspectAction = (client?: Client) => {
-    setSelectedClient(client || null);
-    setIsProspectDialogOpen(true);
+    // TODO: Implement new quotation flow
+    toast.info("El nuevo flujo de cotización se implementará próximamente");
   };
 
   const handleReminderAction = (client?: Client) => {
@@ -278,15 +278,6 @@ const CRM = () => {
         }}
       />
 
-      <ProspectDialog
-        open={isProspectDialogOpen}
-        onOpenChange={setIsProspectDialogOpen}
-        client={selectedClient}
-        onSuccess={() => {
-          toast.success("Cotización registrada exitosamente");
-          setIsProspectDialogOpen(false);
-        }}
-      />
 
       <ReminderDialog
         open={isReminderDialogOpen}

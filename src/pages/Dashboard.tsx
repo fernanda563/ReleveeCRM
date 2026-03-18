@@ -11,13 +11,13 @@ import {
 import { Users, ShoppingCart, Gem, TrendingUp, Plus, UserPlus, ShoppingBag } from "lucide-react";
 import ClientDialog from "@/components/crm/ClientDialog";
 import OrderDialog from "@/components/orders/OrderDialog";
-import ProspectDialog from "@/components/crm/ProspectDialog";
+
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [clientDialogOpen, setClientDialogOpen] = useState(false);
   const [orderDialogOpen, setOrderDialogOpen] = useState(false);
-  const [prospectDialogOpen, setProspectDialogOpen] = useState(false);
+  
 
   const handleOpenClientDialog = () => {
     setOrderDialogOpen(false);
@@ -82,10 +82,6 @@ const Dashboard = () => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48 bg-popover z-50">
-              <DropdownMenuItem onClick={() => setProspectDialogOpen(true)}>
-                <Gem className="h-4 w-4 mr-2" />
-                Nueva Cotización
-              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setClientDialogOpen(true)}>
                 <UserPlus className="h-4 w-4 mr-2" />
                 Nuevo Cliente
@@ -256,13 +252,6 @@ const Dashboard = () => {
       </main>
 
       {/* Dialogs */}
-      <ProspectDialog
-        open={prospectDialogOpen}
-        onOpenChange={setProspectDialogOpen}
-        onSuccess={() => {
-          setProspectDialogOpen(false);
-        }}
-      />
       <ClientDialog
         open={clientDialogOpen}
         onOpenChange={setClientDialogOpen}
