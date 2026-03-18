@@ -137,7 +137,7 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
           <p className="text-muted-foreground">
-            Administra tu cartera de clientes, agenda citas y realiza seguimiento de proyectos.
+            Administra tu cartera de clientes, agenda citas y realiza seguimiento de cotizaciones.
           </p>
               <div className="mt-4 pt-4 border-t border-border">
                 <div className="flex justify-between text-sm">
