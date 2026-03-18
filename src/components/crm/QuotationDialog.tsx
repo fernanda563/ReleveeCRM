@@ -624,16 +624,6 @@ export default function QuotationDialog({
               </div>
             )}
 
-            {/* Validation messages */}
-            {(missingMetal || missingStone) && (
-              <div className="flex items-start gap-2 text-sm text-destructive bg-destructive/10 rounded-md p-3">
-                <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
-                <div>
-                  {missingMetal && <p>Falta agregar un metal para continuar.</p>}
-                  {missingStone && <p>Falta agregar una piedra para continuar.</p>}
-                </div>
-              </div>
-            )}
           </div>
         )}
 
