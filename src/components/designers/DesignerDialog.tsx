@@ -87,7 +87,8 @@ export function DesignerDialog({ open, onOpenChange, designer, onSaved }: Design
     setFormData(prev => ({
       ...prev,
       ubicacion_pais: country,
-      telefono_codigo_pais: phoneCode
+      telefono_codigo_pais: phoneCode,
+      ubicacion_estado: country !== prev.ubicacion_pais ? "" : prev.ubicacion_estado
     }));
   };
 
