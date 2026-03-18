@@ -124,34 +124,17 @@ export function MaterialDialog({
           <div className="space-y-2">
             <Label>Categoría</Label>
             <Select
-              value={showCustomCategoria ? "__nueva__" : (form.categoria || "__none__")}
-              onValueChange={(v) => {
-                if (v === "__nueva__") {
-                  setShowCustomCategoria(true);
-                  update("categoria", "");
-                } else {
-                  setShowCustomCategoria(false);
-                  update("categoria", v === "__none__" ? "" : v);
-                }
-              }}
+              value={form.categoria || "__none__"}
+              onValueChange={(v) => update("categoria", v === "__none__" ? "" : v)}
             >
               <SelectTrigger><SelectValue placeholder="Selecciona una categoría" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="__none__">Sin categoría</SelectItem>
-                {existingCategories.map((c) => (
-                  <SelectItem key={c} value={c}>{c}</SelectItem>
-                ))}
-                <SelectItem value="__nueva__">Otra (nueva categoría)</SelectItem>
+                <SelectItem value="Metales">Metales</SelectItem>
+                <SelectItem value="Piedras Preciosas">Piedras Preciosas</SelectItem>
               </SelectContent>
             </Select>
-            {showCustomCategoria && (
-              <Input
-                placeholder="Escribe la nueva categoría"
-                value={form.categoria}
-                onChange={(e) => update("categoria", e.target.value)}
-                autoFocus
-              />
-            )}
+          </div>
           </div>
 
           {/* Unidad de medida */}
