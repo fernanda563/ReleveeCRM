@@ -1,90 +1,37 @@
 
-## Simplificar el Paso 5: Eliminar subida de STL y agregar búsqueda por nombre
 
-### Qué hay que cambiar
+## Problema
 
-El archivo `src/components/orders/OrderDialogStep5.tsx` actualmente tiene dos mecanismos:
-1. Un `<Select>` para seleccionar STL existentes del repositorio.
-2. Un panel expandible (toggle) para subir un archivo STL nuevo directamente al repositorio.
+La página de Cotizaciones (`/projects`) muestra las tarjetas `ProspectCard` en un layout `flex flex-col gap-4` (una tarjeta por fila, ancho completo). Esto difiere del patrón estándar de administración que usa `grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4`.
 
-La petición es eliminar el mecanismo de subida y reemplazar el `<Select>` por un buscador por nombre.
+Además, la tarjeta muestra demasiada información detallada (metal, piedra, estilo, largo, observaciones) que debería reservarse para el diálogo de detalle.
 
----
+## Cambios propuestos
 
-### Cambios en `OrderDialogStep5.tsx`
+### 1. `src/pages/Projects.tsx` — Cambiar layout de lista
 
-**Eliminar completamente:**
-- Los estados `showUpload`, `uploading`, `stlFile`, `stlNombre`, `stlDescripcion`
-- Las funciones `resetUpload` y `handleUpload`
-- Todo el bloque JSX del panel de subida (el `div` con la clase `rounded-lg border border-dashed`)
-- Los imports de `Upload`, `Loader2`, `X`, `ChevronDown`, `ChevronUp` de lucide-react (si ya no se usan)
-- La prop `onSTLUploaded` de la interfaz y del componente
-
-**Reemplazar el `<Select>` por un buscador con `Command`:**
-
-El proyecto ya tiene instalado `cmdk` y el componente `Command` disponible en `src/components/ui/command.tsx`. Se usará para crear un combo de búsqueda tipo "popover + command" que:
-- Muestra un campo de texto con placeholder "Buscar STL por nombre..."
-- Al escribir, filtra la lista de `availableSTLFiles` por nombre en tiempo real
-- Al seleccionar un resultado, actualiza `selectedSTLFileId`
-- Muestra el nombre del STL seleccionado en el trigger del popover
-- Incluye una opción "Ninguno" para deseleccionar
-
-**Patrón a usar:** `Popover` + `Command` + `CommandInput` + `CommandList` + `CommandItem` (patrón combobox estándar de shadcn/ui, que ya está completamente disponible en el proyecto).
-
+Reemplazar el contenedor de tarjetas de:
 ```
-[Trigger: Popover]
-  "Buscar STL por nombre..."  ← campo de búsqueda
-  ─────────────────────────
-  Ninguno
-  Anillo solitario clásico
-  Solitario 6 uñas          ← filtrado en tiempo real
-  ...
+<div className="flex flex-col gap-4">
+```
+a:
+```
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 ```
 
-**Interfaz de props actualizada:**
-```typescript
-interface OrderDialogStep5Props {
-  notas: string;
-  setNotas: (value: string) => void;
-  selectedSTLFileId: string;
-  setSelectedSTLFileId: (value: string) => void;
-  availableSTLFiles: STLFile[];
-  loading: boolean;
-  // onSTLUploaded ← eliminada
-}
-```
+### 2. `src/components/client-detail/ProspectCard.tsx` — Rediseñar como tarjeta vertical compacta
 
----
+Adaptar la tarjeta al patrón estándar de administración (similar a `MaterialCard`):
 
-### Cambio en `OrderDialog.tsx`
+- **Header**: Título de la cotización (`generateProspectTitle`) con `DropdownMenu` (MoreHorizontal) a la derecha
+- **Badges**: Estado + tipo de pieza como badges debajo del título
+- **Body compacto**: Solo mostrar información clave resumida:
+  - Metal (tipo + color/pureza en una línea)
+  - Importe previsto
+  - Fecha de entrega deseada
+- **Eliminar** de la vista de tarjeta: piedra, estilo, largo, observaciones (se ven al hacer clic en detalle)
+- **Fila de cliente**: Se mantiene condicional (`showClientName`) pero como badge o línea compacta
+- **Notas**: Si hay observaciones, mostrar truncadas con `line-clamp-2` como en MaterialCard
 
-Quitar la prop `onSTLUploaded` que se pasa al componente `OrderDialogStep5` en el JSX del diálogo principal. Esta prop ya no existe en la interfaz del componente.
+La estructura seguirá el patrón: `CardHeader` (título + menú) → badges → `CardContent` (grid de datos compactos).
 
----
-
-### Resultado visual esperado
-
-```
-Paso 5 — Notas y Diseño STL
-─────────────────────────────────────────────────────
-
-[Notas Adicionales]
-  [ Textarea para notas... ]
-
-Archivo STL (Opcional)
-  Selecciona un diseño existente del repositorio.
-
-  [🔍 Buscar archivo STL por nombre...  ▼]
-       ← popover con búsqueda reactiva →
-
-  [Vista previa del STL seleccionado]
-
-─────────────────────────────────────────────────────
-```
-
----
-
-### Archivos a modificar
-
-1. **`src/components/orders/OrderDialogStep5.tsx`** — Eliminar toda la lógica y UI de subida, reemplazar el `<Select>` por un combobox `Popover + Command`.
-2. **`src/components/orders/OrderDialog.tsx`** — Quitar la prop `onSTLUploaded` del lugar donde se renderiza `<OrderDialogStep5 ... />`.
