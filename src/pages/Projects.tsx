@@ -169,7 +169,7 @@ export default function Projects() {
 
       if (error) throw error;
 
-      toast.success("Proyecto eliminado exitosamente");
+      toast.success("Cotización eliminada exitosamente");
       setDeletingProspect(null);
       fetchProspects();
     } catch (error) {
