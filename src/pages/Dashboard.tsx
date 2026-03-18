@@ -17,7 +17,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [clientDialogOpen, setClientDialogOpen] = useState(false);
   const [orderDialogOpen, setOrderDialogOpen] = useState(false);
-  const [prospectDialogOpen, setProspectDialogOpen] = useState(false);
+  
 
   const handleOpenClientDialog = () => {
     setOrderDialogOpen(false);
