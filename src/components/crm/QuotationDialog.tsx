@@ -479,52 +479,31 @@ export default function QuotationDialog({
         {/* Step 2: Materials */}
         {step === 1 && (
           <div className="space-y-4">
-            {/* Material requirements info & skip overrides */}
+            {/* Skip overrides */}
             {(pieceRequirements.requiresMetal || pieceRequirements.requiresStone) && (
-              <div className="rounded-lg border border-border p-3 space-y-2">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                  Requisitos — <span className="capitalize">{selectedType}</span>
-                </p>
+              <div className="flex items-center gap-4 flex-wrap">
                 {pieceRequirements.requiresMetal && (
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-1.5">
-                      {hasMetal || skipMetal ? (
-                        <span className="text-xs font-medium text-foreground">✓ Metal</span>
-                      ) : (
-                        <span className="text-xs text-muted-foreground">Falta agregar un metal</span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <Checkbox
-                        id="skipMetal"
-                        checked={skipMetal}
-                        onCheckedChange={(v) => setSkipMetal(!!v)}
-                      />
-                      <label htmlFor="skipMetal" className="text-xs text-muted-foreground cursor-pointer">
-                        Cliente proporciona metal
-                      </label>
-                    </div>
+                  <div className="flex items-center gap-1.5">
+                    <Checkbox
+                      id="skipMetal"
+                      checked={skipMetal}
+                      onCheckedChange={(v) => setSkipMetal(!!v)}
+                    />
+                    <label htmlFor="skipMetal" className="text-xs text-muted-foreground cursor-pointer">
+                      Cliente proporciona metal
+                    </label>
                   </div>
                 )}
                 {pieceRequirements.requiresStone && (
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-1.5">
-                      {hasStone || skipStone ? (
-                        <span className="text-xs font-medium text-foreground">✓ Piedra</span>
-                      ) : (
-                        <span className="text-xs text-muted-foreground">Falta agregar una piedra</span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <Checkbox
-                        id="skipStone"
-                        checked={skipStone}
-                        onCheckedChange={(v) => setSkipStone(!!v)}
-                      />
-                      <label htmlFor="skipStone" className="text-xs text-muted-foreground cursor-pointer">
-                        Cliente proporciona piedra
-                      </label>
-                    </div>
+                  <div className="flex items-center gap-1.5">
+                    <Checkbox
+                      id="skipStone"
+                      checked={skipStone}
+                      onCheckedChange={(v) => setSkipStone(!!v)}
+                    />
+                    <label htmlFor="skipStone" className="text-xs text-muted-foreground cursor-pointer">
+                      Cliente proporciona piedra
+                    </label>
                   </div>
                 )}
               </div>
