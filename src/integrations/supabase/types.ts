@@ -294,6 +294,54 @@ export type Database = {
         }
         Relationships: []
       }
+      materials: {
+        Row: {
+          activo: boolean | null
+          categoria: string | null
+          costo_directo: number
+          created_at: string | null
+          id: string
+          nombre: string
+          notas: string | null
+          redondeo: string
+          redondeo_multiplo: number | null
+          tipo_margen: string
+          unidad_medida: string
+          updated_at: string | null
+          valor_margen: number
+        }
+        Insert: {
+          activo?: boolean | null
+          categoria?: string | null
+          costo_directo?: number
+          created_at?: string | null
+          id?: string
+          nombre: string
+          notas?: string | null
+          redondeo?: string
+          redondeo_multiplo?: number | null
+          tipo_margen?: string
+          unidad_medida?: string
+          updated_at?: string | null
+          valor_margen?: number
+        }
+        Update: {
+          activo?: boolean | null
+          categoria?: string | null
+          costo_directo?: number
+          created_at?: string | null
+          id?: string
+          nombre?: string
+          notas?: string | null
+          redondeo?: string
+          redondeo_multiplo?: number | null
+          tipo_margen?: string
+          unidad_medida?: string
+          updated_at?: string | null
+          valor_margen?: number
+        }
+        Relationships: []
+      }
       order_deletion_logs: {
         Row: {
           client_name: string | null
