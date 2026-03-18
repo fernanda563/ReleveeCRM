@@ -185,7 +185,7 @@ export default function RingWeightCalculator({ onUseWeight }: RingWeightCalculat
       {/* Result Cards */}
       <div className="grid grid-cols-3 gap-3">
         <Card className="border-border">
-          <CardContent className="pt-4 pb-3 text-center">
+          <CardContent className="pt-6 pb-3 text-center">
             <p className="text-xs text-muted-foreground mb-1">Peso estimado</p>
             <p className="text-2xl font-bold text-foreground">{weight.toFixed(2)}</p>
             <p className="text-xs text-muted-foreground">gramos</p>
