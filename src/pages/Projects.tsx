@@ -144,7 +144,7 @@ export default function Projects() {
       
       if (error) throw error;
       
-      toast.success("Proyecto convertido exitosamente a orden");
+      toast.success("Cotización convertida exitosamente a orden");
       setShowOrderDialog(false);
       setConvertingProspect(null);
       fetchProspects();
