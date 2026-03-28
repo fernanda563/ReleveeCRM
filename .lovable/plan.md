@@ -1,26 +1,47 @@
 
 
-## Plan: Mejorar controles de dimensiones y simplificar tarjetas de tipo de pieza
+## Plan: Estandarizar tarjetas de tipo de pieza y agregar ratio profundidad/diámetro automático
 
 ### Cambios
 
-**1. Controles de dimensiones más precisos**
+**1. Altura uniforme en tarjetas de tipo de pieza**
 
-Actualmente solo hay un Slider con step de 0.01, lo cual hace difícil llegar a un valor exacto. Se agregará un Input numérico editable al lado del valor mostrado, permitiendo al usuario escribir directamente el número deseado. El slider seguirá funcionando para ajustes rápidos.
+Agregar `h-12` (o similar) al botón de cada tipo de pieza para que todas tengan la misma altura independientemente del largo del texto.
 
-- Reemplazar el `<span>` que muestra `X.XX mm` por un `<Input>` de tipo number con step 0.01, ancho compacto (~80px)
-- El slider y el input se mantienen sincronizados bidireccionalmente
-- Se preservan los límites min/max de cada dimensión
+**2. Ratios de profundidad por tipo de corte**
 
-**2. Tarjetas de tipo de pieza: descripción en hover**
+Definir un `depthRatio` en cada `CutDef` que represente la proporción típica profundidad/diámetro (o profundidad/largo para cortes no redondos):
 
-Eliminar el texto de descripción visible debajo del nombre en cada tarjeta. En su lugar, envolver cada botón en un `Tooltip` que muestre la descripción al hacer hover. Esto reduce el tamaño visual de las tarjetas y las hace más limpias.
+| Corte | Ratio profundidad |
+|---|---|
+| Round | 0.615 (61.5% del diámetro) |
+| Princess | 0.71 |
+| Oval | 0.475 |
+| Marquise | 0.35 |
+| Pear | 0.40 |
+| Heart | 0.60 |
+| Cushion | 0.63 |
+| Emerald | 0.50 |
+| Radiant | 0.587 |
+| Asscher | 0.70 |
 
-- Importar `Tooltip`, `TooltipTrigger`, `TooltipContent` y `TooltipProvider`
-- Envolver el grid de piezas en `TooltipProvider`
-- Cada botón se envuelve en `Tooltip` + `TooltipTrigger`/`TooltipContent`
-- Eliminar el `<span>` con `p.description` del interior del botón
-- Opcionalmente, incluir el número de piedras default en el tooltip (ej. "Banda con múltiples piedras · 13 piedras")
+**3. Lógica de sincronización slider ↔ profundidad**
+
+- Agregar un estado `manualOverride: Record<string, boolean>` que rastree si el usuario ha editado manualmente (vía Input) una dimensión.
+- Cuando el usuario mueve un **Slider** de diámetro/largo, la profundidad se recalcula automáticamente como `valor × depthRatio` (clamped al min/max), siempre que no haya override manual activo.
+- Cuando el usuario mueve el **Slider** de profundidad, se recalcula el diámetro/largo inversamente.
+- Cuando el usuario escribe directamente en el **Input numérico**, se marca `manualOverride[key] = true` y NO se recalcula la otra dimensión.
+- Al cambiar de corte, se resetea el override.
+
+**4. Implementación en `setDimValue`**
+
+Crear una función `setDimViaSlider(key, val)` separada de `setDimViaInput(key, val)`:
+- `setDimViaSlider`: actualiza el valor Y recalcula la dimensión complementaria usando el ratio
+- `setDimViaInput`: actualiza solo el valor indicado, marca override
+
+**5. Indicador visual**
+
+Agregar un icono de enlace (🔗) o texto sutil junto al slider de profundidad indicando que está vinculado proporcionalmente. Si hay override manual, mostrar un botón "Vincular" para restablecer.
 
 ### Archivo modificado
 - `src/pages/DiamondWeightCalculator.tsx`
