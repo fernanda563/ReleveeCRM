@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import { Gem, Weight, Percent, ArrowLeftRight, AlertTriangle, Diamond, Layers } from "lucide-react";
 
 // ── Piece types ──
@@ -565,24 +566,29 @@ const DiamondWeightCalculator = () => {
               <Diamond className="h-4 w-4" />
               Tipo de pieza
             </h3>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 mb-4">
-              {PIECE_TYPES.map((p) => (
-                <button
-                  key={p.id}
-                  onClick={() => setPieceType(p.id)}
-                  className={`flex flex-col items-center gap-1 rounded-lg border p-3 transition-all text-xs font-medium text-center ${
-                    pieceType === p.id
-                      ? "border-foreground bg-primary text-primary-foreground"
-                      : "border-border bg-card text-muted-foreground hover:border-foreground/40"
-                  }`}
-                >
-                  <span className="leading-tight">{p.name}</span>
-                  <span className={`text-[10px] leading-tight ${pieceType === p.id ? "text-primary-foreground/70" : "text-muted-foreground/70"}`}>
-                    {p.description}
-                  </span>
-                </button>
-              ))}
-            </div>
+            <TooltipProvider delayDuration={200}>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 mb-4">
+                {PIECE_TYPES.map((p) => (
+                  <Tooltip key={p.id}>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={() => setPieceType(p.id)}
+                        className={`flex items-center justify-center rounded-lg border p-3 transition-all text-xs font-medium text-center ${
+                          pieceType === p.id
+                            ? "border-foreground bg-primary text-primary-foreground"
+                            : "border-border bg-card text-muted-foreground hover:border-foreground/40"
+                        }`}
+                      >
+                        <span className="leading-tight">{p.name}</span>
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
+                      <p>{p.description} · {p.defaultStones} {p.defaultStones === 1 ? "piedra" : "piedras"}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                ))}
+              </div>
+            </TooltipProvider>
             <div className="flex items-center gap-3">
               <label className="text-sm font-medium text-foreground whitespace-nowrap">
                 Número de piedras:
@@ -680,9 +686,23 @@ const DiamondWeightCalculator = () => {
                     <label className="text-sm font-medium text-foreground">
                       {dim.label}
                     </label>
-                    <span className="text-sm font-semibold tabular-nums text-foreground">
-                      {dims[dim.key].toFixed(2)} mm
-                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <Input
+                        type="number"
+                        min={dim.min}
+                        max={dim.max}
+                        step={0.01}
+                        value={dims[dim.key]}
+                        onChange={(e) => {
+                          const v = parseFloat(e.target.value);
+                          if (!isNaN(v)) {
+                            setDimValue(dim.key, Math.min(dim.max, Math.max(dim.min, v)));
+                          }
+                        }}
+                        className="w-20 h-8 text-sm text-right tabular-nums px-2"
+                      />
+                      <span className="text-xs text-muted-foreground">mm</span>
+                    </div>
                   </div>
                   <Slider
                     min={dim.min}
