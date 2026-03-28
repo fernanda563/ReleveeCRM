@@ -426,8 +426,15 @@ function MeasurementDiagram({ cutId }: { cutId: string }) {
 
 // ── Main Component ──
 const DiamondWeightCalculator = () => {
+  const [pieceType, setPieceType] = useState("piedra_suelta");
+  const [stoneCount, setStoneCount] = useState(1);
   const [selectedCut, setSelectedCut] = useState("round");
   const cut = CUTS.find((c) => c.id === selectedCut)!;
+  const currentPiece = PIECE_TYPES.find((p) => p.id === pieceType)!;
+
+  useEffect(() => {
+    setStoneCount(currentPiece.defaultStones);
+  }, [pieceType, currentPiece.defaultStones]);
 
   const [values, setValues] = useState<Record<string, Record<string, number>>>(() => {
     const init: Record<string, Record<string, number>> = {};
