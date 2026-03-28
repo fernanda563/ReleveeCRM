@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
@@ -103,11 +104,28 @@ export default function RingWeightCalculator({ onUseWeight, alloy: controlledAll
       <div className="space-y-5">
         {/* Ring Size */}
         <div className="space-y-2">
-          <div className="flex items-center gap-1.5">
-            <span className="text-sm font-medium text-foreground">Talla US</span>
-            <span className="text-sm text-muted-foreground">
-              ({size} — ⌀ {id.toFixed(2)} mm)
-            </span>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <span className="text-sm font-medium text-foreground">Talla US</span>
+              <span className="text-sm text-muted-foreground">
+                (⌀ {id.toFixed(2)} mm)
+              </span>
+            </div>
+            <Input
+              type="number"
+              step={0.25}
+              min={4}
+              max={13}
+              value={size}
+              onChange={(e) => {
+                const v = parseFloat(e.target.value);
+                if (!isNaN(v)) {
+                  const clamped = Math.min(13, Math.max(4, v));
+                  setSize(Math.round(clamped * 4) / 4);
+                }
+              }}
+              className="w-20 h-8 text-center text-sm"
+            />
           </div>
           <Slider
             value={[sizeIndex]}
@@ -123,9 +141,25 @@ export default function RingWeightCalculator({ onUseWeight, alloy: controlledAll
 
         {/* Band Width */}
         <div className="space-y-2">
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-foreground">Ancho de banda</span>
-            <span className="text-sm text-muted-foreground">({width.toFixed(1)} mm)</span>
+            <div className="flex items-center gap-1">
+              <Input
+                type="number"
+                step={0.1}
+                min={2}
+                max={8}
+                value={width}
+                onChange={(e) => {
+                  const v = parseFloat(e.target.value);
+                  if (!isNaN(v)) {
+                    setWidth(Math.round(Math.min(8, Math.max(2, v)) * 10) / 10);
+                  }
+                }}
+                className="w-20 h-8 text-center text-sm"
+              />
+              <span className="text-xs text-muted-foreground">mm</span>
+            </div>
           </div>
           <Slider
             value={[width]}
@@ -141,11 +175,30 @@ export default function RingWeightCalculator({ onUseWeight, alloy: controlledAll
 
         {/* Wall Thickness */}
         <div className="space-y-2">
-          <div className="flex items-center gap-1.5">
-            <span className="text-sm font-medium text-foreground">Grosor de pared</span>
-            <span className="text-sm text-muted-foreground">
-              ({thickness} mm — {THICKNESS_LABELS[thickness]})
-            </span>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <span className="text-sm font-medium text-foreground">Grosor de pared</span>
+              <span className="text-sm text-muted-foreground">
+                ({THICKNESS_LABELS[thickness]})
+              </span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Input
+                type="number"
+                step={0.5}
+                min={1}
+                max={3}
+                value={thickness}
+                onChange={(e) => {
+                  const v = parseFloat(e.target.value);
+                  if (!isNaN(v)) {
+                    setThickness(Math.round(Math.min(3, Math.max(1, v)) * 2) / 2);
+                  }
+                }}
+                className="w-20 h-8 text-center text-sm"
+              />
+              <span className="text-xs text-muted-foreground">mm</span>
+            </div>
           </div>
           <Slider
             value={[(thickness - 1) * 2]}
