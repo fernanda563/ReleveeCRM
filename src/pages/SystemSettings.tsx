@@ -6,6 +6,7 @@ import { CompanySettingsCard } from "@/components/settings/CompanySettingsCard";
 import { NotificationSettingsCard } from "@/components/settings/NotificationSettingsCard";
 import { RegionalSettingsCard } from "@/components/settings/RegionalSettingsCard";
 import { AppearanceSettingsCard } from "@/components/settings/AppearanceSettingsCard";
+import { MetalPriceSettingsCard } from "@/components/settings/MetalPriceSettingsCard";
 
 export default function SystemSettings() {
   const navigate = useNavigate();
