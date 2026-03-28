@@ -1,46 +1,59 @@
 
 
-## Plan: Agregar tipo de cambio USD/MXN a la sincronización de precios de metales
+## Plan: Selector de tipo de pieza y número de piedras en la calculadora de diamantes
 
 ### Resumen
 
-Consultar el tipo de cambio USD→MXN durante cada sincronización de precios, guardar los precios en ambas divisas, y mostrar ambas columnas en la tarjeta de configuración. Los materiales en la base de datos se almacenarán en MXN (pesos mexicanos) en lugar de USD.
+Agregar una sección antes del selector de corte donde el usuario seleccione el tipo de joya y la cantidad de piedras. Los resultados se multiplicarán automáticamente para mostrar el peso total estimado de todas las piedras.
 
-### Cambios detallados
+### Tipos de pieza (con piedras sugeridas por defecto)
 
-**1. Edge Function `fetch-metal-prices/index.ts`**
+| Tipo de pieza | Piedras default | Descripción |
+|---|---|---|
+| Piedra suelta | 1 | Sin montar |
+| Anillo de compromiso | 1 | Piedra central |
+| Churumbela | 13 | Band con múltiples piedras |
+| Anillo de eternidad | 20 | Piedras alrededor completo |
+| Media churumbela | 7 | Medio anillo con piedras |
+| Anillo cóctel | 1 | Piedra central grande |
+| Aretes (par) | 2 | Una piedra por arete |
+| Collar / Gargantilla | 1 | Piedra central o pendiente |
+| Pulsera tennis | 30 | Múltiples piedras en línea |
+| Dije / Pendiente | 1 | Piedra central |
+| Argollas de matrimonio | 0 | Generalmente sin piedra |
+| Otro | 1 | Personalizable |
 
-- Después de obtener los precios de Metals.dev, hacer un fetch al tipo de cambio USD/MXN usando una API gratuita (ej. `https://api.exchangerate-api.com/v4/latest/USD` — no requiere API key)
-- Extraer `rates.MXN` del response
-- En el `price_table`, agregar campo `precio_gramo_mxn` = `precio_gramo * tipoCambio` (redondeado a 2 decimales)
-- Al actualizar los materiales en la tabla `materials`, guardar el precio en MXN en `costo_directo` (en vez de USD)
-- Guardar el tipo de cambio en `system_settings` (key: `metal_price_exchange_rate`, category: `metals`) con valor `{ usd_mxn: number, updated_at: string }`
-- Incluir `exchange_rate` y `precio_gramo_mxn` en el response JSON
+### Comportamiento
 
-**2. MetalPriceSettingsCard.tsx**
+1. Al seleccionar un tipo de pieza, el campo "Número de piedras" se pre-llena con el valor sugerido pero es **siempre editable**
+2. Si el número de piedras es 0, se muestra un aviso de que esta pieza normalmente no lleva diamantes
+3. Las tarjetas de resultado muestran:
+   - **Peso por piedra**: el cálculo actual (quilates, mg, rango)
+   - **Peso total**: peso por piedra × número de piedras (nueva fila o tarjeta adicional)
+4. La fórmula al final incluye `× N piedras = X.XXX ct total`
 
-- Actualizar la interfaz `PriceRow` para incluir `precio_gramo_mxn`
-- Cargar el tipo de cambio desde `system_settings` al iniciar
-- Mostrar el tipo de cambio actual (ej. "1 USD = $20.45 MXN") en un badge o info box
-- En la tabla de precios, mostrar dos columnas: USD/g y MXN/g lado a lado
-- Actualizar el estado con los nuevos datos después de cada sync manual
+### Cambios en `src/pages/DiamondWeightCalculator.tsx`
 
-**3. MaterialCard.tsx**
+**1. Nueva constante `PIECE_TYPES`** al inicio del archivo con la tabla anterior
 
-- Los precios ya se muestran con `$` y `toLocaleString("es-MX")` — al cambiar el costo base a MXN, los precios se mostrarán automáticamente en pesos. Agregar indicador "MXN" junto al precio para mayor claridad.
+**2. Nuevos estados**:
+```ts
+const [pieceType, setPieceType] = useState("piedra_suelta");
+const [stoneCount, setStoneCount] = useState(1);
+```
 
-**4. MaterialDialog.tsx**
+**3. Nueva sección UI** entre el header y el selector de corte:
+- Card con título "Tipo de pieza"
+- Grid de botones (similar al selector de corte) con los tipos de pieza
+- Input numérico para "Número de piedras" con valor pre-llenado según la pieza seleccionada
+- `useEffect` que actualiza `stoneCount` al cambiar `pieceType`
 
-- En el `useEffect` que auto-asigna el costo directo, usar `precio_gramo_mxn` del price table en vez de `precio_gramo` (USD)
+**4. Tarjetas de resultado** actualizadas:
+- Agregar una quinta tarjeta "Total (N piedras)" que muestre `carats × stoneCount`
+- Las 4 tarjetas existentes se mantienen como "por piedra"
 
-### API de tipo de cambio
+**5. Fórmula** actualizada para incluir el multiplicador
 
-Se usará `https://api.exchangerate-api.com/v4/latest/USD` (gratuita, sin API key, hasta 1,500 requests/mes). Alternativa: `https://open.er-api.com/v6/latest/USD`.
-
-### Archivos modificados
-
-- `supabase/functions/fetch-metal-prices/index.ts` — fetch tipo de cambio, calcular MXN, guardar en system_settings
-- `src/components/settings/MetalPriceSettingsCard.tsx` — mostrar USD y MXN, tipo de cambio
-- `src/components/materials/MaterialCard.tsx` — indicador "MXN"
-- `src/components/materials/MaterialDialog.tsx` — usar `precio_gramo_mxn`
+### Archivo modificado
+- `src/pages/DiamondWeightCalculator.tsx` — selector de pieza, conteo de piedras, multiplicador en resultados
 
