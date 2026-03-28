@@ -733,8 +733,20 @@ const DiamondWeightCalculator = () => {
           {/* Sliders */}
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Dimensiones (mm)
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center justify-between">
+                <span>Dimensiones (mm)</span>
+                <button
+                  onClick={resetLink}
+                  className={`flex items-center gap-1 text-xs font-normal px-2 py-1 rounded transition-colors ${
+                    isLinked
+                      ? "text-primary"
+                      : "text-muted-foreground hover:text-primary"
+                  }`}
+                  title={isLinked ? "Profundidad vinculada proporcionalmente" : "Clic para restablecer vínculo proporcional"}
+                >
+                  {isLinked ? <Link className="h-3.5 w-3.5" /> : <Unlink className="h-3.5 w-3.5" />}
+                  {isLinked ? "Vinculado" : "Vincular"}
+                </button>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-5">
@@ -754,7 +766,7 @@ const DiamondWeightCalculator = () => {
                         onChange={(e) => {
                           const v = parseFloat(e.target.value);
                           if (!isNaN(v)) {
-                            setDimValue(dim.key, Math.min(dim.max, Math.max(dim.min, v)));
+                            setDimViaInput(dim.key, Math.min(dim.max, Math.max(dim.min, v)));
                           }
                         }}
                         className="w-20 h-8 text-sm text-right tabular-nums px-2"
@@ -767,7 +779,7 @@ const DiamondWeightCalculator = () => {
                     max={dim.max}
                     step={0.01}
                     value={[dims[dim.key]]}
-                    onValueChange={([v]) => setDimValue(dim.key, v)}
+                    onValueChange={([v]) => setDimViaSlider(dim.key, v)}
                     className="w-full"
                   />
                   <p className="text-[11px] text-muted-foreground leading-snug">{dim.hint}</p>
