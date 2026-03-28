@@ -1,9 +1,9 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
-import { Gem, Weight, Percent, ArrowLeftRight, AlertTriangle, Diamond, Layers } from "lucide-react";
+import { Gem, Weight, Percent, ArrowLeftRight, AlertTriangle, Diamond, Layers, Link, Unlink } from "lucide-react";
 
 // ── Piece types ──
 interface PieceType {
