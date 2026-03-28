@@ -1,7 +1,31 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
-import { Gem, Weight, Percent, ArrowLeftRight } from "lucide-react";
+import { Gem, Weight, Percent, ArrowLeftRight, AlertTriangle, Diamond, Layers } from "lucide-react";
+
+// ── Piece types ──
+interface PieceType {
+  id: string;
+  name: string;
+  defaultStones: number;
+  description: string;
+}
+
+const PIECE_TYPES: PieceType[] = [
+  { id: "piedra_suelta", name: "Piedra suelta", defaultStones: 1, description: "Sin montar" },
+  { id: "anillo_compromiso", name: "Anillo de compromiso", defaultStones: 1, description: "Piedra central" },
+  { id: "churumbela", name: "Churumbela", defaultStones: 13, description: "Banda con múltiples piedras" },
+  { id: "anillo_eternidad", name: "Anillo de eternidad", defaultStones: 20, description: "Piedras alrededor completo" },
+  { id: "media_churumbela", name: "Media churumbela", defaultStones: 7, description: "Medio anillo con piedras" },
+  { id: "anillo_coctel", name: "Anillo cóctel", defaultStones: 1, description: "Piedra central grande" },
+  { id: "aretes", name: "Aretes (par)", defaultStones: 2, description: "Una piedra por arete" },
+  { id: "collar", name: "Collar / Gargantilla", defaultStones: 1, description: "Piedra central o pendiente" },
+  { id: "pulsera_tennis", name: "Pulsera tennis", defaultStones: 30, description: "Múltiples piedras en línea" },
+  { id: "dije", name: "Dije / Pendiente", defaultStones: 1, description: "Piedra central" },
+  { id: "argollas_matrimonio", name: "Argollas de matrimonio", defaultStones: 0, description: "Generalmente sin piedra" },
+  { id: "otro", name: "Otro", defaultStones: 1, description: "Personalizable" },
+];
 
 // ── Cut definitions ──
 interface DimensionDef {
@@ -402,8 +426,15 @@ function MeasurementDiagram({ cutId }: { cutId: string }) {
 
 // ── Main Component ──
 const DiamondWeightCalculator = () => {
+  const [pieceType, setPieceType] = useState("piedra_suelta");
+  const [stoneCount, setStoneCount] = useState(1);
   const [selectedCut, setSelectedCut] = useState("round");
   const cut = CUTS.find((c) => c.id === selectedCut)!;
+  const currentPiece = PIECE_TYPES.find((p) => p.id === pieceType)!;
+
+  useEffect(() => {
+    setStoneCount(currentPiece.defaultStones);
+  }, [pieceType, currentPiece.defaultStones]);
 
   const [values, setValues] = useState<Record<string, Record<string, number>>>(() => {
     const init: Record<string, Record<string, number>> = {};
@@ -455,14 +486,17 @@ const DiamondWeightCalculator = () => {
     }
   }, [dims, cut]);
 
+  const totalCarats = result.carats * stoneCount;
+  const totalMg = Math.round(totalCarats * 200);
+
   const stats = [
     {
-      title: "Quilates Estimados",
+      title: "Quilates por piedra",
       value: `${result.carats.toFixed(3)} ct`,
       icon: Gem,
     },
     {
-      title: "Miligramos",
+      title: "Miligramos por piedra",
       value: `${result.mg} mg`,
       icon: Weight,
     },
@@ -490,12 +524,12 @@ const DiamondWeightCalculator = () => {
             </h1>
           </div>
           <p className="text-muted-foreground">
-            Selecciona un corte e ingresa las dimensiones para estimar el peso en quilates
+            Selecciona el tipo de pieza, el corte e ingresa las dimensiones para estimar el peso en quilates
           </p>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
           {stats.map((stat) => (
             <Card key={stat.title} className="border-border">
               <CardHeader className="pb-3">
@@ -509,7 +543,75 @@ const DiamondWeightCalculator = () => {
               </CardContent>
             </Card>
           ))}
+          {/* Total card */}
+          <Card className={`border-border ${stoneCount > 1 ? "ring-2 ring-primary/30" : ""}`}>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                <Layers className="h-4 w-4" />
+                Total ({stoneCount} {stoneCount === 1 ? "piedra" : "piedras"})
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-foreground tabular-nums">{totalCarats.toFixed(3)} ct</div>
+              <p className="text-xs text-muted-foreground mt-1">{totalMg} mg</p>
+            </CardContent>
+          </Card>
         </div>
+
+        {/* Piece type selector */}
+        <Card className="mb-6">
+          <CardContent className="pt-6">
+            <h3 className="font-semibold mb-4 flex items-center gap-2">
+              <Diamond className="h-4 w-4" />
+              Tipo de pieza
+            </h3>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 mb-4">
+              {PIECE_TYPES.map((p) => (
+                <button
+                  key={p.id}
+                  onClick={() => setPieceType(p.id)}
+                  className={`flex flex-col items-center gap-1 rounded-lg border p-3 transition-all text-xs font-medium text-center ${
+                    pieceType === p.id
+                      ? "border-foreground bg-primary text-primary-foreground"
+                      : "border-border bg-card text-muted-foreground hover:border-foreground/40"
+                  }`}
+                >
+                  <span className="leading-tight">{p.name}</span>
+                  <span className={`text-[10px] leading-tight ${pieceType === p.id ? "text-primary-foreground/70" : "text-muted-foreground/70"}`}>
+                    {p.description}
+                  </span>
+                </button>
+              ))}
+            </div>
+            <div className="flex items-center gap-3">
+              <label className="text-sm font-medium text-foreground whitespace-nowrap">
+                Número de piedras:
+              </label>
+              <Input
+                type="number"
+                min={0}
+                max={999}
+                value={stoneCount}
+                onChange={(e) => setStoneCount(Math.max(0, parseInt(e.target.value) || 0))}
+                className="w-24"
+              />
+              {currentPiece.defaultStones !== stoneCount && (
+                <button
+                  onClick={() => setStoneCount(currentPiece.defaultStones)}
+                  className="text-xs text-primary hover:underline"
+                >
+                  Restablecer ({currentPiece.defaultStones})
+                </button>
+              )}
+            </div>
+            {stoneCount === 0 && (
+              <div className="mt-3 flex items-center gap-2 text-sm text-amber-600 dark:text-amber-400">
+                <AlertTriangle className="h-4 w-4" />
+                Esta pieza normalmente no lleva diamantes
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Cut selector */}
         <Card className="mb-6">
@@ -602,6 +704,11 @@ const DiamondWeightCalculator = () => {
           <CardContent className="pt-6">
             <p className="text-sm text-muted-foreground">
               Fórmula: <span className="font-mono text-foreground">{result.formula}</span> = <span className="font-semibold text-foreground">{result.carats.toFixed(3)} ct</span>
+              {stoneCount > 1 && (
+                <span className="ml-2">
+                  × {stoneCount} piedras = <span className="font-semibold text-foreground">{totalCarats.toFixed(3)} ct total</span>
+                </span>
+              )}
             </p>
           </CardContent>
         </Card>
