@@ -448,12 +448,69 @@ const DiamondWeightCalculator = () => {
     return init;
   });
 
+  const [manualOverride, setManualOverride] = useState<Record<string, boolean>>({});
+
+  // Reset manual override when cut changes
+  useEffect(() => {
+    setManualOverride({});
+  }, [selectedCut]);
+
   const dims = values[selectedCut];
 
-  const setDimValue = (key: string, val: number) => {
+  const getPrimaryKey = useCallback(() => {
+    return cut.isRound ? "diameter" : "length";
+  }, [cut]);
+
+  const getDepthDim = useCallback(() => {
+    return cut.dimensions.find((d) => d.key === "depth")!;
+  }, [cut]);
+
+  const getPrimaryDim = useCallback(() => {
+    const key = getPrimaryKey();
+    return cut.dimensions.find((d) => d.key === key)!;
+  }, [cut, getPrimaryKey]);
+
+  const setDimViaSlider = (key: string, val: number) => {
+    setValues((prev) => {
+      const next = { ...prev[selectedCut], [key]: val };
+      const depthDim = getDepthDim();
+      const primaryKey = getPrimaryKey();
+
+      if (key === "depth" && !manualOverride[primaryKey]) {
+        // Moving depth slider → recalculate primary dimension inversely
+        const primaryDim = getPrimaryDim();
+        const newPrimary = Math.min(primaryDim.max, Math.max(primaryDim.min, parseFloat((val / cut.depthRatio).toFixed(2))));
+        next[primaryKey] = newPrimary;
+      } else if (key !== "depth" && (key === primaryKey) && !manualOverride.depth) {
+        // Moving primary slider → recalculate depth
+        const newDepth = Math.min(depthDim.max, Math.max(depthDim.min, parseFloat((val * cut.depthRatio).toFixed(2))));
+        next.depth = newDepth;
+      }
+
+      return { ...prev, [selectedCut]: next };
+    });
+  };
+
+  const setDimViaInput = (key: string, val: number) => {
+    setManualOverride((prev) => ({ ...prev, [key]: true }));
     setValues((prev) => ({
       ...prev,
       [selectedCut]: { ...prev[selectedCut], [key]: val },
+    }));
+  };
+
+  const isLinked = !manualOverride.depth && !manualOverride[getPrimaryKey()];
+
+  const resetLink = () => {
+    setManualOverride({});
+    // Recalculate depth from current primary value
+    const primaryKey = getPrimaryKey();
+    const depthDim = getDepthDim();
+    const primaryVal = dims[primaryKey];
+    const newDepth = Math.min(depthDim.max, Math.max(depthDim.min, parseFloat((primaryVal * cut.depthRatio).toFixed(2))));
+    setValues((prev) => ({
+      ...prev,
+      [selectedCut]: { ...prev[selectedCut], depth: newDepth },
     }));
   };
 
