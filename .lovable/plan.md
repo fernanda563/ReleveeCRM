@@ -1,90 +1,48 @@
 
-## Simplificar el Paso 5: Eliminar subida de STL y agregar búsqueda por nombre
 
-### Qué hay que cambiar
+## Problema
 
-El archivo `src/components/orders/OrderDialogStep5.tsx` actualmente tiene dos mecanismos:
-1. Un `<Select>` para seleccionar STL existentes del repositorio.
-2. Un panel expandible (toggle) para subir un archivo STL nuevo directamente al repositorio.
+El `ProspectDetailDialog` no muestra los ítems de la cotización (`prospect_items`). El wizard de cotización (`QuotationDialog`) guarda materiales y mano de obra en la tabla `prospect_items`, pero el diálogo de detalle nunca los consulta ni los renderiza. Esto hace que el modal parezca vacío cuando se abre una cotización.
 
-La petición es eliminar el mecanismo de subida y reemplazar el `<Select>` por un buscador por nombre.
+Además, varios campos del prospect se ocultan condicionalmente (importe, fecha de entrega, piedra, etc.), así que si alguno es null, esa sección no aparece — contribuyendo a la sensación de vacío.
 
----
+## Plan
 
-### Cambios en `OrderDialogStep5.tsx`
+### 1. Obtener `prospect_items` al abrir el diálogo
 
-**Eliminar completamente:**
-- Los estados `showUpload`, `uploading`, `stlFile`, `stlNombre`, `stlDescripcion`
-- Las funciones `resetUpload` y `handleUpload`
-- Todo el bloque JSX del panel de subida (el `div` con la clase `rounded-lg border border-dashed`)
-- Los imports de `Upload`, `Loader2`, `X`, `ChevronDown`, `ChevronUp` de lucide-react (si ya no se usan)
-- La prop `onSTLUploaded` de la interfaz y del componente
+En `ProspectDetailDialog.tsx`, agregar un `useEffect` que al abrir el diálogo haga fetch de:
 
-**Reemplazar el `<Select>` por un buscador con `Command`:**
-
-El proyecto ya tiene instalado `cmdk` y el componente `Command` disponible en `src/components/ui/command.tsx`. Se usará para crear un combo de búsqueda tipo "popover + command" que:
-- Muestra un campo de texto con placeholder "Buscar STL por nombre..."
-- Al escribir, filtra la lista de `availableSTLFiles` por nombre en tiempo real
-- Al seleccionar un resultado, actualiza `selectedSTLFileId`
-- Muestra el nombre del STL seleccionado en el trigger del popover
-- Incluye una opción "Ninguno" para deseleccionar
-
-**Patrón a usar:** `Popover` + `Command` + `CommandInput` + `CommandList` + `CommandItem` (patrón combobox estándar de shadcn/ui, que ya está completamente disponible en el proyecto).
-
-```
-[Trigger: Popover]
-  "Buscar STL por nombre..."  ← campo de búsqueda
-  ─────────────────────────
-  Ninguno
-  Anillo solitario clásico
-  Solitario 6 uñas          ← filtrado en tiempo real
-  ...
+```sql
+SELECT pi.*, m.nombre as material_nombre, wc.nombre as concepto_nombre
+FROM prospect_items pi
+LEFT JOIN materials m ON pi.tipo = 'material' AND pi.referencia_id = m.id
+LEFT JOIN work_concepts wc ON pi.tipo = 'mano_de_obra' AND pi.referencia_id = wc.id
+WHERE pi.prospect_id = ?
 ```
 
-**Interfaz de props actualizada:**
-```typescript
-interface OrderDialogStep5Props {
-  notas: string;
-  setNotas: (value: string) => void;
-  selectedSTLFileId: string;
-  setSelectedSTLFileId: (value: string) => void;
-  availableSTLFiles: STLFile[];
-  loading: boolean;
-  // onSTLUploaded ← eliminada
-}
-```
+Se harán dos queries separadas (una para materiales, otra para mano de obra) usando el SDK de Supabase, ya que no se pueden hacer JOINs cruzados fácilmente. Alternativa: fetch todos los `prospect_items` por `prospect_id`, luego fetch los nombres de `materials` y `work_concepts` correspondientes.
 
----
+### 2. Mostrar sección de ítems en el diálogo
 
-### Cambio en `OrderDialog.tsx`
+Agregar dos secciones nuevas en el diálogo (modo lectura):
 
-Quitar la prop `onSTLUploaded` que se pasa al componente `OrderDialogStep5` en el JSX del diálogo principal. Esta prop ya no existe en la interfaz del componente.
+- **Materiales**: tabla con nombre, cantidad, costo unitario, precio unitario, subtotal
+- **Mano de obra**: tabla con nombre, cantidad, costo unitario, precio unitario, subtotal
+- **Totales**: suma de costos y precios
 
----
+Usar el mismo estilo de tabla que ya se usa en otros componentes del proyecto (`Table`, `TableHeader`, `TableBody`, etc.).
 
-### Resultado visual esperado
+### 3. Mostrar todos los campos siempre (no condicionalmente)
 
-```
-Paso 5 — Notas y Diseño STL
-─────────────────────────────────────────────────────
+Cambiar las condiciones que ocultan secciones para que siempre se muestren los campos en modo lectura, mostrando "N/A" o "—" cuando el valor sea null. Esto aplica a:
+- Metal (tipo, color, pureza)
+- Piedra (incluye piedra, tipo)
+- Importe previsto
+- Fecha de entrega
+- Observaciones
+- Fecha de vigencia (agregar este campo que falta)
 
-[Notas Adicionales]
-  [ Textarea para notas... ]
+### Archivo modificado
 
-Archivo STL (Opcional)
-  Selecciona un diseño existente del repositorio.
+- `src/components/client-detail/ProspectDetailDialog.tsx` — agregar fetch de prospect_items, renderizar tablas de materiales y mano de obra, mostrar todos los campos siempre
 
-  [🔍 Buscar archivo STL por nombre...  ▼]
-       ← popover con búsqueda reactiva →
-
-  [Vista previa del STL seleccionado]
-
-─────────────────────────────────────────────────────
-```
-
----
-
-### Archivos a modificar
-
-1. **`src/components/orders/OrderDialogStep5.tsx`** — Eliminar toda la lógica y UI de subida, reemplazar el `<Select>` por un combobox `Popover + Command`.
-2. **`src/components/orders/OrderDialog.tsx`** — Quitar la prop `onSTLUploaded` del lugar donde se renderiza `<OrderDialogStep5 ... />`.
