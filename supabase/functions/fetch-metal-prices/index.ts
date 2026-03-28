@@ -48,6 +48,7 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Fetch metal prices
     const apiUrl = `https://api.metals.dev/v1/latest?api_key=${apiKey}&currency=USD&unit=g`;
     const apiRes = await fetch(apiUrl);
     if (!apiRes.ok) {
@@ -67,29 +68,48 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Fetch USD/MXN exchange rate
+    let usdMxnRate = 20.0; // fallback
+    try {
+      const fxRes = await fetch("https://api.exchangerate-api.com/v4/latest/USD");
+      if (fxRes.ok) {
+        const fxData = await fxRes.json();
+        if (fxData.rates?.MXN) {
+          usdMxnRate = fxData.rates.MXN;
+        }
+      }
+    } catch (fxErr) {
+      console.error("Exchange rate fetch failed, using fallback:", fxErr);
+    }
+
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // Build price_table with all purities
-    const priceTable: Array<{ metal: string; metal_key: string; pureza: string; factor: number; precio_gramo: number }> = [];
+    // Build price_table with all purities (USD and MXN)
+    const priceTable: Array<{
+      metal: string; metal_key: string; pureza: string;
+      factor: number; precio_gramo: number; precio_gramo_mxn: number;
+    }> = [];
     for (const [metalKey, purities] of Object.entries(PURITY_MAP)) {
       const apiMetalKey = METAL_API_KEYS[metalKey];
       if (!apiMetalKey || !metals[apiMetalKey]) continue;
       const basePrice = metals[apiMetalKey];
       for (const [purity, factor] of Object.entries(purities)) {
+        const precioUsd = Math.round(basePrice * factor * 100) / 100;
         priceTable.push({
           metal: METAL_LABELS[metalKey],
           metal_key: metalKey,
           pureza: purity,
           factor,
-          precio_gramo: Math.round(basePrice * factor * 100) / 100,
+          precio_gramo: precioUsd,
+          precio_gramo_mxn: Math.round(precioUsd * usdMxnRate * 100) / 100,
         });
       }
     }
 
-    // Fetch and update materials
+    // Fetch and update materials (store price in MXN)
     const { data: materials, error: fetchErr } = await supabase
       .from("materials")
       .select("id, nombre, tipo_material, kilataje, costo_directo")
@@ -116,7 +136,8 @@ Deno.serve(async (req) => {
       const factor = purities[mat.kilataje];
       if (factor === undefined) continue;
 
-      const newPrice = Math.round(basePrice * factor * 100) / 100;
+      const priceUsd = Math.round(basePrice * factor * 100) / 100;
+      const newPrice = Math.round(priceUsd * usdMxnRate * 100) / 100;
 
       if (newPrice !== mat.costo_directo) {
         const { error: upErr } = await supabase
@@ -174,12 +195,33 @@ Deno.serve(async (req) => {
         .insert({ key: "metal_price_table", category: "metals", value: { value: priceTable } });
     }
 
+    // Save exchange rate to system_settings
+    const exchangeRateValue = { usd_mxn: usdMxnRate, updated_at: now };
+    const { data: existingRate } = await supabase
+      .from("system_settings")
+      .select("id")
+      .eq("key", "metal_price_exchange_rate")
+      .eq("category", "metals")
+      .maybeSingle();
+
+    if (existingRate) {
+      await supabase
+        .from("system_settings")
+        .update({ value: { value: exchangeRateValue } })
+        .eq("key", "metal_price_exchange_rate");
+    } else {
+      await supabase
+        .from("system_settings")
+        .insert({ key: "metal_price_exchange_rate", category: "metals", value: { value: exchangeRateValue } });
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
         updated_count: updates.length,
         updates,
         price_table: priceTable,
+        exchange_rate: { usd_mxn: usdMxnRate },
         api_prices: {
           gold_per_gram_usd: metals.gold,
           silver_per_gram_usd: metals.silver,
