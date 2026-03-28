@@ -631,7 +631,7 @@ const DiamondWeightCalculator = () => {
                     <TooltipTrigger asChild>
                       <button
                         onClick={() => setPieceType(p.id)}
-                        className={`flex items-center justify-center rounded-lg border p-3 transition-all text-xs font-medium text-center ${
+                        className={`flex items-center justify-center rounded-lg border p-3 h-12 transition-all text-xs font-medium text-center ${
                           pieceType === p.id
                             ? "border-foreground bg-primary text-primary-foreground"
                             : "border-border bg-card text-muted-foreground hover:border-foreground/40"
