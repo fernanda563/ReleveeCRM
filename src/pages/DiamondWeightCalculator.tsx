@@ -1,7 +1,31 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
-import { Gem, Weight, Percent, ArrowLeftRight } from "lucide-react";
+import { Gem, Weight, Percent, ArrowLeftRight, AlertTriangle, Diamond, Layers } from "lucide-react";
+
+// ── Piece types ──
+interface PieceType {
+  id: string;
+  name: string;
+  defaultStones: number;
+  description: string;
+}
+
+const PIECE_TYPES: PieceType[] = [
+  { id: "piedra_suelta", name: "Piedra suelta", defaultStones: 1, description: "Sin montar" },
+  { id: "anillo_compromiso", name: "Anillo de compromiso", defaultStones: 1, description: "Piedra central" },
+  { id: "churumbela", name: "Churumbela", defaultStones: 13, description: "Banda con múltiples piedras" },
+  { id: "anillo_eternidad", name: "Anillo de eternidad", defaultStones: 20, description: "Piedras alrededor completo" },
+  { id: "media_churumbela", name: "Media churumbela", defaultStones: 7, description: "Medio anillo con piedras" },
+  { id: "anillo_coctel", name: "Anillo cóctel", defaultStones: 1, description: "Piedra central grande" },
+  { id: "aretes", name: "Aretes (par)", defaultStones: 2, description: "Una piedra por arete" },
+  { id: "collar", name: "Collar / Gargantilla", defaultStones: 1, description: "Piedra central o pendiente" },
+  { id: "pulsera_tennis", name: "Pulsera tennis", defaultStones: 30, description: "Múltiples piedras en línea" },
+  { id: "dije", name: "Dije / Pendiente", defaultStones: 1, description: "Piedra central" },
+  { id: "argollas_matrimonio", name: "Argollas de matrimonio", defaultStones: 0, description: "Generalmente sin piedra" },
+  { id: "otro", name: "Otro", defaultStones: 1, description: "Personalizable" },
+];
 
 // ── Cut definitions ──
 interface DimensionDef {
