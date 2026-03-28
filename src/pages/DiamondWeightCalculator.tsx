@@ -44,6 +44,7 @@ interface CutDef {
   name: string;
   factor: number;
   isRound: boolean;
+  depthRatio: number; // typical depth / primary dimension ratio
   dimensions: DimensionDef[];
   note?: string;
 }
