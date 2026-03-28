@@ -87,6 +87,12 @@ export function MaterialCard({ material, onEdit, onDelete }: MaterialCardProps) 
           {material.categoria && (
             <Badge variant="secondary" className="text-xs">{material.categoria}</Badge>
           )}
+          {(material as any).tipo_material && ["oro", "plata", "platino"].includes((material as any).tipo_material) && (material as any).kilataje && (
+            <Badge variant="default" className="text-xs gap-1">
+              <RotateCw className="h-3 w-3" />
+              API
+            </Badge>
+          )}
           {(material as any).tipo_material && (
             <Badge variant="default" className="text-xs capitalize">{(material as any).tipo_material}</Badge>
           )}

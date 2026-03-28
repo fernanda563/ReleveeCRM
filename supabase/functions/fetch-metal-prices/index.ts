@@ -6,7 +6,6 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// Purity factors for each metal type + karat/purity
 const PURITY_MAP: Record<string, Record<string, number>> = {
   oro: {
     "24k": 1.0,
@@ -23,11 +22,16 @@ const PURITY_MAP: Record<string, Record<string, number>> = {
   },
 };
 
-// Metals.dev API metal keys
 const METAL_API_KEYS: Record<string, string> = {
   oro: "gold",
   plata: "silver",
   platino: "platinum",
+};
+
+const METAL_LABELS: Record<string, string> = {
+  oro: "Oro",
+  plata: "Plata",
+  platino: "Platino",
 };
 
 Deno.serve(async (req) => {
@@ -44,7 +48,6 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Fetch prices from Metals.dev (USD per gram)
     const apiUrl = `https://api.metals.dev/v1/latest?api_key=${apiKey}&currency=USD&unit=g`;
     const apiRes = await fetch(apiUrl);
     if (!apiRes.ok) {
@@ -64,13 +67,29 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Create supabase admin client
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // Fetch all metal materials
+    // Build price_table with all purities
+    const priceTable: Array<{ metal: string; metal_key: string; pureza: string; factor: number; precio_gramo: number }> = [];
+    for (const [metalKey, purities] of Object.entries(PURITY_MAP)) {
+      const apiMetalKey = METAL_API_KEYS[metalKey];
+      if (!apiMetalKey || !metals[apiMetalKey]) continue;
+      const basePrice = metals[apiMetalKey];
+      for (const [purity, factor] of Object.entries(purities)) {
+        priceTable.push({
+          metal: METAL_LABELS[metalKey],
+          metal_key: metalKey,
+          pureza: purity,
+          factor,
+          precio_gramo: Math.round(basePrice * factor * 100) / 100,
+        });
+      }
+    }
+
+    // Fetch and update materials
     const { data: materials, error: fetchErr } = await supabase
       .from("materials")
       .select("id, nombre, tipo_material, kilataje, costo_directo")
@@ -90,7 +109,7 @@ Deno.serve(async (req) => {
       const metalKey = METAL_API_KEYS[mat.tipo_material];
       if (!metalKey || !metals[metalKey]) continue;
 
-      const basePrice = metals[metalKey]; // USD per gram
+      const basePrice = metals[metalKey];
       const purities = PURITY_MAP[mat.tipo_material];
       if (!purities || !mat.kilataje) continue;
 
@@ -116,16 +135,16 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Update last sync timestamp in system_settings
+    // Save last sync timestamp
     const now = new Date().toISOString();
-    const { data: existing } = await supabase
+    const { data: existingSync } = await supabase
       .from("system_settings")
       .select("id")
       .eq("key", "metal_price_last_sync")
       .eq("category", "metals")
       .maybeSingle();
 
-    if (existing) {
+    if (existingSync) {
       await supabase
         .from("system_settings")
         .update({ value: { value: now } })
@@ -133,11 +152,26 @@ Deno.serve(async (req) => {
     } else {
       await supabase
         .from("system_settings")
-        .insert({
-          key: "metal_price_last_sync",
-          category: "metals",
-          value: { value: now },
-        });
+        .insert({ key: "metal_price_last_sync", category: "metals", value: { value: now } });
+    }
+
+    // Save price_table to system_settings
+    const { data: existingTable } = await supabase
+      .from("system_settings")
+      .select("id")
+      .eq("key", "metal_price_table")
+      .eq("category", "metals")
+      .maybeSingle();
+
+    if (existingTable) {
+      await supabase
+        .from("system_settings")
+        .update({ value: { value: priceTable } })
+        .eq("key", "metal_price_table");
+    } else {
+      await supabase
+        .from("system_settings")
+        .insert({ key: "metal_price_table", category: "metals", value: { value: priceTable } });
     }
 
     return new Response(
@@ -145,6 +179,7 @@ Deno.serve(async (req) => {
         success: true,
         updated_count: updates.length,
         updates,
+        price_table: priceTable,
         api_prices: {
           gold_per_gram_usd: metals.gold,
           silver_per_gram_usd: metals.silver,

@@ -11,6 +11,8 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { RefreshCw } from "lucide-react";
 import { calcularPrecioMaterial } from "@/lib/material-utils";
 import {
   getTiposMaterialPorCategoria,
@@ -98,6 +100,12 @@ export function MaterialDialog({
 }: MaterialDialogProps) {
   const [form, setForm] = useState<MaterialFormData>(defaultForm);
   const isEditing = !!initialData;
+
+  // Determine if this is an API-managed metal material
+  const isAutoMetal = isEditing &&
+    form.categoria === "Metales" &&
+    ["oro", "plata", "platino"].includes(form.tipo_material) &&
+    !!form.kilataje;
 
   useEffect(() => {
     if (open) {
@@ -201,12 +209,23 @@ export function MaterialDialog({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* API-managed notice */}
+          {isAutoMetal && (
+            <Alert className="border-primary/30 bg-primary/5">
+              <RefreshCw className="h-4 w-4 text-primary" />
+              <AlertDescription className="text-xs">
+                El costo directo de este material se actualiza automáticamente desde la API de precios de metales. Solo puedes modificar el margen, redondeo y notas.
+              </AlertDescription>
+            </Alert>
+          )}
+
           {/* Categoría */}
           <div className="space-y-2">
             <Label>Categoría *</Label>
             <Select
               value={form.categoria || "__none__"}
               onValueChange={handleCategoriaChange}
+              disabled={isAutoMetal}
             >
               <SelectTrigger><SelectValue placeholder="Selecciona una categoría" /></SelectTrigger>
               <SelectContent>
@@ -224,6 +243,7 @@ export function MaterialDialog({
               <Select
                 value={form.tipo_material || "__none__"}
                 onValueChange={handleTipoMaterialChange}
+                disabled={isAutoMetal}
               >
                 <SelectTrigger><SelectValue placeholder="Selecciona tipo" /></SelectTrigger>
                 <SelectContent>
@@ -243,6 +263,7 @@ export function MaterialDialog({
               <Select
                 value={form.kilataje || "__none__"}
                 onValueChange={handleKilatajeChange}
+                disabled={isAutoMetal}
               >
                 <SelectTrigger><SelectValue placeholder="Seleccionar..." /></SelectTrigger>
                 <SelectContent>
@@ -262,6 +283,7 @@ export function MaterialDialog({
               <Select
                 value={form.color || "__none__"}
                 onValueChange={handleColorChange}
+                disabled={isAutoMetal}
               >
                 <SelectTrigger><SelectValue placeholder="Seleccionar..." /></SelectTrigger>
                 <SelectContent>
@@ -284,7 +306,7 @@ export function MaterialDialog({
           {/* Unidad de medida */}
           <div className="space-y-2">
             <Label>Unidad de medida</Label>
-            <Select value={form.unidad_medida} onValueChange={(v) => update("unidad_medida", v)}>
+            <Select value={form.unidad_medida} onValueChange={(v) => update("unidad_medida", v)} disabled={isAutoMetal}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="gramo">Gramo</SelectItem>
@@ -307,7 +329,11 @@ export function MaterialDialog({
               value={form.costo_directo}
               onChange={(e) => update("costo_directo", formatCurrency(e.target.value))}
               placeholder="$0.00"
+              disabled={isAutoMetal}
             />
+            {isAutoMetal && (
+              <p className="text-xs text-muted-foreground">Este valor se actualiza automáticamente vía API</p>
+            )}
           </div>
 
           {/* Tipo de margen */}
