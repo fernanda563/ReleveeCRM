@@ -250,7 +250,9 @@ export function MaterialDialog({
             <Alert className="border-primary/30 bg-primary/5">
               <RefreshCw className="h-4 w-4 text-primary" />
               <AlertDescription className="text-xs">
-                El costo directo de este material se actualiza automáticamente desde la API de precios de metales. Solo puedes modificar el margen, redondeo y notas.
+                {isEditing
+                  ? "El costo directo de este material se actualiza automáticamente desde la API de precios de metales. Solo puedes modificar el margen, redondeo y notas."
+                  : "El costo directo se asignará automáticamente desde la API de precios de metales. Solo podrás modificar el margen, redondeo y notas."}
               </AlertDescription>
             </Alert>
           )}
