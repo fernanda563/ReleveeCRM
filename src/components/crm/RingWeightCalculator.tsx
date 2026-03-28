@@ -232,13 +232,13 @@ export default function RingWeightCalculator({ onUseWeight, alloy: controlledAll
               <Input
                 type="number"
                 step={0.1}
-                min={2}
+                min={1}
                 max={8}
                 value={width}
                 onChange={(e) => {
                   const v = parseFloat(e.target.value);
                   if (!isNaN(v)) {
-                    setWidth(Math.round(Math.min(8, Math.max(2, v)) * 10) / 10);
+                    setWidth(Math.round(Math.min(8, Math.max(1, v)) * 10) / 10);
                   }
                 }}
                 className="w-20 h-8 text-center text-sm"
@@ -248,13 +248,13 @@ export default function RingWeightCalculator({ onUseWeight, alloy: controlledAll
           </div>
           <Slider
             value={[width]}
-            min={2}
+            min={1}
             max={8}
             step={0.1}
             onValueChange={([v]) => setWidth(Math.round(v * 10) / 10)}
           />
           <div className="flex justify-between text-xs text-muted-foreground">
-            <span>2 mm</span><span>8 mm</span>
+            <span>1 mm</span><span>8 mm</span>
           </div>
         </div>
 
