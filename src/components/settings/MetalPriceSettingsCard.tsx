@@ -9,6 +9,14 @@ import { useToast } from "@/hooks/use-toast";
 import { format, formatDistanceToNow, addHours, addDays } from "date-fns";
 import { es } from "date-fns/locale";
 
+interface PriceRow {
+  metal: string;
+  metal_key: string;
+  pureza: string;
+  factor: number;
+  precio_gramo: number;
+}
+
 const FREQUENCY_OPTIONS = [
   { value: "1h", label: "Cada hora" },
   { value: "6h", label: "Cada 6 horas" },
@@ -18,24 +26,19 @@ const FREQUENCY_OPTIONS = [
 ];
 
 const FREQUENCY_HOURS: Record<string, number> = {
-  "1h": 1,
-  "6h": 6,
-  "12h": 12,
-  "24h": 24,
-  "semanal": 168,
+  "1h": 1, "6h": 6, "12h": 12, "24h": 24, "semanal": 168,
 };
 
 export function MetalPriceSettingsCard() {
   const [frequency, setFrequency] = useState("24h");
   const [lastSync, setLastSync] = useState<string | null>(null);
+  const [priceTable, setPriceTable] = useState<PriceRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [updatingFreq, setUpdatingFreq] = useState(false);
   const { toast } = useToast();
 
-  useEffect(() => {
-    fetchSettings();
-  }, []);
+  useEffect(() => { fetchSettings(); }, []);
 
   const fetchSettings = async () => {
     try {
@@ -50,6 +53,7 @@ export function MetalPriceSettingsCard() {
           const val = raw && typeof raw === "object" && "value" in raw ? raw.value : raw;
           if (row.key === "metal_price_frequency" && val) setFrequency(val);
           if (row.key === "metal_price_last_sync" && val) setLastSync(val);
+          if (row.key === "metal_price_table" && Array.isArray(val)) setPriceTable(val);
         }
       }
     } catch (err) {
@@ -63,7 +67,6 @@ export function MetalPriceSettingsCard() {
     setSyncing(true);
     try {
       const { data, error } = await supabase.functions.invoke("fetch-metal-prices");
-
       if (error) throw error;
 
       toast({
@@ -72,6 +75,7 @@ export function MetalPriceSettingsCard() {
       });
 
       setLastSync(data.synced_at);
+      if (Array.isArray(data.price_table)) setPriceTable(data.price_table);
     } catch (err: any) {
       toast({
         title: "Error",
@@ -86,10 +90,9 @@ export function MetalPriceSettingsCard() {
   const handleFrequencyChange = async (newFrequency: string) => {
     setUpdatingFreq(true);
     try {
-      const { data, error } = await supabase.functions.invoke("update-metal-price-schedule", {
+      const { error } = await supabase.functions.invoke("update-metal-price-schedule", {
         body: { frequency: newFrequency },
       });
-
       if (error) throw error;
 
       setFrequency(newFrequency);
@@ -117,6 +120,12 @@ export function MetalPriceSettingsCard() {
   };
 
   const nextSync = getNextSync();
+
+  // Group price table by metal
+  const grouped = priceTable.reduce<Record<string, PriceRow[]>>((acc, row) => {
+    (acc[row.metal] = acc[row.metal] || []).push(row);
+    return acc;
+  }, {});
 
   if (loading) {
     return (
@@ -160,19 +169,11 @@ export function MetalPriceSettingsCard() {
           <label className="text-sm font-medium text-foreground">
             Frecuencia de actualización
           </label>
-          <Select
-            value={frequency}
-            onValueChange={handleFrequencyChange}
-            disabled={updatingFreq}
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
+          <Select value={frequency} onValueChange={handleFrequencyChange} disabled={updatingFreq}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
               {FREQUENCY_OPTIONS.map((opt) => (
-                <SelectItem key={opt.value} value={opt.value}>
-                  {opt.label}
-                </SelectItem>
+                <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -186,9 +187,7 @@ export function MetalPriceSettingsCard() {
               Última actualización
             </div>
             <p className="text-sm font-medium text-foreground">
-              {lastSync
-                ? formatDistanceToNow(new Date(lastSync), { addSuffix: true, locale: es })
-                : "Nunca"}
+              {lastSync ? formatDistanceToNow(new Date(lastSync), { addSuffix: true, locale: es }) : "Nunca"}
             </p>
             {lastSync && (
               <p className="text-xs text-muted-foreground">
@@ -196,16 +195,13 @@ export function MetalPriceSettingsCard() {
               </p>
             )}
           </div>
-
           <div className="rounded-lg border bg-muted/30 p-3 space-y-1">
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <RefreshCw className="h-3.5 w-3.5" />
               Próxima actualización
             </div>
             <p className="text-sm font-medium text-foreground">
-              {nextSync
-                ? formatDistanceToNow(nextSync, { addSuffix: true, locale: es })
-                : "Pendiente"}
+              {nextSync ? formatDistanceToNow(nextSync, { addSuffix: true, locale: es }) : "Pendiente"}
             </p>
             {nextSync && (
               <p className="text-xs text-muted-foreground">
@@ -215,7 +211,34 @@ export function MetalPriceSettingsCard() {
           </div>
         </div>
 
-        {/* Info about what gets updated */}
+        {/* Price table by purity */}
+        {priceTable.length > 0 && (
+          <div className="space-y-3">
+            <label className="text-sm font-medium text-foreground">Precios por pureza (USD/g)</label>
+            {Object.entries(grouped).map(([metal, rows]) => (
+              <div key={metal} className="rounded-lg border overflow-hidden">
+                <div className="bg-muted/50 px-3 py-1.5">
+                  <span className="text-xs font-semibold text-foreground">{metal}</span>
+                </div>
+                <div className="divide-y">
+                  {rows.map((r) => (
+                    <div key={`${r.metal_key}-${r.pureza}`} className="flex items-center justify-between px-3 py-2 text-sm">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="text-xs">{r.pureza}</Badge>
+                        <span className="text-xs text-muted-foreground">×{r.factor}</span>
+                      </div>
+                      <span className="font-medium text-foreground">
+                        ${r.precio_gramo.toLocaleString("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Info */}
         <div className="flex items-start gap-2 rounded-lg bg-muted/30 border p-3">
           <AlertCircle className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
           <p className="text-xs text-muted-foreground">
@@ -225,12 +248,7 @@ export function MetalPriceSettingsCard() {
         </div>
 
         {/* Manual sync button */}
-        <Button
-          onClick={handleSyncNow}
-          disabled={syncing}
-          className="w-full"
-          variant="outline"
-        >
+        <Button onClick={handleSyncNow} disabled={syncing} className="w-full" variant="outline">
           <RefreshCw className={`h-4 w-4 mr-2 ${syncing ? "animate-spin" : ""}`} />
           {syncing ? "Actualizando precios..." : "Actualizar ahora"}
         </Button>
