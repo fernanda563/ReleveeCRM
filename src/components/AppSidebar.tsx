@@ -72,6 +72,7 @@ const menuSections = [
   {
     label: "Calculadoras",
     items: [
+      { title: "Peso de Pieza", url: "/calculators/piece-weight", icon: Package, adminOnly: false },
       { title: "Peso de Montura", url: "/calculators/ring-weight", icon: Scale, adminOnly: false },
       { title: "Peso de Diamante", url: "/calculators/diamond-weight", icon: Gem, adminOnly: false },
     ],
