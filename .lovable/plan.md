@@ -1,55 +1,42 @@
 
 
-## Plan: Mostrar precios de metales en la tarjeta de configuración y bloquear edición de campos automáticos en materiales
+## Plan: Auto-detectar materiales con precio API durante la creación
 
-### Resumen
+### Problema
 
-Dos cambios principales:
-1. **MetalPriceSettingsCard**: Después de sincronizar, mostrar una tabla con los precios por gramo de cada metal y su desglose por pureza (los precios que la API devuelve y calcula).
-2. **MaterialDialog**: Cuando el material es de categoría "Metales" y tiene `tipo_material` en (oro, plata, platino), deshabilitar los campos de categoría, tipo de material, kilataje, color, unidad de medida y costo directo — ya que estos se actualizan automáticamente vía la API. Solo permitir editar margen, redondeo y notas.
+La lógica `isAutoMetal` actual requiere `isEditing` (línea 105), por lo que al crear un nuevo material de tipo oro/plata/platino, el formulario no bloquea los campos ni asigna automáticamente el costo desde la API. El usuario puede ingresar un costo manual que será sobreescrito en la próxima sincronización.
 
-### Cambios detallados
+### Solución
 
-**1. Edge Function `fetch-metal-prices` (modificación menor)**
+Eliminar la condición `isEditing` de `isAutoMetal` para que aplique tanto en creación como en edición. Cuando el usuario selecciona categoría "Metales" + tipo (oro/plata/platino) + kilataje, el formulario:
 
-Ya retorna `api_prices` con los precios base. Agregar al response un campo `price_table` con el desglose completo por pureza para que el frontend lo muestre:
+1. **Bloquea** los campos de costo directo y unidad de medida (igual que en edición)
+2. **Consulta** la tabla `metal_price_table` de `system_settings` para obtener el precio por gramo correspondiente a ese tipo+pureza y lo asigna automáticamente al campo `costo_directo`
+3. **Muestra** el aviso de que el costo se gestiona vía API
 
-```json
-{
-  "price_table": [
-    { "metal": "Oro", "pureza": "24k", "factor": 1.0, "precio_gramo": 95.23 },
-    { "metal": "Oro", "pureza": "18k", "factor": 0.75, "precio_gramo": 71.42 },
-    ...
-  ]
-}
+### Cambios en `src/components/materials/MaterialDialog.tsx`
+
+**1. Cambiar la condición `isAutoMetal`** (línea 105):
+```ts
+// Antes
+const isAutoMetal = isEditing && form.categoria === "Metales" && ...
+// Después
+const isAutoMetal = form.categoria === "Metales" &&
+  ["oro", "plata", "platino"].includes(form.tipo_material) &&
+  !!form.kilataje;
 ```
 
-Además, guardar este `price_table` en `system_settings` (key: `metal_price_table`, category: `metals`) para que la tarjeta pueda mostrarlo sin necesidad de volver a llamar a la API.
+**2. Cargar `price_table` de `system_settings`** al abrir el diálogo:
+- Fetch a `system_settings` donde `key = 'metal_price_table'`
+- Almacenar en estado local `priceTable`
 
-**2. MetalPriceSettingsCard**
+**3. Auto-asignar costo directo** cuando `isAutoMetal` cambia a `true`:
+- En un `useEffect` que observe `form.tipo_material`, `form.kilataje` y `priceTable`
+- Buscar en `priceTable` la entrada que coincida con el metal y pureza seleccionados
+- Asignar `form.costo_directo = formatCurrency(precio_gramo)` y `form.unidad_medida = "gramo"`
 
-- Cargar el `price_table` de `system_settings` al iniciar
-- Mostrar una tabla/grid con columnas: Metal, Pureza, Factor, Precio USD/g
-- Actualizar la tabla después de cada sincronización manual (usando el response de la edge function)
-- Agrupar visualmente por metal (Oro, Plata, Platino)
+**4. Ajustar el aviso** para que en modo creación diga algo como: "El costo directo se asignará automáticamente desde la API de precios de metales."
 
-**3. MaterialDialog — bloquear campos para metales con API**
-
-Determinar si el material es "automático" (categoría = "Metales" AND tipo_material IN ['oro', 'plata', 'platino'] AND tiene kilataje). Cuando es así:
-
-- Deshabilitar (`disabled`) los selects de: categoría, tipo de material, kilataje, color, unidad de medida
-- Deshabilitar el input de costo directo
-- Mostrar un aviso: "El costo directo de este material se actualiza automáticamente desde la API de precios de metales"
-- Dejar editables: tipo de margen, valor de margen, redondeo, múltiplo de redondeo, notas, activo
-
-**4. MaterialCard — indicador visual**
-
-Agregar un badge o icono sutil en las tarjetas de materiales con precio automático (ej. icono `RefreshCw` o badge "API") para que el usuario identifique cuáles se actualizan automáticamente.
-
-### Archivos modificados
-
-- `supabase/functions/fetch-metal-prices/index.ts` — agregar `price_table` al response y guardarlo en `system_settings`
-- `src/components/settings/MetalPriceSettingsCard.tsx` — mostrar tabla de precios por pureza
-- `src/components/materials/MaterialDialog.tsx` — deshabilitar campos para metales automáticos
-- `src/components/materials/MaterialCard.tsx` — badge indicador de precio automático
+### Archivo modificado
+- `src/components/materials/MaterialDialog.tsx`
 
