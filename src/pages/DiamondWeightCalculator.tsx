@@ -51,14 +51,14 @@ interface CutDef {
 
 const CUTS: CutDef[] = [
   {
-    id: "round", name: "Round", factor: 0.0061, isRound: true,
+    id: "round", name: "Round", factor: 0.0061, isRound: true, depthRatio: 0.615,
     dimensions: [
       { key: "diameter", label: "Diámetro", min: 2, max: 15, default: 6.5, hint: "Medir a lo ancho del filetín en el punto más amplio", style: "solid" },
       { key: "depth", label: "Profundidad", min: 1, max: 12, default: 4.0, hint: "Desde la tabla (arriba) hasta el culet (abajo)", style: "dashed" },
     ],
   },
   {
-    id: "princess", name: "Princess", factor: 0.0083, isRound: false,
+    id: "princess", name: "Princess", factor: 0.0083, isRound: false, depthRatio: 0.71,
     dimensions: [
       { key: "length", label: "Largo", min: 2, max: 15, default: 5.5, hint: "Lado más largo medido en el filetín", style: "solid" },
       { key: "width", label: "Ancho", min: 2, max: 15, default: 5.5, hint: "Lado más corto medido en el filetín", style: "dotted" },
@@ -66,7 +66,7 @@ const CUTS: CutDef[] = [
     ],
   },
   {
-    id: "oval", name: "Oval", factor: 0.0062, isRound: false,
+    id: "oval", name: "Oval", factor: 0.0062, isRound: false, depthRatio: 0.475,
     dimensions: [
       { key: "length", label: "Largo", min: 3, max: 20, default: 8.0, hint: "Eje mayor: de punta a punta", style: "solid" },
       { key: "width", label: "Ancho", min: 2, max: 15, default: 5.5, hint: "Eje menor: punto perpendicular más ancho", style: "dotted" },
@@ -74,7 +74,7 @@ const CUTS: CutDef[] = [
     ],
   },
   {
-    id: "marquise", name: "Marquise", factor: 0.00565, isRound: false,
+    id: "marquise", name: "Marquise", factor: 0.00565, isRound: false, depthRatio: 0.35,
     dimensions: [
       { key: "length", label: "Largo", min: 4, max: 25, default: 10.0, hint: "De punta a punta a lo largo del eje mayor", style: "solid" },
       { key: "width", label: "Ancho", min: 2, max: 12, default: 5.0, hint: "Punto más ancho perpendicular al largo", style: "dotted" },
@@ -82,7 +82,7 @@ const CUTS: CutDef[] = [
     ],
   },
   {
-    id: "pear", name: "Pear", factor: 0.0059, isRound: false,
+    id: "pear", name: "Pear", factor: 0.0059, isRound: false, depthRatio: 0.40,
     dimensions: [
       { key: "length", label: "Largo", min: 4, max: 20, default: 9.0, hint: "Desde la punta hasta la parte superior del extremo redondeado", style: "solid" },
       { key: "width", label: "Ancho", min: 3, max: 14, default: 5.5, hint: "Punto más ancho de la sección redondeada", style: "dotted" },
@@ -90,7 +90,7 @@ const CUTS: CutDef[] = [
     ],
   },
   {
-    id: "heart", name: "Heart", factor: 0.0059, isRound: false,
+    id: "heart", name: "Heart", factor: 0.0059, isRound: false, depthRatio: 0.60,
     dimensions: [
       { key: "length", label: "Largo", min: 4, max: 18, default: 8.0, hint: "Desde la punta inferior hasta el centro de la hendidura superior", style: "solid" },
       { key: "width", label: "Ancho", min: 4, max: 18, default: 8.0, hint: "De lóbulo a lóbulo en el punto más ancho", style: "dotted" },
@@ -98,7 +98,7 @@ const CUTS: CutDef[] = [
     ],
   },
   {
-    id: "cushion", name: "Cushion", factor: 0.0082, isRound: false,
+    id: "cushion", name: "Cushion", factor: 0.0082, isRound: false, depthRatio: 0.63,
     dimensions: [
       { key: "length", label: "Largo", min: 3, max: 18, default: 6.5, hint: "Lado más largo medido en el filetín", style: "solid" },
       { key: "width", label: "Ancho", min: 3, max: 15, default: 6.0, hint: "Lado más corto medido en el filetín", style: "dotted" },
@@ -106,7 +106,7 @@ const CUTS: CutDef[] = [
     ],
   },
   {
-    id: "emerald", name: "Emerald", factor: 0.0092, isRound: false,
+    id: "emerald", name: "Emerald", factor: 0.0092, isRound: false, depthRatio: 0.50,
     note: "Medir lados rectos, no esquinas cortadas",
     dimensions: [
       { key: "length", label: "Largo", min: 4, max: 22, default: 8.0, hint: "Lado largo del rectángulo medido en el filetín (no las esquinas)", style: "solid" },
@@ -115,7 +115,7 @@ const CUTS: CutDef[] = [
     ],
   },
   {
-    id: "radiant", name: "Radiant", factor: 0.0083, isRound: false,
+    id: "radiant", name: "Radiant", factor: 0.0083, isRound: false, depthRatio: 0.587,
     note: "Medir lados rectos, no esquinas cortadas",
     dimensions: [
       { key: "length", label: "Largo", min: 4, max: 18, default: 7.5, hint: "Lado recto más largo en el filetín — NO medir a través de las esquinas cortadas", style: "solid" },
@@ -124,7 +124,7 @@ const CUTS: CutDef[] = [
     ],
   },
   {
-    id: "asscher", name: "Asscher", factor: 0.0080, isRound: false,
+    id: "asscher", name: "Asscher", factor: 0.0080, isRound: false, depthRatio: 0.70,
     note: "Medir lados rectos, no esquinas cortadas",
     dimensions: [
       { key: "length", label: "Largo", min: 3, max: 16, default: 6.0, hint: "Un lado recto del octágono (entre dos esquinas cortadas)", style: "solid" },
