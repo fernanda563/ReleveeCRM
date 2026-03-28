@@ -132,7 +132,12 @@ export default function QuotationDialog({
   const [accessoryTypes, setAccessoryTypes] = useState<AccessoryType[]>([]);
   const [selectedClientId, setSelectedClientId] = useState(clientId || "");
   const [selectedType, setSelectedType] = useState("");
-  const [fechaEntrega, setFechaEntrega] = useState("");
+  const getDefaultEntrega = () => {
+    const d = new Date();
+    d.setDate(d.getDate() + 60);
+    return d.toISOString().split("T")[0];
+  };
+  const [fechaEntrega, setFechaEntrega] = useState(getDefaultEntrega());
   const getDefaultVigencia = () => {
     const d = new Date();
     d.setDate(d.getDate() + 7);
@@ -169,7 +174,7 @@ export default function QuotationDialog({
     setStep(0);
     setSelectedClientId(clientId || "");
     setSelectedType("");
-    setFechaEntrega("");
+    setFechaEntrega(getDefaultEntrega());
     setFechaVigencia(getDefaultVigencia());
     setObservaciones("");
     setMaterialItems([]);
