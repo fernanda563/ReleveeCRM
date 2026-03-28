@@ -46,6 +46,7 @@ export default function SystemSettings() {
         <NotificationSettingsCard />
         <RegionalSettingsCard />
         <AppearanceSettingsCard />
+        <MetalPriceSettingsCard />
       </div>
     </div>
   );
