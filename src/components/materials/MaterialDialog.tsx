@@ -100,13 +100,30 @@ export function MaterialDialog({
   open, onOpenChange, onSubmit, initialData, existingCategories, loading,
 }: MaterialDialogProps) {
   const [form, setForm] = useState<MaterialFormData>(defaultForm);
+  const [priceTable, setPriceTable] = useState<any[]>([]);
   const isEditing = !!initialData;
 
-  // Determine if this is an API-managed metal material
-  const isAutoMetal = isEditing &&
-    form.categoria === "Metales" &&
+  // Determine if this is an API-managed metal material (works for both create and edit)
+  const isAutoMetal = form.categoria === "Metales" &&
     ["oro", "plata", "platino"].includes(form.tipo_material) &&
     !!form.kilataje;
+
+  // Load price table from system_settings
+  useEffect(() => {
+    if (open) {
+      supabase
+        .from("system_settings")
+        .select("value")
+        .eq("key", "metal_price_table")
+        .eq("category", "metals")
+        .maybeSingle()
+        .then(({ data }) => {
+          if (data?.value && Array.isArray(data.value)) {
+            setPriceTable(data.value as any[]);
+          }
+        });
+    }
+  }, [open]);
 
   useEffect(() => {
     if (open) {
@@ -132,6 +149,24 @@ export function MaterialDialog({
       setForm(data);
     }
   }, [open, initialData]);
+
+  // Auto-assign cost from price table when auto-metal is detected
+  useEffect(() => {
+    if (!isAutoMetal || priceTable.length === 0) return;
+
+    const metalMap: Record<string, string> = { oro: "Oro", plata: "Plata", platino: "Platino" };
+    const metalLabel = metalMap[form.tipo_material];
+    const match = priceTable.find(
+      (row: any) => row.metal === metalLabel && row.pureza === form.kilataje
+    );
+    if (match) {
+      setForm((prev) => ({
+        ...prev,
+        costo_directo: formatCurrency(String(match.precio_gramo.toFixed(2))),
+        unidad_medida: "gramo",
+      }));
+    }
+  }, [form.tipo_material, form.kilataje, priceTable, isAutoMetal]);
 
   const costoNumerico = parseFloat(unformatCurrency(form.costo_directo)) || 0;
   const margenNumerico = parseFloat(unformatPercentage(form.valor_margen)) || 0;
