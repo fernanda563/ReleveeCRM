@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Coins, RefreshCw, Clock, CheckCircle2, AlertCircle } from "lucide-react";
+import { Coins, RefreshCw, Clock, CheckCircle2, AlertCircle, ArrowRightLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format, formatDistanceToNow, addHours, addDays } from "date-fns";
@@ -15,6 +15,7 @@ interface PriceRow {
   pureza: string;
   factor: number;
   precio_gramo: number;
+  precio_gramo_mxn: number;
 }
 
 const FREQUENCY_OPTIONS = [
@@ -33,6 +34,7 @@ export function MetalPriceSettingsCard() {
   const [frequency, setFrequency] = useState("24h");
   const [lastSync, setLastSync] = useState<string | null>(null);
   const [priceTable, setPriceTable] = useState<PriceRow[]>([]);
+  const [exchangeRate, setExchangeRate] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [updatingFreq, setUpdatingFreq] = useState(false);
@@ -54,6 +56,9 @@ export function MetalPriceSettingsCard() {
           if (row.key === "metal_price_frequency" && val) setFrequency(val);
           if (row.key === "metal_price_last_sync" && val) setLastSync(val);
           if (row.key === "metal_price_table" && Array.isArray(val)) setPriceTable(val);
+          if (row.key === "metal_price_exchange_rate" && val && typeof val === "object") {
+            setExchangeRate(val.usd_mxn ?? null);
+          }
         }
       }
     } catch (err) {
@@ -76,6 +81,7 @@ export function MetalPriceSettingsCard() {
 
       setLastSync(data.synced_at);
       if (Array.isArray(data.price_table)) setPriceTable(data.price_table);
+      if (data.exchange_rate?.usd_mxn) setExchangeRate(data.exchange_rate.usd_mxn);
     } catch (err: any) {
       toast({
         title: "Error",
@@ -121,7 +127,6 @@ export function MetalPriceSettingsCard() {
 
   const nextSync = getNextSync();
 
-  // Group price table by metal
   const grouped = priceTable.reduce<Record<string, PriceRow[]>>((acc, row) => {
     (acc[row.metal] = acc[row.metal] || []).push(row);
     return acc;
@@ -179,6 +184,19 @@ export function MetalPriceSettingsCard() {
           </Select>
         </div>
 
+        {/* Exchange rate info */}
+        {exchangeRate && (
+          <div className="flex items-center gap-2 rounded-lg border bg-muted/30 p-3">
+            <ArrowRightLeft className="h-4 w-4 text-primary shrink-0" />
+            <div>
+              <p className="text-sm font-medium text-foreground">
+                1 USD = ${exchangeRate.toLocaleString("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 4 })} MXN
+              </p>
+              <p className="text-xs text-muted-foreground">Tipo de cambio utilizado en la última sincronización</p>
+            </div>
+          </div>
+        )}
+
         {/* Status info */}
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-lg border bg-muted/30 p-3 space-y-1">
@@ -214,11 +232,15 @@ export function MetalPriceSettingsCard() {
         {/* Price table by purity */}
         {priceTable.length > 0 && (
           <div className="space-y-3">
-            <label className="text-sm font-medium text-foreground">Precios por pureza (USD/g)</label>
+            <label className="text-sm font-medium text-foreground">Precios por pureza</label>
             {Object.entries(grouped).map(([metal, rows]) => (
               <div key={metal} className="rounded-lg border overflow-hidden">
-                <div className="bg-muted/50 px-3 py-1.5">
+                <div className="bg-muted/50 px-3 py-1.5 flex items-center justify-between">
                   <span className="text-xs font-semibold text-foreground">{metal}</span>
+                  <div className="flex gap-4 text-xs text-muted-foreground">
+                    <span className="w-20 text-right">USD/g</span>
+                    <span className="w-24 text-right">MXN/g</span>
+                  </div>
                 </div>
                 <div className="divide-y">
                   {rows.map((r) => (
@@ -227,9 +249,14 @@ export function MetalPriceSettingsCard() {
                         <Badge variant="outline" className="text-xs">{r.pureza}</Badge>
                         <span className="text-xs text-muted-foreground">×{r.factor}</span>
                       </div>
-                      <span className="font-medium text-foreground">
-                        ${r.precio_gramo.toLocaleString("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                      </span>
+                      <div className="flex gap-4">
+                        <span className="w-20 text-right text-muted-foreground">
+                          ${r.precio_gramo.toLocaleString("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </span>
+                        <span className="w-24 text-right font-medium text-foreground">
+                          ${(r.precio_gramo_mxn ?? 0).toLocaleString("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </span>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -242,8 +269,8 @@ export function MetalPriceSettingsCard() {
         <div className="flex items-start gap-2 rounded-lg bg-muted/30 border p-3">
           <AlertCircle className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
           <p className="text-xs text-muted-foreground">
-            Se actualizan automáticamente los materiales de categoría "Metales" con tipo oro, plata o platino.
-            Los precios se obtienen en USD por gramo y se ajustan según la pureza (24k, 18k, 14k, 10k, 925, 950).
+            Los precios se obtienen en USD y se convierten a MXN usando el tipo de cambio actual.
+            Los materiales en el catálogo se almacenan en pesos mexicanos (MXN).
           </p>
         </div>
 

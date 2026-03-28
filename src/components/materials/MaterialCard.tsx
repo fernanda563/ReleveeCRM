@@ -113,7 +113,7 @@ export function MaterialCard({ material, onEdit, onDelete }: MaterialCardProps) 
           <div className="space-y-1">
             <p className="text-xs text-muted-foreground">Costo directo</p>
             <p className="text-sm font-medium">
-              ${material.costo_directo.toLocaleString("es-MX", { minimumFractionDigits: 2 })} / {unidadLabel}
+              ${material.costo_directo.toLocaleString("es-MX", { minimumFractionDigits: 2 })} MXN / {unidadLabel}
             </p>
           </div>
           <div className="space-y-1">

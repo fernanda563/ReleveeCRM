@@ -160,9 +160,10 @@ export function MaterialDialog({
       (row: any) => row.metal === metalLabel && row.pureza === form.kilataje
     );
     if (match) {
+      const mxnPrice = match.precio_gramo_mxn ?? match.precio_gramo;
       setForm((prev) => ({
         ...prev,
-        costo_directo: formatCurrency(String(match.precio_gramo.toFixed(2))),
+        costo_directo: formatCurrency(String(mxnPrice.toFixed(2))),
         unidad_medida: "gramo",
       }));
     }
