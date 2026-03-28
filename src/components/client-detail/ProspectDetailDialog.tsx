@@ -21,7 +21,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
-import { Gem, DollarSign, Calendar, Trash2, CalendarIcon } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Gem, DollarSign, Calendar, Trash2, CalendarIcon, Loader2 } from "lucide-react";
 import { generateProspectTitle } from "./prospect-utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -43,10 +44,22 @@ interface Prospect {
   estilo_anillo: string | null;
   importe_previsto: number | null;
   fecha_entrega_deseada: string | null;
+  fecha_vigencia?: string | null;
   estado: string;
   observaciones: string | null;
   created_at: string;
   updated_at: string;
+}
+
+interface ProspectItem {
+  id: string;
+  tipo: string;
+  referencia_id: string;
+  cantidad: number;
+  costo_unitario: number;
+  precio_unitario: number;
+  notas: string | null;
+  nombre?: string;
 }
 
 interface ProspectDetailDialogProps {
@@ -69,23 +82,85 @@ export const ProspectDetailDialog = ({
   // Edición de proyecto
   const [isEditing, setIsEditing] = React.useState(initialEditMode);
   const [showDeleteDialog, setShowDeleteDialog] = React.useState(false);
-  const [estado, setEstado] = React.useState<string>(prospect.estado);
-  const [tipoAccesorio, setTipoAccesorio] = React.useState<string>(prospect.tipo_accesorio || "");
-  const [subtipoAccesorio, setSubtipoAccesorio] = React.useState<string>(prospect.subtipo_accesorio || "");
-  const [tipoMetal, setTipoMetal] = React.useState<string>(prospect.metal_tipo || "");
-  const [colorOro, setColorOro] = React.useState<string>(prospect.color_oro || "");
-  const [purezaOro, setPurezaOro] = React.useState<string>(prospect.pureza_oro || "");
-  const [incluyePiedra, setIncluyePiedra] = React.useState<string>(prospect.incluye_piedra || "");
-  const [tipoPiedra, setTipoPiedra] = React.useState<string>(prospect.tipo_piedra || "");
-  const [largoAprox, setLargoAprox] = React.useState<string>(prospect.largo_aprox || "");
-  const [estiloAnillo, setEstiloAnillo] = React.useState<string>(prospect.estilo_anillo || "");
+  const [estado, setEstado] = React.useState<string>(prospect?.estado || "activo");
+  const [tipoAccesorio, setTipoAccesorio] = React.useState<string>(prospect?.tipo_accesorio || "");
+  const [subtipoAccesorio, setSubtipoAccesorio] = React.useState<string>(prospect?.subtipo_accesorio || "");
+  const [tipoMetal, setTipoMetal] = React.useState<string>(prospect?.metal_tipo || "");
+  const [colorOro, setColorOro] = React.useState<string>(prospect?.color_oro || "");
+  const [purezaOro, setPurezaOro] = React.useState<string>(prospect?.pureza_oro || "");
+  const [incluyePiedra, setIncluyePiedra] = React.useState<string>(prospect?.incluye_piedra || "");
+  const [tipoPiedra, setTipoPiedra] = React.useState<string>(prospect?.tipo_piedra || "");
+  const [largoAprox, setLargoAprox] = React.useState<string>(prospect?.largo_aprox || "");
+  const [estiloAnillo, setEstiloAnillo] = React.useState<string>(prospect?.estilo_anillo || "");
   const [importePrevisto, setImportePrevisto] = React.useState<string>(
-    prospect.importe_previsto !== null ? String(prospect.importe_previsto) : ""
+    prospect?.importe_previsto !== null && prospect?.importe_previsto !== undefined ? String(prospect.importe_previsto) : ""
   );
   const [fechaEntrega, setFechaEntrega] = React.useState<string>(
-    prospect.fecha_entrega_deseada ? prospect.fecha_entrega_deseada : ""
+    prospect?.fecha_entrega_deseada ? prospect.fecha_entrega_deseada : ""
   );
-  const [observaciones, setObservaciones] = React.useState<string>(prospect.observaciones || "");
+  const [observaciones, setObservaciones] = React.useState<string>(prospect?.observaciones || "");
+
+  // Prospect items
+  const [items, setItems] = React.useState<ProspectItem[]>([]);
+  const [loadingItems, setLoadingItems] = React.useState(false);
+
+  // Fetch prospect items when dialog opens
+  React.useEffect(() => {
+    if (open && prospect?.id) {
+      fetchProspectItems();
+    } else {
+      setItems([]);
+    }
+  }, [open, prospect?.id]);
+
+  const fetchProspectItems = async () => {
+    if (!prospect?.id) return;
+    setLoadingItems(true);
+    try {
+      // Fetch all prospect items
+      const { data: itemsData, error: itemsError } = await supabase
+        .from("prospect_items")
+        .select("*")
+        .eq("prospect_id", prospect.id);
+
+      if (itemsError) throw itemsError;
+      if (!itemsData || itemsData.length === 0) {
+        setItems([]);
+        setLoadingItems(false);
+        return;
+      }
+
+      // Separate by type
+      const materialIds = itemsData.filter(i => i.tipo === "material").map(i => i.referencia_id);
+      const conceptIds = itemsData.filter(i => i.tipo === "mano_de_obra").map(i => i.referencia_id);
+
+      // Fetch names in parallel
+      const [materialsRes, conceptsRes] = await Promise.all([
+        materialIds.length > 0
+          ? supabase.from("materials").select("id, nombre").in("id", materialIds)
+          : Promise.resolve({ data: [], error: null }),
+        conceptIds.length > 0
+          ? supabase.from("work_concepts").select("id, nombre").in("id", conceptIds)
+          : Promise.resolve({ data: [], error: null }),
+      ]);
+
+      const materialNames = new Map((materialsRes.data || []).map(m => [m.id, m.nombre]));
+      const conceptNames = new Map((conceptsRes.data || []).map(c => [c.id, c.nombre]));
+
+      const enriched: ProspectItem[] = itemsData.map(item => ({
+        ...item,
+        nombre: item.tipo === "material"
+          ? materialNames.get(item.referencia_id) || "Material desconocido"
+          : conceptNames.get(item.referencia_id) || "Concepto desconocido",
+      }));
+
+      setItems(enriched);
+    } catch (error) {
+      console.error("Error fetching prospect items:", error);
+    } finally {
+      setLoadingItems(false);
+    }
+  };
 
   // Reset all state when prospect or dialog changes
   React.useEffect(() => {
@@ -108,6 +183,7 @@ export const ProspectDetailDialog = ({
   }, [open, prospect, initialEditMode]);
 
   const handleCancel = () => {
+    if (!prospect) return;
     setIsEditing(false);
     setEstado(prospect.estado);
     setTipoAccesorio(prospect.tipo_accesorio || "");
@@ -125,6 +201,7 @@ export const ProspectDetailDialog = ({
   };
 
   const handleDelete = async () => {
+    if (!prospect) return;
     const { error } = await supabase
       .from("prospects")
       .delete()
@@ -145,6 +222,7 @@ export const ProspectDetailDialog = ({
   };
 
   const handleSave = async () => {
+    if (!prospect) return;
     const updates: any = {
       estado,
       tipo_accesorio: tipoAccesorio || null,
@@ -159,11 +237,8 @@ export const ProspectDetailDialog = ({
       observaciones: observaciones || null,
     };
 
-    // Convertir importe (remove formatting)
     const importeNum = importePrevisto.trim() === "" ? null : Number(importePrevisto.replace(/[$,]/g, ""));
     updates.importe_previsto = importeNum;
-
-    // Fecha
     updates.fecha_entrega_deseada = fechaEntrega || null;
 
     const { data, error } = await supabase
@@ -188,8 +263,8 @@ export const ProspectDetailDialog = ({
   };
 
 
-  const formatCurrency = (amount: number | null) => {
-    if (!amount) return "N/A";
+  const formatCurrency = (amount: number | null | undefined) => {
+    if (amount === null || amount === undefined) return "—";
     return new Intl.NumberFormat("es-MX", {
       style: "currency",
       currency: "MXN",
@@ -210,8 +285,8 @@ export const ProspectDetailDialog = ({
       : `$${formattedInteger}`;
   };
 
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return "N/A";
+  const formatDate = (dateString: string | null | undefined) => {
+    if (!dateString) return "—";
     return new Date(dateString).toLocaleDateString("es-MX", {
       year: "numeric",
       month: "long",
@@ -222,17 +297,23 @@ export const ProspectDetailDialog = ({
   const getStatusColor = (estado: string) => {
     switch (estado) {
       case "activo":
-        return "bg-success/10 text-success";
+        return "bg-foreground/10 text-foreground";
       case "convertido":
-        return "bg-primary/10 text-primary";
+        return "bg-foreground/20 text-foreground";
       case "perdido":
-        return "bg-destructive/10 text-destructive";
+        return "bg-muted text-muted-foreground";
       default:
         return "bg-muted";
     }
   };
 
   if (!prospect) return null;
+
+  const materialItems = items.filter(i => i.tipo === "material");
+  const laborItems = items.filter(i => i.tipo === "mano_de_obra");
+
+  const totalCosto = items.reduce((sum, i) => sum + i.costo_unitario * i.cantidad, 0);
+  const totalPrecio = items.reduce((sum, i) => sum + i.precio_unitario * i.cantidad, 0);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -293,82 +374,83 @@ export const ProspectDetailDialog = ({
                 </SelectContent>
               </Select>
             ) : (
-              <p className="font-medium capitalize">{prospect.tipo_accesorio || "N/A"}</p>
+              <p className="font-medium capitalize">{prospect.tipo_accesorio || "—"}</p>
             )}
           </div>
 
-          {/* Subtipo - condicional según tipo */}
-          {tipoAccesorio && tipoAccesorio !== "otro" && (
+          {/* Subtipo */}
+          {isEditing && tipoAccesorio && tipoAccesorio !== "otro" ? (
             <div>
               <p className="text-xs font-medium text-muted-foreground mb-2">SUBTIPO / ESTILO</p>
-              {isEditing ? (
-                <Select value={subtipoAccesorio} onValueChange={setSubtipoAccesorio}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar subtipo" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {tipoAccesorio === "anillo" && (
-                      <>
-                        <SelectItem value="compromiso">Compromiso</SelectItem>
-                        <SelectItem value="matrimonio">Matrimonio</SelectItem>
-                        <SelectItem value="aniversario">Aniversario</SelectItem>
-                        <SelectItem value="casual">Casual</SelectItem>
-                        <SelectItem value="otro">Otro</SelectItem>
-                      </>
-                    )}
-                    {tipoAccesorio === "collar" && (
-                      <>
-                        <SelectItem value="cadena">Cadena</SelectItem>
-                        <SelectItem value="dije">Dije</SelectItem>
-                        <SelectItem value="collar_completo">Collar completo</SelectItem>
-                        <SelectItem value="gargantilla">Gargantilla</SelectItem>
-                      </>
-                    )}
-                    {tipoAccesorio === "pulsera" && (
-                      <>
-                        <SelectItem value="cadena">Cadena</SelectItem>
-                        <SelectItem value="brazalete">Brazalete</SelectItem>
-                        <SelectItem value="esclava">Esclava</SelectItem>
-                        <SelectItem value="charm">Charm</SelectItem>
-                      </>
-                    )}
-                    {tipoAccesorio === "arete" && (
-                      <>
-                        <SelectItem value="arracada">Arracada</SelectItem>
-                        <SelectItem value="boton">Botón</SelectItem>
-                        <SelectItem value="colgante">Colgante</SelectItem>
-                        
-                      </>
-                    )}
-                  </SelectContent>
-                </Select>
-              ) : (
-                <p className="font-medium capitalize">{prospect.subtipo_accesorio || "N/A"}</p>
-              )}
+              <Select value={subtipoAccesorio} onValueChange={setSubtipoAccesorio}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar subtipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  {tipoAccesorio === "anillo" && (
+                    <>
+                      <SelectItem value="compromiso">Compromiso</SelectItem>
+                      <SelectItem value="matrimonio">Matrimonio</SelectItem>
+                      <SelectItem value="aniversario">Aniversario</SelectItem>
+                      <SelectItem value="casual">Casual</SelectItem>
+                      <SelectItem value="otro">Otro</SelectItem>
+                    </>
+                  )}
+                  {tipoAccesorio === "collar" && (
+                    <>
+                      <SelectItem value="cadena">Cadena</SelectItem>
+                      <SelectItem value="dije">Dije</SelectItem>
+                      <SelectItem value="collar_completo">Collar completo</SelectItem>
+                      <SelectItem value="gargantilla">Gargantilla</SelectItem>
+                    </>
+                  )}
+                  {tipoAccesorio === "pulsera" && (
+                    <>
+                      <SelectItem value="cadena">Cadena</SelectItem>
+                      <SelectItem value="brazalete">Brazalete</SelectItem>
+                      <SelectItem value="esclava">Esclava</SelectItem>
+                      <SelectItem value="charm">Charm</SelectItem>
+                    </>
+                  )}
+                  {tipoAccesorio === "arete" && (
+                    <>
+                      <SelectItem value="arracada">Arracada</SelectItem>
+                      <SelectItem value="boton">Botón</SelectItem>
+                      <SelectItem value="colgante">Colgante</SelectItem>
+                    </>
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+          ) : !isEditing && (
+            <div>
+              <p className="text-xs font-medium text-muted-foreground mb-2">SUBTIPO / ESTILO</p>
+              <p className="font-medium capitalize">{prospect.subtipo_accesorio || "—"}</p>
             </div>
           )}
 
-          {/* Estilo de anillo - editable si aplica */}
-          {tipoAccesorio === "anillo" && incluyePiedra === "si" && (
+          {/* Estilo de anillo */}
+          {isEditing && tipoAccesorio === "anillo" && incluyePiedra === "si" ? (
             <div>
               <p className="text-xs font-medium text-muted-foreground mb-2">ESTILO DE ANILLO</p>
-              {isEditing ? (
-                <Select value={estiloAnillo} onValueChange={setEstiloAnillo}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar estilo" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="solitario">Solitario</SelectItem>
-                    <SelectItem value="3_piedras">3 Piedras</SelectItem>
-                    <SelectItem value="piedra_lateral">Piedra lateral</SelectItem>
-                    <SelectItem value="aureola">Aureola</SelectItem>
-                    <SelectItem value="two_stone">Two Stone</SelectItem>
-                    <SelectItem value="otro">Otro</SelectItem>
-                  </SelectContent>
-                </Select>
-              ) : (
-                <p className="font-medium capitalize">{prospect.estilo_anillo?.replace(/_/g, ' ') || "N/A"}</p>
-              )}
+              <Select value={estiloAnillo} onValueChange={setEstiloAnillo}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar estilo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="solitario">Solitario</SelectItem>
+                  <SelectItem value="3_piedras">3 Piedras</SelectItem>
+                  <SelectItem value="piedra_lateral">Piedra lateral</SelectItem>
+                  <SelectItem value="aureola">Aureola</SelectItem>
+                  <SelectItem value="two_stone">Two Stone</SelectItem>
+                  <SelectItem value="otro">Otro</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          ) : !isEditing && prospect.estilo_anillo && (
+            <div>
+              <p className="text-xs font-medium text-muted-foreground mb-2">ESTILO DE ANILLO</p>
+              <p className="font-medium capitalize">{prospect.estilo_anillo?.replace(/_/g, ' ')}</p>
             </div>
           )}
 
@@ -424,20 +506,16 @@ export const ProspectDetailDialog = ({
               <div className="grid grid-cols-3 gap-4 text-sm">
                 <div>
                   <p className="text-muted-foreground mb-1">Tipo:</p>
-                  <p className="font-medium capitalize">{prospect.metal_tipo || "N/A"}</p>
+                  <p className="font-medium capitalize">{prospect.metal_tipo || "—"}</p>
                 </div>
-                {prospect.metal_tipo === "oro" && (
-                  <>
-                    <div>
-                      <p className="text-muted-foreground mb-1">Color:</p>
-                      <p className="font-medium capitalize">{prospect.color_oro || "N/A"}</p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground mb-1">Pureza:</p>
-                      <p className="font-medium">{prospect.pureza_oro || "N/A"}</p>
-                    </div>
-                  </>
-                )}
+                <div>
+                  <p className="text-muted-foreground mb-1">Color:</p>
+                  <p className="font-medium capitalize">{prospect.color_oro || "—"}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground mb-1">Pureza:</p>
+                  <p className="font-medium">{prospect.pureza_oro || "—"}</p>
+                </div>
               </div>
             )}
           </div>
@@ -476,118 +554,218 @@ export const ProspectDetailDialog = ({
                 )}
               </div>
             ) : (
-              <div className="text-sm">
-                <p className="text-muted-foreground mb-1">Incluye piedra:</p>
-                <p className="font-medium capitalize">{prospect.incluye_piedra || "N/A"}</p>
-                {prospect.incluye_piedra === "si" && prospect.tipo_piedra && (
-                  <>
-                    <p className="text-muted-foreground mb-1 mt-2">Tipo:</p>
-                    <p className="font-medium capitalize">{prospect.tipo_piedra}</p>
-                  </>
-                )}
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-muted-foreground mb-1">Incluye piedra:</p>
+                  <p className="font-medium capitalize">{prospect.incluye_piedra === "si" ? "Sí" : prospect.incluye_piedra === "no" ? "No" : "—"}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground mb-1">Tipo:</p>
+                  <p className="font-medium capitalize">{prospect.tipo_piedra || "—"}</p>
+                </div>
               </div>
             )}
           </div>
 
-          {/* Largo aproximado - solo para collares/pulseras */}
-          {(tipoAccesorio === "collar" || tipoAccesorio === "pulsera") && (
+          {/* Largo aproximado */}
+          {isEditing && (tipoAccesorio === "collar" || tipoAccesorio === "pulsera") ? (
             <div>
               <p className="text-xs font-medium text-muted-foreground mb-2">LARGO APROXIMADO</p>
-              {isEditing ? (
-                <Input
-                  value={largoAprox}
-                  onChange={(e) => setLargoAprox(e.target.value)}
-                  placeholder="Ej: 45cm, 18 pulgadas..."
-                />
+              <Input
+                value={largoAprox}
+                onChange={(e) => setLargoAprox(e.target.value)}
+                placeholder="Ej: 45cm, 18 pulgadas..."
+              />
+            </div>
+          ) : !isEditing && prospect.largo_aprox && (
+            <div>
+              <p className="text-xs font-medium text-muted-foreground mb-2">LARGO APROXIMADO</p>
+              <p className="font-medium">{prospect.largo_aprox}</p>
+            </div>
+          )}
+
+          {/* Información financiera y fechas - always show */}
+          <div className="pt-4 border-t">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
+                  <DollarSign className="h-4 w-4" />
+                  <span>Importe previsto</span>
+                </div>
+                {isEditing ? (
+                  <Input
+                    type="text"
+                    value={importePrevisto}
+                    onChange={(e) => setImportePrevisto(formatCurrencyInput(e.target.value))}
+                    placeholder="$0.00"
+                  />
+                ) : (
+                  <p className="font-semibold text-lg">
+                    {formatCurrency(prospect.importe_previsto)}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
+                  <Calendar className="h-4 w-4" />
+                  <span>Fecha de entrega</span>
+                </div>
+                {isEditing ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !fechaEntrega && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {fechaEntrega ? format(new Date(fechaEntrega), "PPP", { locale: es }) : "Seleccionar"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <CalendarComponent
+                        mode="single"
+                        selected={fechaEntrega ? new Date(fechaEntrega) : undefined}
+                        onSelect={(date) => {
+                          setFechaEntrega(date?.toISOString().split('T')[0] || "");
+                        }}
+                        disabled={(date) => date < new Date()}
+                        initialFocus
+                        className="pointer-events-auto"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <p className="font-medium">
+                    {formatDate(prospect.fecha_entrega_deseada)}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Fecha de vigencia - read only */}
+            {!isEditing && (
+              <div className="mt-4">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
+                  <CalendarIcon className="h-4 w-4" />
+                  <span>Vigencia de cotización</span>
+                </div>
+                <p className="font-medium">
+                  {formatDate(prospect.fecha_vigencia)}
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Materiales table */}
+          {!isEditing && (
+            <div className="pt-4 border-t">
+              <p className="text-xs font-medium text-muted-foreground mb-3">MATERIALES</p>
+              {loadingItems ? (
+                <div className="flex justify-center py-4">
+                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                </div>
+              ) : materialItems.length > 0 ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Material</TableHead>
+                      <TableHead className="text-right">Cant.</TableHead>
+                      <TableHead className="text-right">Costo Unit.</TableHead>
+                      <TableHead className="text-right">Precio Unit.</TableHead>
+                      <TableHead className="text-right">Subtotal</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {materialItems.map(item => (
+                      <TableRow key={item.id}>
+                        <TableCell className="font-medium">{item.nombre}</TableCell>
+                        <TableCell className="text-right">{item.cantidad}</TableCell>
+                        <TableCell className="text-right">{formatCurrency(item.costo_unitario)}</TableCell>
+                        <TableCell className="text-right">{formatCurrency(item.precio_unitario)}</TableCell>
+                        <TableCell className="text-right">{formatCurrency(item.precio_unitario * item.cantidad)}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               ) : (
-                <p className="font-medium">{prospect.largo_aprox || "N/A"}</p>
+                <p className="text-sm text-muted-foreground">Sin materiales registrados</p>
               )}
             </div>
           )}
 
-          {/* Información financiera y fecha */}
-          {(prospect.importe_previsto || prospect.fecha_entrega_deseada || isEditing) && (
+          {/* Mano de obra table */}
+          {!isEditing && (
+            <div className="pt-4 border-t">
+              <p className="text-xs font-medium text-muted-foreground mb-3">MANO DE OBRA</p>
+              {loadingItems ? (
+                <div className="flex justify-center py-4">
+                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                </div>
+              ) : laborItems.length > 0 ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Concepto</TableHead>
+                      <TableHead className="text-right">Cant.</TableHead>
+                      <TableHead className="text-right">Costo Unit.</TableHead>
+                      <TableHead className="text-right">Precio Unit.</TableHead>
+                      <TableHead className="text-right">Subtotal</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {laborItems.map(item => (
+                      <TableRow key={item.id}>
+                        <TableCell className="font-medium">{item.nombre}</TableCell>
+                        <TableCell className="text-right">{item.cantidad}</TableCell>
+                        <TableCell className="text-right">{formatCurrency(item.costo_unitario)}</TableCell>
+                        <TableCell className="text-right">{formatCurrency(item.precio_unitario)}</TableCell>
+                        <TableCell className="text-right">{formatCurrency(item.precio_unitario * item.cantidad)}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : (
+                <p className="text-sm text-muted-foreground">Sin mano de obra registrada</p>
+              )}
+            </div>
+          )}
+
+          {/* Totales */}
+          {!isEditing && items.length > 0 && (
             <div className="pt-4 border-t">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                    <DollarSign className="h-4 w-4" />
-                    <span>Importe previsto</span>
-                  </div>
-                  {isEditing ? (
-                    <Input
-                      type="text"
-                      value={importePrevisto}
-                      onChange={(e) => setImportePrevisto(formatCurrencyInput(e.target.value))}
-                      placeholder="$0.00"
-                    />
-                  ) : (
-                    <p className="font-semibold text-lg">
-                      {formatCurrency(prospect.importe_previsto)}
-                    </p>
-                  )}
+                  <p className="text-xs font-medium text-muted-foreground mb-1">COSTO TOTAL</p>
+                  <p className="font-semibold text-lg">{formatCurrency(totalCosto)}</p>
                 </div>
-
                 <div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                    <Calendar className="h-4 w-4" />
-                    <span>Fecha de entrega</span>
-                  </div>
-                  {isEditing ? (
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            "w-full justify-start text-left font-normal",
-                            !fechaEntrega && "text-muted-foreground"
-                          )}
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {fechaEntrega ? format(new Date(fechaEntrega), "PPP", { locale: es }) : "Seleccionar"}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <CalendarComponent
-                          mode="single"
-                          selected={fechaEntrega ? new Date(fechaEntrega) : undefined}
-                          onSelect={(date) => {
-                            setFechaEntrega(date?.toISOString().split('T')[0] || "");
-                          }}
-                          disabled={(date) => date < new Date()}
-                          initialFocus
-                          className="pointer-events-auto"
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  ) : (
-                    <p className="font-medium">
-                      {formatDate(prospect.fecha_entrega_deseada)}
-                    </p>
-                  )}
+                  <p className="text-xs font-medium text-muted-foreground mb-1">PRECIO TOTAL</p>
+                  <p className="font-semibold text-lg">{formatCurrency(totalPrecio)}</p>
                 </div>
               </div>
             </div>
           )}
 
-          {/* Observaciones */}
-          {(prospect.observaciones || isEditing) && (
-            <div className="pt-4 border-t">
-              <p className="text-xs font-medium text-muted-foreground mb-2">OBSERVACIONES</p>
-              {isEditing ? (
-                <Textarea
-                  value={observaciones}
-                  onChange={(e) => setObservaciones(e.target.value)}
-                  placeholder="Observaciones adicionales..."
-                  rows={3}
-                />
-              ) : (
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                  {prospect.observaciones}
-                </p>
-              )}
-            </div>
-          )}
+          {/* Observaciones - always show */}
+          <div className="pt-4 border-t">
+            <p className="text-xs font-medium text-muted-foreground mb-2">OBSERVACIONES</p>
+            {isEditing ? (
+              <Textarea
+                value={observaciones}
+                onChange={(e) => setObservaciones(e.target.value)}
+                placeholder="Observaciones adicionales..."
+                rows={3}
+              />
+            ) : (
+              <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                {prospect.observaciones || "—"}
+              </p>
+            )}
+          </div>
 
           {/* Botones de edición */}
           {isEditing && (
