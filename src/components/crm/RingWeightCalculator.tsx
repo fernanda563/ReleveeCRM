@@ -1,9 +1,8 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   Table,
   TableBody,
@@ -12,6 +11,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+  TooltipProvider,
+} from "@/components/ui/tooltip";
 
 // US ring sizes → internal diameter (mm)
 const SIZE_MAP: Record<number, number> = {
@@ -43,6 +48,20 @@ const THICKNESS_LABELS: Record<number, string> = {
   3: "Gruesa",
 };
 
+const RING_TYPES = [
+  { id: "solitario", label: "Solitario", description: "Banda fina, el peso se concentra en la montura de la piedra", defaultWidth: 2.0, defaultThickness: 1.5, defaultCount: 1 },
+  { id: "churumbela", label: "Churumbela", description: "Banda media con canal para múltiples piedras", defaultWidth: 2.5, defaultThickness: 2.0, defaultCount: 1 },
+  { id: "argolla_dama", label: "Argolla Dama", description: "Comfort-fit clásica delgada para matrimonio", defaultWidth: 2.0, defaultThickness: 1.5, defaultCount: 1 },
+  { id: "argolla_caballero", label: "Argolla Caballero", description: "Más ancha y robusta para matrimonio", defaultWidth: 4.0, defaultThickness: 2.0, defaultCount: 1 },
+  { id: "arras", label: "Arras", description: "Anillos muy finos y ligeros (×13 piezas)", defaultWidth: 2.0, defaultThickness: 1.0, defaultCount: 13 },
+  { id: "coctel", label: "Cóctel", description: "Pieza ancha y vistosa, diseño llamativo", defaultWidth: 5.0, defaultThickness: 2.5, defaultCount: 1 },
+  { id: "sello", label: "Sello / Signet", description: "Superficie plana amplia para grabado", defaultWidth: 6.0, defaultThickness: 2.5, defaultCount: 1 },
+  { id: "banda_lisa", label: "Banda Lisa", description: "Banda simple sin piedras ni adornos", defaultWidth: 3.0, defaultThickness: 2.0, defaultCount: 1 },
+  { id: "personalizado", label: "Personalizado", description: "Sin presets, ajusta los valores manualmente", defaultWidth: null, defaultThickness: null, defaultCount: 1 },
+] as const;
+
+type RingTypeId = typeof RING_TYPES[number]["id"];
+
 function calcWeight(id: number, width: number, thickness: number, density: number) {
   const od = id + 2 * thickness;
   const volumeMm3 = (Math.PI / 4) * (od * od - id * id) * width;
@@ -63,12 +82,24 @@ export default function RingWeightCalculator({ onUseWeight, alloy: controlledAll
   const [width, setWidth] = useState(2);
   const [thickness, setThickness] = useState(2);
   const [internalAlloy, setInternalAlloy] = useState<AlloyKey>("14K");
+  const [ringType, setRingType] = useState<RingTypeId>("personalizado");
+  const [pieceCount, setPieceCount] = useState(1);
 
   const alloy = controlledAlloy ?? internalAlloy;
   const setAlloy = (v: AlloyKey) => {
     setInternalAlloy(v);
     onAlloyChange?.(v);
   };
+
+  // Apply presets when ring type changes
+  useEffect(() => {
+    const preset = RING_TYPES.find((r) => r.id === ringType);
+    if (preset && preset.defaultWidth !== null && preset.defaultThickness !== null) {
+      setWidth(preset.defaultWidth);
+      setThickness(preset.defaultThickness);
+      setPieceCount(preset.defaultCount);
+    }
+  }, [ringType]);
 
   const id = SIZE_MAP[size];
   const currentAlloy = ALLOYS[alloy];
@@ -79,6 +110,7 @@ export default function RingWeightCalculator({ onUseWeight, alloy: controlledAll
   );
 
   const pureGold = weight * currentAlloy.purity;
+  const totalWeight = weight * pieceCount;
 
   // Reference table data
   const tableData = useMemo(() =>
@@ -95,11 +127,64 @@ export default function RingWeightCalculator({ onUseWeight, alloy: controlledAll
     [width, thickness]
   );
 
-  // Size slider: convert 0-18 index to 4-13 step 0.5
+  // Size slider: convert 0-36 index to 4-13 step 0.25
   const sizeIndex = (size - 4) * 4;
 
   return (
     <div className="space-y-6 pt-4">
+      {/* Ring Type Selector */}
+      <div className="space-y-2">
+        <span className="text-sm font-medium text-foreground">Tipo de anillo</span>
+        <TooltipProvider delayDuration={300}>
+          <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+            {RING_TYPES.map((rt) => {
+              const isActive = ringType === rt.id;
+              return (
+                <Tooltip key={rt.id}>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      onClick={() => setRingType(rt.id)}
+                      className={`h-10 px-2 rounded-md border text-xs font-medium transition-colors truncate ${
+                        isActive
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "bg-background text-foreground border-border hover:bg-accent"
+                      }`}
+                    >
+                      {rt.label}
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="max-w-52">
+                    <p className="text-xs">{rt.description}</p>
+                  </TooltipContent>
+                </Tooltip>
+              );
+            })}
+          </div>
+        </TooltipProvider>
+      </div>
+
+      {/* Piece Count (visible when > 1 or for arras) */}
+      {(pieceCount > 1 || ringType === "arras") && (
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-foreground">Número de piezas</span>
+            <Input
+              type="number"
+              step={1}
+              min={1}
+              max={100}
+              value={pieceCount}
+              onChange={(e) => {
+                const v = parseInt(e.target.value);
+                if (!isNaN(v) && v >= 1) setPieceCount(Math.min(100, v));
+              }}
+              className="w-20 h-8 text-center text-sm"
+            />
+          </div>
+        </div>
+      )}
+
       {/* Sliders */}
       <div className="space-y-5">
         {/* Ring Size */}
@@ -179,7 +264,7 @@ export default function RingWeightCalculator({ onUseWeight, alloy: controlledAll
             <div className="flex items-center gap-1.5">
               <span className="text-sm font-medium text-foreground">Grosor de pared</span>
               <span className="text-sm text-muted-foreground">
-                ({THICKNESS_LABELS[thickness]})
+                ({THICKNESS_LABELS[thickness] ?? `${thickness} mm`})
               </span>
             </div>
             <div className="flex items-center gap-1">
@@ -245,10 +330,10 @@ export default function RingWeightCalculator({ onUseWeight, alloy: controlledAll
       </div>
 
       {/* Result Cards */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className={`grid gap-3 ${pieceCount > 1 ? "grid-cols-2 sm:grid-cols-4" : "grid-cols-3"}`}>
         <Card className="border-border">
           <CardContent className="pt-6 pb-3 text-center">
-            <p className="text-xs text-muted-foreground mb-1">Peso estimado</p>
+            <p className="text-xs text-muted-foreground mb-1">{pieceCount > 1 ? "Peso por pieza" : "Peso estimado"}</p>
             <p className="text-2xl font-bold text-foreground">{weight.toFixed(2)}</p>
             <p className="text-xs text-muted-foreground">gramos</p>
           </CardContent>
@@ -267,6 +352,15 @@ export default function RingWeightCalculator({ onUseWeight, alloy: controlledAll
             <p className="text-xs text-muted-foreground">cm³</p>
           </CardContent>
         </Card>
+        {pieceCount > 1 && (
+          <Card className="border-primary/30 bg-primary/5">
+            <CardContent className="pt-6 pb-3 text-center">
+              <p className="text-xs text-muted-foreground mb-1">Total ({pieceCount} piezas)</p>
+              <p className="text-2xl font-bold text-foreground">{totalWeight.toFixed(2)}</p>
+              <p className="text-xs text-muted-foreground">gramos</p>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Reference Table */}
@@ -309,10 +403,10 @@ export default function RingWeightCalculator({ onUseWeight, alloy: controlledAll
       {/* Use weight button */}
       {onUseWeight && (
         <Button
-          onClick={() => onUseWeight(parseFloat(weight.toFixed(2)))}
+          onClick={() => onUseWeight(parseFloat((pieceCount > 1 ? totalWeight : weight).toFixed(2)))}
           className="w-full"
         >
-          Usar este peso ({weight.toFixed(2)} g)
+          Usar este peso ({(pieceCount > 1 ? totalWeight : weight).toFixed(2)} g{pieceCount > 1 ? ` — ${pieceCount} piezas` : ""})
         </Button>
       )}
 
