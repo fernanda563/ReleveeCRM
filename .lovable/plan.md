@@ -1,88 +1,55 @@
 
 
-## Plan: Actualización automática y configurable de precios de metales
+## Plan: Mostrar precios de metales en la tarjeta de configuración y bloquear edición de campos automáticos en materiales
 
 ### Resumen
 
-Crear una edge function que consulte Metals.dev, un cron job configurable para ejecutarla periódicamente, y una tarjeta de configuración en Ajustes del Sistema donde el admin controle la frecuencia y vea el estado de las sincronizaciones.
+Dos cambios principales:
+1. **MetalPriceSettingsCard**: Después de sincronizar, mostrar una tabla con los precios por gramo de cada metal y su desglose por pureza (los precios que la API devuelve y calcula).
+2. **MaterialDialog**: Cuando el material es de categoría "Metales" y tiene `tipo_material` en (oro, plata, platino), deshabilitar los campos de categoría, tipo de material, kilataje, color, unidad de medida y costo directo — ya que estos se actualizan automáticamente vía la API. Solo permitir editar margen, redondeo y notas.
 
-### Arquitectura
+### Cambios detallados
 
-```text
-[Configuración del Sistema]
-  ├── Frecuencia: cada 1h / 6h / 12h / 24h / semanal
-  ├── Última actualización: timestamp
-  ├── Próxima actualización: timestamp
-  └── Botón "Ejecutar ahora" (manual, opcional)
-        │
-        ▼
-[pg_cron job] ──> [Edge Function: fetch-metal-prices]
-        │                    │
-        │                    ├── GET metals.dev/v1/latest
-        │                    ├── Mapea por tipo_material + kilataje
-        │                    └── UPDATE materials SET costo_directo
-        │
-        └── Frecuencia configurable vía UPDATE cron.job
+**1. Edge Function `fetch-metal-prices` (modificación menor)**
+
+Ya retorna `api_prices` con los precios base. Agregar al response un campo `price_table` con el desglose completo por pureza para que el frontend lo muestre:
+
+```json
+{
+  "price_table": [
+    { "metal": "Oro", "pureza": "24k", "factor": 1.0, "precio_gramo": 95.23 },
+    { "metal": "Oro", "pureza": "18k", "factor": 0.75, "precio_gramo": 71.42 },
+    ...
+  ]
+}
 ```
 
-### Pasos de implementación
+Además, guardar este `price_table` en `system_settings` (key: `metal_price_table`, category: `metals`) para que la tarjeta pueda mostrarlo sin necesidad de volver a llamar a la API.
 
-**1. Secret `METALS_DEV_API_KEY`**
+**2. MetalPriceSettingsCard**
 
-Solicitar al usuario su API key de Metals.dev usando `add_secret`.
+- Cargar el `price_table` de `system_settings` al iniciar
+- Mostrar una tabla/grid con columnas: Metal, Pureza, Factor, Precio USD/g
+- Actualizar la tabla después de cada sincronización manual (usando el response de la edge function)
+- Agrupar visualmente por metal (Oro, Plata, Platino)
 
-**2. Edge Function `fetch-metal-prices`**
+**3. MaterialDialog — bloquear campos para metales con API**
 
-- Consulta `https://api.metals.dev/v1/latest?api_key=KEY&currency=USD&unit=g`
-- Mapea precios por pureza:
-  - Oro 24k = 100%, 18k = 75%, 14k = 58.5%, 10k = 41.7%
-  - Plata 925 = 92.5%, 950 = 95%
-  - Platino 950 = 95%
-- Actualiza `materials` donde `categoria = 'Metales'` y coincida `tipo_material` + `kilataje`
-- Registra timestamp de última actualización en `system_settings`
-- Retorna resumen de materiales actualizados
+Determinar si el material es "automático" (categoría = "Metales" AND tipo_material IN ['oro', 'plata', 'platino'] AND tiene kilataje). Cuando es así:
 
-**3. Migración: habilitar `pg_cron` y `pg_net`**
+- Deshabilitar (`disabled`) los selects de: categoría, tipo de material, kilataje, color, unidad de medida
+- Deshabilitar el input de costo directo
+- Mostrar un aviso: "El costo directo de este material se actualiza automáticamente desde la API de precios de metales"
+- Dejar editables: tipo de margen, valor de margen, redondeo, múltiplo de redondeo, notas, activo
 
-Habilitar las extensiones necesarias para programar jobs automáticos.
+**4. MaterialCard — indicador visual**
 
-**4. Cron job inicial**
+Agregar un badge o icono sutil en las tarjetas de materiales con precio automático (ej. icono `RefreshCw` o badge "API") para que el usuario identifique cuáles se actualizan automáticamente.
 
-Usar la herramienta de insert para crear un cron job que invoque la edge function diariamente (frecuencia por defecto).
+### Archivos modificados
 
-**5. Nueva tarjeta de configuración: `MetalPriceSettingsCard`**
-
-Ubicada en la página de Configuración del Sistema (`SystemSettings.tsx`), con:
-
-- **Frecuencia de actualización**: Select con opciones (cada 1h, 6h, 12h, 24h, semanal)
-- **Última actualización**: fecha/hora de la última sincronización exitosa
-- **Próxima actualización**: calculada según frecuencia
-- **Materiales actualizados**: cantidad de materiales que se actualizan
-- **Botón "Actualizar ahora"**: ejecución manual inmediata
-- **Indicador de estado**: si la API key está configurada o no
-
-Al cambiar la frecuencia, se actualiza el cron schedule vía una edge function auxiliar o directamente actualizando `system_settings` y recreando el cron job.
-
-**6. Edge Function `update-metal-price-schedule`**
-
-Recibe la nueva frecuencia (cron expression), ejecuta `cron.unschedule` + `cron.schedule` para actualizar el job. Esto permite que el cambio de frecuencia desde el frontend surta efecto en el backend.
-
-### Mapeo de frecuencias a cron expressions
-
-| Opción UI | Cron |
-|---|---|
-| Cada hora | `0 * * * *` |
-| Cada 6 horas | `0 */6 * * *` |
-| Cada 12 horas | `0 */12 * * *` |
-| Diario | `0 8 * * *` |
-| Semanal | `0 8 * * 1` |
-
-### Archivos creados/modificados
-
-- `supabase/functions/fetch-metal-prices/index.ts` — nueva edge function
-- `supabase/functions/update-metal-price-schedule/index.ts` — nueva edge function para cambiar frecuencia
-- `src/components/settings/MetalPriceSettingsCard.tsx` — nueva tarjeta de configuración
-- `src/pages/SystemSettings.tsx` — agregar la nueva tarjeta
-- Migración SQL — habilitar `pg_cron` y `pg_net`
-- Insert SQL — crear cron job inicial
+- `supabase/functions/fetch-metal-prices/index.ts` — agregar `price_table` al response y guardarlo en `system_settings`
+- `src/components/settings/MetalPriceSettingsCard.tsx` — mostrar tabla de precios por pureza
+- `src/components/materials/MaterialDialog.tsx` — deshabilitar campos para metales automáticos
+- `src/components/materials/MaterialCard.tsx` — badge indicador de precio automático
 
