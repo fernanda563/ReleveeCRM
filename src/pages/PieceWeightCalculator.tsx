@@ -45,7 +45,7 @@ const ALLOYS = {
 type AlloyKey = keyof typeof ALLOYS;
 
 const THICKNESS_LABELS: Record<number, string> = {
-  1: "Muy fina", 1.5: "Banda fina", 2: "Estándar", 2.5: "Robusta", 3: "Gruesa",
+  1: "Muy fina", 1.5: "Banda fina", 2: "Estándar", 2.5: "Robusta", 3: "Gruesa", 3.5: "Muy gruesa", 4: "Extra gruesa",
 };
 
 function calcMetalWeight(innerDiam: number, width: number, thickness: number, density: number) {
@@ -470,16 +470,16 @@ const PieceWeightCalculator = () => {
                 </div>
                 <div className="flex items-center gap-1">
                   <Input
-                    type="number" step={0.5} min={1} max={3}
+                    type="number" step={0.1} min={1} max={4}
                     value={thickness}
-                    onChange={(e) => { const v = parseFloat(e.target.value); if (!isNaN(v)) setThickness(Math.round(Math.min(3, Math.max(1, v)) * 2) / 2); }}
+                    onChange={(e) => { const v = parseFloat(e.target.value); if (!isNaN(v)) setThickness(Math.round(Math.min(4, Math.max(1, v)) * 10) / 10); }}
                     className="w-20 h-8 text-center text-sm"
                   />
                   <span className="text-xs text-muted-foreground">mm</span>
                 </div>
               </div>
-              <Slider value={[(thickness - 1) * 2]} min={0} max={4} step={1} onValueChange={([v]) => setThickness(1 + v * 0.5)} />
-              <div className="flex justify-between text-xs text-muted-foreground"><span>1 mm</span><span>3 mm</span></div>
+              <Slider value={[thickness]} min={1} max={4} step={0.1} onValueChange={([v]) => setThickness(Math.round(v * 10) / 10)} />
+              <div className="flex justify-between text-xs text-muted-foreground"><span>1 mm</span><span>4 mm</span></div>
             </div>
 
             {/* Alloy Toggle */}
