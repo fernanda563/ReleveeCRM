@@ -40,36 +40,58 @@ export type Database = {
       }
       appointments: {
         Row: {
+          calendar_connection_id: string | null
           client_id: string
           created_at: string
+          duracion_minutos: number
           estado: string
           fecha: string
+          folio: string | null
+          google_event_id: string | null
           id: string
           notas: string | null
+          origen: string
           tipo: string
           updated_at: string
         }
         Insert: {
+          calendar_connection_id?: string | null
           client_id: string
           created_at?: string
+          duracion_minutos?: number
           estado?: string
           fecha: string
+          folio?: string | null
+          google_event_id?: string | null
           id?: string
           notas?: string | null
+          origen?: string
           tipo: string
           updated_at?: string
         }
         Update: {
+          calendar_connection_id?: string | null
           client_id?: string
           created_at?: string
+          duracion_minutos?: number
           estado?: string
           fecha?: string
+          folio?: string | null
+          google_event_id?: string | null
           id?: string
           notas?: string | null
+          origen?: string
           tipo?: string
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "appointments_calendar_connection_id_fkey"
+            columns: ["calendar_connection_id"]
+            isOneToOne: false
+            referencedRelation: "google_calendar_connections"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "appointments_client_id_fkey"
             columns: ["client_id"]
@@ -108,6 +130,98 @@ export type Database = {
           },
         ]
       }
+      client_documents: {
+        Row: {
+          client_id: string
+          created_at: string
+          created_by: string | null
+          document_side: string
+          document_type: string
+          id: string
+          mime_type: string | null
+          source: string
+          status: string
+          storage_path: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          created_by?: string | null
+          document_side?: string
+          document_type?: string
+          id?: string
+          mime_type?: string | null
+          source?: string
+          status?: string
+          storage_path: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          created_by?: string | null
+          document_side?: string
+          document_type?: string
+          id?: string
+          mime_type?: string | null
+          source?: string
+          status?: string
+          storage_path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_documents_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_duplicate_reviews: {
+        Row: {
+          client_id: string | null
+          created_at: string
+          id: string
+          match_reason: string
+          matched_client_id: string | null
+          payload: Json
+          resolved: boolean
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string
+          id?: string
+          match_reason: string
+          matched_client_id?: string | null
+          payload?: Json
+          resolved?: boolean
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string
+          id?: string
+          match_reason?: string
+          matched_client_id?: string | null
+          payload?: Json
+          resolved?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_duplicate_reviews_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_duplicate_reviews_matched_client_id_fkey"
+            columns: ["matched_client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clients: {
         Row: {
           apellido: string
@@ -118,6 +232,9 @@ export type Database = {
           id: string
           nombre: string
           numero_incremental: number
+          privacy_accepted_at: string | null
+          privacy_policy_version: string | null
+          registration_channel: string
           telefono_adicional: string | null
           telefono_adicional_codigo_pais: string | null
           telefono_principal: string
@@ -133,6 +250,9 @@ export type Database = {
           id?: string
           nombre: string
           numero_incremental?: number
+          privacy_accepted_at?: string | null
+          privacy_policy_version?: string | null
+          registration_channel?: string
           telefono_adicional?: string | null
           telefono_adicional_codigo_pais?: string | null
           telefono_principal: string
@@ -148,6 +268,9 @@ export type Database = {
           id?: string
           nombre?: string
           numero_incremental?: number
+          privacy_accepted_at?: string | null
+          privacy_policy_version?: string | null
+          registration_channel?: string
           telefono_adicional?: string | null
           telefono_adicional_codigo_pais?: string | null
           telefono_principal?: string
@@ -696,6 +819,112 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "prospects_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      public_booking_settings: {
+        Row: {
+          activo: boolean
+          anticipacion_minima_minutos: number
+          buffer_minutos: number
+          calendar_connection_id: string | null
+          created_at: string
+          dias_disponibles: number[]
+          direccion: string | null
+          duracion_minutos: number
+          hora_fin: string
+          hora_inicio: string
+          id: string
+          intervalo_minutos: number
+          max_dias_adelante: number
+          modalidad: string
+          nombre: string
+          privacy_version: string
+          timezone: string
+          updated_at: string
+        }
+        Insert: {
+          activo?: boolean
+          anticipacion_minima_minutos?: number
+          buffer_minutos?: number
+          calendar_connection_id?: string | null
+          created_at?: string
+          dias_disponibles?: number[]
+          direccion?: string | null
+          duracion_minutos?: number
+          hora_fin?: string
+          hora_inicio?: string
+          id?: string
+          intervalo_minutos?: number
+          max_dias_adelante?: number
+          modalidad?: string
+          nombre?: string
+          privacy_version?: string
+          timezone?: string
+          updated_at?: string
+        }
+        Update: {
+          activo?: boolean
+          anticipacion_minima_minutos?: number
+          buffer_minutos?: number
+          calendar_connection_id?: string | null
+          created_at?: string
+          dias_disponibles?: number[]
+          direccion?: string | null
+          duracion_minutos?: number
+          hora_fin?: string
+          hora_inicio?: string
+          id?: string
+          intervalo_minutos?: number
+          max_dias_adelante?: number
+          modalidad?: string
+          nombre?: string
+          privacy_version?: string
+          timezone?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "public_booking_settings_calendar_connection_id_fkey"
+            columns: ["calendar_connection_id"]
+            isOneToOne: false
+            referencedRelation: "google_calendar_connections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      public_registration_sessions: {
+        Row: {
+          client_id: string
+          created_at: string
+          expires_at: string
+          id: string
+          ip_hash: string | null
+          token: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          ip_hash?: string | null
+          token?: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          ip_hash?: string | null
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "public_registration_sessions_client_id_fkey"
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"

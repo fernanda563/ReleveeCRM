@@ -52,83 +52,31 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useUserRole } from "@/hooks/useUserRole";
 
-// Helper function to capitalize first letter of each word in real-time
-function capitalizeAsYouType(value: string): string {
-  return value
-    .split(' ')
-    .map(word => {
-      if (word.length === 0) return word;
-      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
-    })
-    .join(' ');
-}
+import {
+  capitalizeAsYouType,
+  capitalizeFirstLetter,
+  cleanPhoneNumber,
+  lastTenDigits,
+  nombreField,
+  apellidoField,
+  emailField,
+  telefonoPrincipalField,
+  telefonoAdicionalField,
+  fuenteContactoField,
+} from "@/lib/client-schema";
+import { ClientIneDocuments } from "@/components/crm/ClientIneDocuments";
+import { uploadClientDocument } from "@/lib/client-documents";
 
-// Helper function to capitalize first letter of each word
-function capitalizeFirstLetter(str: string): string {
-  return str
-    .split(' ')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(' ');
-}
-
-// Helper function to format phone number as (555) 123-4567
-function formatPhoneNumber(value: string): string {
-  // Remove all non-digits
-  const cleaned = value.replace(/\D/g, '');
-  
-  // Apply formatting based on length
-  if (cleaned.length <= 3) {
-    return cleaned;
-  } else if (cleaned.length <= 6) {
-    return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3)}`;
-  } else {
-    return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6, 10)}`;
-  }
-}
-
-// Helper function to clean phone number (remove formatting)
-function cleanPhoneNumber(value: string): string {
-  return value.replace(/\D/g, '');
-}
-
-// Zod schema with validation and normalization
+// Zod schema shared with the public self-registration flow
 const clientFormSchema = z.object({
-  nombre: z
-    .string()
-    .min(1, "El nombre es obligatorio")
-    .max(100, "El nombre no puede exceder 100 caracteres")
-    .regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, "El nombre solo puede contener letras")
-    .transform(capitalizeFirstLetter),
-  
-  apellido: z
-    .string()
-    .min(1, "El apellido es obligatorio")
-    .max(100, "El apellido no puede exceder 100 caracteres")
-    .regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, "El apellido solo puede contener letras")
-    .transform(capitalizeFirstLetter),
-  
-  email: z
-    .string()
-    .min(1, "El correo electrónico es obligatorio")
-    .email({ message: "Formato de correo electrónico inválido" })
-    .max(255, "El correo no puede exceder 255 caracteres")
-    .transform((val) => val.toLowerCase()),
-  
-  telefono_principal: z
-    .string()
-    .min(1, "El teléfono principal es obligatorio")
-    .regex(/^\+\d+\d{10}$/, "El teléfono debe tener exactamente 10 dígitos"),
-  
-  telefono_adicional: z
-    .string()
-    .regex(/^(\+\d+\d{10})?$/, "El teléfono debe tener exactamente 10 dígitos")
-    .optional()
-    .or(z.literal("")),
-  
-  fuente_contacto: z
-    .string()
-    .min(1, "Debe seleccionar cómo se enteró de nosotros"),
+  nombre: nombreField,
+  apellido: apellidoField,
+  email: emailField,
+  telefono_principal: telefonoPrincipalField,
+  telefono_adicional: telefonoAdicionalField,
+  fuente_contacto: fuenteContactoField,
 });
+
 
 type ClientFormValues = z.infer<typeof clientFormSchema>;
 
@@ -143,7 +91,9 @@ const ClientDialog = ({ open, onOpenChange, client, onSuccess }: ClientDialogPro
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [ineFile, setIneFile] = useState<File | null>(null);
+  const [pendingDocs, setPendingDocs] = useState<{ front?: File; back?: File }>({});
+  const [phoneExists, setPhoneExists] = useState(false);
+
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
   const [checkingEmail, setCheckingEmail] = useState(false);
   const [emailExists, setEmailExists] = useState(false);
@@ -188,7 +138,7 @@ const ClientDialog = ({ open, onOpenChange, client, onSuccess }: ClientDialogPro
         telefono_adicional: "",
         fuente_contacto: "",
       });
-      setIneFile(null);
+      setPendingDocs({});
       setEmailExists(false);
       setSearchQuery("");
       setSearchResults([]);
@@ -265,47 +215,57 @@ const ClientDialog = ({ open, onOpenChange, client, onSuccess }: ClientDialogPro
     return () => clearTimeout(timeoutId);
   }, [form.watch("email"), client, open]);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.type !== "application/pdf") {
-        toast.error("Solo se permiten archivos PDF");
-        return;
-      }
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error("El archivo no debe superar 5MB");
-        return;
-      }
-      setIneFile(file);
+  // Detección de duplicados por teléfono normalizado (con debounce)
+  useEffect(() => {
+    const phone = form.watch("telefono_principal");
+    const last10 = lastTenDigits(phone || "");
+
+    if (!open || last10.length < 10) {
+      setPhoneExists(false);
+      return;
     }
-  };
 
-  const uploadINE = async (clientId: string): Promise<string | null> => {
-    if (!ineFile) return null;
+    if (client && lastTenDigits(client.telefono_principal) === last10) {
+      setPhoneExists(false);
+      return;
+    }
 
+    const timeoutId = setTimeout(async () => {
+      try {
+        const { data, error } = await supabase
+          .from("clients")
+          .select("id")
+          .ilike("telefono_principal", `%${last10}`)
+          .limit(1);
+
+        if (error) throw error;
+        setPhoneExists(!!data && data.length > 0);
+      } catch (error) {
+        console.error("Error checking phone:", error);
+        setPhoneExists(false);
+      }
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [form.watch("telefono_principal"), client, open]);
+
+  const uploadPendingDocuments = async (clientId: string) => {
+    const entries = Object.entries(pendingDocs) as Array<["front" | "back", File | undefined]>;
+    if (entries.length === 0) return;
     setUploading(true);
-    const fileExt = "pdf";
-    const fileName = `${clientId}_${Date.now()}.${fileExt}`;
-    const filePath = `${clientId}/${fileName}`;
-
-    const { error: uploadError } = await supabase.storage
-      .from("ine-documents")
-      .upload(filePath, ineFile);
-
-    setUploading(false);
-
-    if (uploadError) {
-      toast.error("Error al subir el archivo");
-      console.error(uploadError);
-      return null;
+    try {
+      for (const [side, file] of entries) {
+        if (file) await uploadClientDocument(clientId, file, side);
+      }
+    } catch (error) {
+      console.error("Error uploading client documents:", error);
+      toast.error("El cliente se guardó, pero un documento no se pudo subir");
+    } finally {
+      setUploading(false);
+      setPendingDocs({});
     }
-
-    const { data } = supabase.storage
-      .from("ine-documents")
-      .getPublicUrl(filePath);
-
-    return data.publicUrl;
   };
+
 
   const handleSelectExistingClient = (selectedClient: Client) => {
     form.reset({
@@ -355,23 +315,15 @@ const ClientDialog = ({ open, onOpenChange, client, onSuccess }: ClientDialogPro
     setLoading(true);
 
     try {
-      let documentUrl = client?.documento_id_url;
-
       if (client) {
         // Update existing client
-        if (ineFile) {
-          documentUrl = await uploadINE(client.id);
-        }
-
         const { error } = await supabase
           .from("clients")
-          .update({
-            ...values,
-            documento_id_url: documentUrl,
-          })
+          .update({ ...values })
           .eq("id", client.id);
 
         if (error) throw error;
+        await uploadPendingDocuments(client.id);
         toast.success("Cliente actualizado exitosamente");
       } else {
         // Create new client
@@ -384,24 +336,20 @@ const ClientDialog = ({ open, onOpenChange, client, onSuccess }: ClientDialogPro
             telefono_principal: values.telefono_principal,
             telefono_adicional: values.telefono_adicional || null,
             fuente_contacto: values.fuente_contacto,
+            registration_channel: "internal_manual",
           }])
           .select()
           .single();
 
         if (insertError) throw insertError;
 
-        if (ineFile && newClient) {
-          documentUrl = await uploadINE(newClient.id);
-          if (documentUrl) {
-            await supabase
-              .from("clients")
-              .update({ documento_id_url: documentUrl })
-              .eq("id", newClient.id);
-          }
+        if (newClient) {
+          await uploadPendingDocuments(newClient.id);
         }
 
         toast.success("Cliente creado exitosamente");
       }
+
 
       onSuccess();
       onOpenChange(false);
@@ -621,7 +569,13 @@ const ClientDialog = ({ open, onOpenChange, client, onSuccess }: ClientDialogPro
                         placeholder="5551234567"
                       />
                     </FormControl>
+                    {phoneExists && (
+                      <p className="text-sm text-muted-foreground">
+                        Este teléfono ya está registrado con otro cliente
+                      </p>
+                    )}
                     <FormMessage />
+
                   </FormItem>
                 )}
               />
@@ -678,27 +632,12 @@ const ClientDialog = ({ open, onOpenChange, client, onSuccess }: ClientDialogPro
               )}
             />
 
-            <div className="space-y-2">
-              <FormLabel htmlFor="ine">INE (PDF)</FormLabel>
-              <div className="flex items-center gap-2">
-                <Input
-                  id="ine"
-                  type="file"
-                  accept="application/pdf"
-                  onChange={handleFileChange}
-                  disabled={loading || uploading}
-                  className="flex-1"
-                />
-                {ineFile && (
-                  <span className="text-sm text-muted-foreground">
-                    {ineFile.name}
-                  </span>
-                )}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Máximo 5MB. Solo archivos PDF.
-              </p>
-            </div>
+            <ClientIneDocuments
+              clientId={client?.id}
+              pending={pendingDocs}
+              onPendingChange={setPendingDocs}
+            />
+
 
             <div className="flex justify-between items-center gap-3 pt-4">
               {/* Botón de eliminar (solo visible para administradores y cuando se edita un cliente) */}

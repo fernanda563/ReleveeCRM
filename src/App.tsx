@@ -5,6 +5,8 @@ import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import Auth from "./pages/Auth";
 import Sign from "./pages/Sign";
+import PublicBooking from "./pages/PublicBooking";
+
 import CRM from "./pages/CRM";
 import ClientDetail from "./pages/ClientDetail";
 import Projects from "./pages/Projects";
@@ -39,7 +41,9 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/sign" element={<Sign />} />
+          <Route path="/agendar-cita" element={<PublicBooking />} />
           <Route path="/stl-viewer-fullscreen" element={<STLViewerFullscreen />} />
+
       <Route element={<DashboardLayout />}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/crm" element={<CRM />} />

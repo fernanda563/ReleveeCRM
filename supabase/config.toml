@@ -2,3 +2,6 @@ project_id = "aanwkfsnwpmngbxkeltj"
 
 [functions.dropbox-sign-webhook]
 verify_jwt = false
+
+[functions.public-booking]
+verify_jwt = false

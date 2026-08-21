@@ -25,6 +25,7 @@ import { ProspectsHistory } from "@/components/client-detail/ProspectsHistory";
 import { RemindersHistory } from "@/components/client-detail/RemindersHistory";
 import { OrdersHistory } from "@/components/client-detail/OrdersHistory";
 import QuotationDialog from "@/components/crm/QuotationDialog";
+import { ClientIneDocuments } from "@/components/crm/ClientIneDocuments";
 
 
 interface Client {
@@ -36,6 +37,7 @@ interface Client {
   telefono_adicional?: string;
   fuente_contacto?: string;
   documento_id_url?: string;
+  registration_channel?: string;
   created_at: string;
 }
 
@@ -196,15 +198,36 @@ const ClientDetail = () => {
                   </div>
                 )}
               </div>
-              {client.fuente_contacto && (
+              <div className="space-y-3">
+                {client.fuente_contacto && (
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Fuente de Contacto</p>
+                    <p className="text-sm font-medium">{client.fuente_contacto}</p>
+                  </div>
+                )}
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Fuente de Contacto</p>
-                  <p className="text-sm font-medium">{client.fuente_contacto}</p>
+                  <p className="text-sm text-muted-foreground mb-1">Canal de alta</p>
+                  <p className="text-sm font-medium">
+                    {client.registration_channel === "public_self_service"
+                      ? "Auto-registro público"
+                      : "Alta manual en CRM"}
+                  </p>
                 </div>
-              )}
+              </div>
             </div>
           </CardContent>
         </Card>
+
+        {/* Documentos privados (INE) */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Identificación</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ClientIneDocuments clientId={client.id} pending={{}} onPendingChange={() => {}} />
+          </CardContent>
+        </Card>
+
 
         {/* Tabs with History */}
         <Tabs defaultValue="timeline" className="w-full">
