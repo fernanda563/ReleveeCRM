@@ -618,14 +618,13 @@ const ClientDialog = ({ open, onOpenChange, client, onSuccess }: ClientDialogPro
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="Facebook">Facebook</SelectItem>
-                      <SelectItem value="Instagram">Instagram</SelectItem>
-                      <SelectItem value="TikTok">TikTok</SelectItem>
-                      <SelectItem value="Recomendación">Recomendación</SelectItem>
-                      <SelectItem value="Tienda física">Tienda física</SelectItem>
-                      <SelectItem value="Google">Google</SelectItem>
-                      <SelectItem value="Otro">Otro</SelectItem>
+                      {CONTACT_SOURCES.map((source) => (
+                        <SelectItem key={source.value} value={source.value}>
+                          {source.label}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
+
                   </Select>
                   <FormMessage />
                 </FormItem>
