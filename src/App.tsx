@@ -39,7 +39,9 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/sign" element={<Sign />} />
+          <Route path="/agendar-cita" element={<PublicBooking />} />
           <Route path="/stl-viewer-fullscreen" element={<STLViewerFullscreen />} />
+
       <Route element={<DashboardLayout />}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/crm" element={<CRM />} />
