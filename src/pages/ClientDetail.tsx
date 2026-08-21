@@ -204,8 +204,9 @@ const ClientDetail = () => {
                 {client.fuente_contacto && (
                   <div>
                     <p className="text-sm text-muted-foreground mb-1">Fuente de Contacto</p>
-                    <p className="text-sm font-medium">{client.fuente_contacto}</p>
+                    <p className="text-sm font-medium">{getContactSourceLabel(client.fuente_contacto)}</p>
                   </div>
+
                 )}
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">Canal de alta</p>
