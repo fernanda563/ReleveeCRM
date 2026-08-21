@@ -5,6 +5,8 @@ import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import Auth from "./pages/Auth";
 import Sign from "./pages/Sign";
+import PublicBooking from "./pages/PublicBooking";
+
 import CRM from "./pages/CRM";
 import ClientDetail from "./pages/ClientDetail";
 import Projects from "./pages/Projects";
