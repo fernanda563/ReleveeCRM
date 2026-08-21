@@ -25,6 +25,7 @@ import { ProspectsHistory } from "@/components/client-detail/ProspectsHistory";
 import { RemindersHistory } from "@/components/client-detail/RemindersHistory";
 import { OrdersHistory } from "@/components/client-detail/OrdersHistory";
 import QuotationDialog from "@/components/crm/QuotationDialog";
+import { ClientIneDocuments } from "@/components/crm/ClientIneDocuments";
 
 
 interface Client {
@@ -36,6 +37,7 @@ interface Client {
   telefono_adicional?: string;
   fuente_contacto?: string;
   documento_id_url?: string;
+  registration_channel?: string;
   created_at: string;
 }
 
