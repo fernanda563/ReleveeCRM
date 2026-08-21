@@ -366,7 +366,7 @@ const PublicBooking = () => {
                 control={form.control}
                 name="privacidad"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="sm:col-span-2">
                     <div className="flex items-start gap-3 rounded-lg border border-border p-4">
                       <FormControl>
                         <Checkbox
@@ -392,12 +392,17 @@ const PublicBooking = () => {
                 )}
               />
 
-              <Button type="submit" className="h-12 w-full text-base" disabled={submitting}>
-                {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Continuar
-              </Button>
+              <div className="sm:col-span-2 sm:flex sm:justify-end">
+                <Button type="submit" className="h-12 w-full text-base sm:w-auto sm:min-w-[200px]" disabled={submitting}>
+                  {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Continuar
+                </Button>
+              </div>
             </form>
           </Form>
+            </CardContent>
+          </Card>
+
         )}
 
         {/* Step 2 — INE */}
