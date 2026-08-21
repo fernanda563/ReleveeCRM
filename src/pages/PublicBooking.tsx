@@ -407,40 +407,51 @@ const PublicBooking = () => {
 
         {/* Step 2 — INE */}
         {step === 1 && (
-          <div className="space-y-4">
-            <div className="flex items-start gap-3 rounded-lg border border-border p-4">
-              <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-foreground" />
-              <p className="text-sm text-muted-foreground">
-                Tu identificación se guarda de forma privada y sólo puede consultarla el personal
-                autorizado de Relevée.
-              </p>
-            </div>
+          <Card>
+            <CardHeader className="hidden sm:block">
+              <CardTitle>Identificación oficial</CardTitle>
+              <CardDescription>Captura el frente y el reverso de tu INE.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4 pt-6 sm:pt-0">
+              <div className="flex items-start gap-3 rounded-lg border border-border p-4">
+                <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-foreground" />
+                <p className="text-sm text-muted-foreground">
+                  Tu identificación se guarda de forma privada y sólo puede consultarla el personal
+                  autorizado de Relevée.
+                </p>
+              </div>
 
-            <IneCapture
-              side="front"
-              title="INE — Frente"
-              hint="Coloca tu identificación sobre una superficie plana y captura el frente completo."
-              uploaded={sides.front}
-              onUpload={(dataUrl) => uploadSide("front", dataUrl)}
-            />
+              <div className="grid gap-4 md:grid-cols-2">
+                <IneCapture
+                  side="front"
+                  title="INE — Frente"
+                  hint="Coloca tu identificación sobre una superficie plana y captura el frente completo."
+                  uploaded={sides.front}
+                  onUpload={(dataUrl) => uploadSide("front", dataUrl)}
+                />
 
-            <IneCapture
-              side="back"
-              title="INE — Reverso"
-              hint="Ahora captura el reverso, cuidando que se lea con claridad."
-              uploaded={sides.back}
-              onUpload={(dataUrl) => uploadSide("back", dataUrl)}
-            />
+                <IneCapture
+                  side="back"
+                  title="INE — Reverso"
+                  hint="Ahora captura el reverso, cuidando que se lea con claridad."
+                  uploaded={sides.back}
+                  onUpload={(dataUrl) => uploadSide("back", dataUrl)}
+                />
+              </div>
 
-            <Button
-              className="h-12 w-full text-base"
-              onClick={goToCalendar}
-              disabled={!sides.front || !sides.back}
-            >
-              <CalendarDays className="mr-2 h-4 w-4" /> Continuar a elegir cita
-            </Button>
-          </div>
+              <div className="sm:flex sm:justify-end">
+                <Button
+                  className="h-12 w-full text-base sm:w-auto sm:min-w-[240px]"
+                  onClick={goToCalendar}
+                  disabled={!sides.front || !sides.back}
+                >
+                  <CalendarDays className="mr-2 h-4 w-4" /> Continuar a elegir cita
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         )}
+
 
         {/* Step 3 — calendario */}
         {step === 2 && (
