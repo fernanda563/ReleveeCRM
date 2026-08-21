@@ -620,8 +620,9 @@ const PublicBooking = () => {
           </Card>
 
         )}
-      </div>
+      </main>
     </div>
+
   );
 };
 
