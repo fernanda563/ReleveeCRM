@@ -92,6 +92,9 @@ const ClientDialog = ({ open, onOpenChange, client, onSuccess }: ClientDialogPro
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [ineFile, setIneFile] = useState<File | null>(null);
+  const [pendingDocs, setPendingDocs] = useState<{ front?: File; back?: File }>({});
+  const [phoneExists, setPhoneExists] = useState(false);
+
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
   const [checkingEmail, setCheckingEmail] = useState(false);
   const [emailExists, setEmailExists] = useState(false);
