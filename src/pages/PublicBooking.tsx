@@ -230,17 +230,18 @@ const PublicBooking = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="mx-auto w-full max-w-md px-5 pb-16 pt-8 sm:max-w-2xl sm:px-8 sm:pt-12 lg:max-w-3xl lg:pt-16">
-        <header className="mb-8 text-center sm:mb-10">
-          <p className="text-xs uppercase tracking-[0.35em] text-muted-foreground">Relevée</p>
-          <h1 className="mt-3 text-2xl font-semibold text-foreground sm:text-3xl lg:text-4xl">
-            Agenda tu cita
-          </h1>
-          <p className="mt-2 text-sm text-muted-foreground sm:text-base">
-            Registro y reserva en unos minutos, desde cualquier dispositivo.
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
+      <div className="container mx-auto max-w-3xl px-4 py-10">
+        <header className="mb-8 flex flex-col items-center text-center">
+          <div className="rounded-full bg-accent/10 p-3">
+            <Gem className="h-8 w-8 text-accent" />
+          </div>
+          <h1 className="mt-4 text-2xl font-semibold text-foreground">Agenda tu cita</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Joyería Relevée — registro y reserva en unos minutos.
           </p>
         </header>
+
 
         {/* Progress */}
         <ol className="mb-8 flex items-center gap-2 sm:gap-4" aria-label="Progreso">
