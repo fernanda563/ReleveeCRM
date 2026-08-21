@@ -455,83 +455,90 @@ const PublicBooking = () => {
 
         {/* Step 3 — calendario */}
         {step === 2 && (
-          <div className="space-y-5">
-            <h2 className="text-lg font-medium text-foreground">Selecciona tu cita</h2>
+          <Card>
+            <CardHeader>
+              <CardTitle>Selecciona tu cita</CardTitle>
+              <CardDescription>Elige el día y horario que mejor te acomode.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              {loadingAvailability ? (
+                <div className="flex items-center justify-center py-16">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </div>
+              ) : availability.length === 0 ? (
+                <div className="rounded-lg border border-border p-6 text-center text-sm text-muted-foreground">
+                  Por ahora no hay horarios disponibles. Inténtalo más tarde.
+                </div>
+              ) : (
+                <>
+                  <div className="-mx-6 overflow-x-auto px-6 sm:mx-0 sm:overflow-visible sm:px-0">
+                    <div className="flex gap-2 pb-2 sm:flex-wrap sm:pb-0">
+                      {availability.map((day) => (
+                        <button
+                          key={day.date}
+                          type="button"
+                          onClick={() => {
+                            setSelectedDay(day.date);
+                            setSelectedSlot(null);
+                          }}
+                          className={`min-w-[92px] shrink-0 rounded-lg border px-3 py-3 text-sm transition-colors ${
+                            selectedDay === day.date
+                              ? "border-foreground bg-foreground text-background"
+                              : "border-border text-foreground hover:bg-muted"
+                          }`}
+                        >
+                          {formatDayLabel(day.date)}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
 
-            {loadingAvailability ? (
-              <div className="flex items-center justify-center py-16">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-              </div>
-            ) : availability.length === 0 ? (
-              <div className="rounded-lg border border-border p-6 text-center text-sm text-muted-foreground">
-                Por ahora no hay horarios disponibles. Inténtalo más tarde.
-              </div>
-            ) : (
-              <>
-                <div className="-mx-5 overflow-x-auto px-5">
-                  <div className="flex gap-2 pb-2">
-                    {availability.map((day) => (
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-5">
+                    {slotsForDay.map((slot) => (
                       <button
-                        key={day.date}
+                        key={slot}
                         type="button"
-                        onClick={() => {
-                          setSelectedDay(day.date);
-                          setSelectedSlot(null);
-                        }}
-                        className={`min-w-[92px] rounded-lg border px-3 py-3 text-sm ${
-                          selectedDay === day.date
+                        onClick={() => setSelectedSlot(slot)}
+                        className={`h-12 rounded-lg border text-base transition-colors ${
+                          selectedSlot === slot
                             ? "border-foreground bg-foreground text-background"
-                            : "border-border text-foreground"
+                            : "border-border text-foreground hover:bg-muted"
                         }`}
                       >
-                        {formatDayLabel(day.date)}
+                        {formatTime(slot)}
                       </button>
                     ))}
                   </div>
-                </div>
 
-                <div className="grid grid-cols-2 gap-2">
-                  {slotsForDay.map((slot) => (
-                    <button
-                      key={slot}
-                      type="button"
-                      onClick={() => setSelectedSlot(slot)}
-                      className={`h-12 rounded-lg border text-base ${
-                        selectedSlot === slot
-                          ? "border-foreground bg-foreground text-background"
-                          : "border-border text-foreground"
-                      }`}
+                  <div className="space-y-2">
+                    <label className="text-sm text-muted-foreground" htmlFor="notas">
+                      ¿Algo que debamos saber? (opcional)
+                    </label>
+                    <Textarea
+                      id="notas"
+                      value={notas}
+                      maxLength={500}
+                      onChange={(e) => setNotas(e.target.value)}
+                      className="min-h-[88px] text-base"
+                    />
+                  </div>
+
+                  <div className="sm:flex sm:justify-end">
+                    <Button
+                      className="h-12 w-full text-base sm:w-auto sm:min-w-[200px]"
+                      onClick={confirmBooking}
+                      disabled={!selectedSlot || submitting}
                     >
-                      {formatTime(slot)}
-                    </button>
-                  ))}
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm text-muted-foreground" htmlFor="notas">
-                    ¿Algo que debamos saber? (opcional)
-                  </label>
-                  <Textarea
-                    id="notas"
-                    value={notas}
-                    maxLength={500}
-                    onChange={(e) => setNotas(e.target.value)}
-                    className="min-h-[88px] text-base"
-                  />
-                </div>
-
-                <Button
-                  className="h-12 w-full text-base"
-                  onClick={confirmBooking}
-                  disabled={!selectedSlot || submitting}
-                >
-                  {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Confirmar cita
-                </Button>
-              </>
-            )}
-          </div>
+                      {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      Confirmar cita
+                    </Button>
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
         )}
+
 
         {/* Step 4 — confirmación */}
         {step === 3 && confirmation && (
