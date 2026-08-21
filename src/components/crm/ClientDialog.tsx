@@ -63,7 +63,10 @@ import {
   telefonoPrincipalField,
   telefonoAdicionalField,
   fuenteContactoField,
+  CONTACT_SOURCES,
+  getContactSourceLabel,
 } from "@/lib/client-schema";
+
 import { ClientIneDocuments } from "@/components/crm/ClientIneDocuments";
 import { uploadClientDocument } from "@/lib/client-documents";
 
