@@ -91,7 +91,6 @@ const ClientDialog = ({ open, onOpenChange, client, onSuccess }: ClientDialogPro
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [ineFile, setIneFile] = useState<File | null>(null);
   const [pendingDocs, setPendingDocs] = useState<{ front?: File; back?: File }>({});
   const [phoneExists, setPhoneExists] = useState(false);
 
@@ -139,7 +138,7 @@ const ClientDialog = ({ open, onOpenChange, client, onSuccess }: ClientDialogPro
         telefono_adicional: "",
         fuente_contacto: "",
       });
-      setIneFile(null);
+      setPendingDocs({});
       setEmailExists(false);
       setSearchQuery("");
       setSearchResults([]);
