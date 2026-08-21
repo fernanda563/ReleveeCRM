@@ -340,7 +340,8 @@ const PublicBooking = () => {
                 control={form.control}
                 name="fuente_contacto"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="sm:col-span-2">
+
                     <FormLabel>¿Cómo se enteró de nosotros? *</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
