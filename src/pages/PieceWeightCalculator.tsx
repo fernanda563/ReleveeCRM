@@ -1,4 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
+import { useWeightCalculation } from "@/hooks/useWeightCalculation";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
@@ -252,9 +254,8 @@ const PieceWeightCalculator = () => {
     [innerDiam, bandWidth, thickness, currentAlloy.density]
   );
 
-  const metalWeightPerPiece = metalResult.weight;
-  const metalWeightTotal = metalWeightPerPiece * metalPieceCount;
-  const pureGold = metalWeightPerPiece * currentAlloy.purity;
+  const pureGold = metalResult.weight * currentAlloy.purity;
+
 
   // ── Stone calculations ──
   const dims = stoneValues[selectedCut];
@@ -314,14 +315,49 @@ const PieceWeightCalculator = () => {
     }
   }, [dims, cut]);
 
-  const caratsPerStone = stoneResult.carats;
-  const totalCarats = caratsPerStone * stoneCount;
-  const stoneWeightGrams = totalCarats * 0.2; // 1 ct = 0.2 g
-  const stoneWeightPerPieceGrams = stoneCount > 0 ? stoneWeightGrams / (metalPieceCount > 1 ? 1 : 1) : 0;
+  // ── Cálculo en backend (fuente de verdad) con fallback local ──
+  const localPiece = useMemo(() => {
+    const carats = stoneResult.carats * stoneCount;
+    const grams = carats * 0.2; // 1 ct = 0.2 g
+    return {
+      metalWeightPerPiece: metalResult.weight,
+      metalWeightTotal: metalResult.weight * metalPieceCount,
+      stoneWeightGrams: stoneCount > 0 ? grams : 0,
+      totalWeightPerPiece: metalResult.weight + (stoneCount > 0 ? grams : 0),
+      totalWeightAll: metalResult.weight * metalPieceCount + (stoneCount > 0 ? grams * metalPieceCount : 0),
+      stone: { caratsPerStone: stoneResult.carats, totalCarats: carats },
+    };
+  }, [metalResult.weight, metalPieceCount, stoneResult.carats, stoneCount]);
+
+  const { result: piece, source: calcSource } = useWeightCalculation(
+    {
+      mode: "piece" as const,
+      metal: { size, width: bandWidth, thickness, alloy, pieceCount: metalPieceCount },
+      stone: stoneCount > 0
+        ? {
+            cut: selectedCut,
+            diameter: cut.isRound ? dims.diameter : undefined,
+            length: cut.isRound ? undefined : dims.length,
+            width: cut.isRound ? undefined : dims.width,
+            depth: dims.depth,
+            stoneCount,
+          }
+        : null,
+    },
+    localPiece
+  );
+
+  const metalWeightPerPiece = piece.metalWeightPerPiece;
+  const metalWeightTotal = piece.metalWeightTotal;
+  const caratsPerStone = piece.stone?.caratsPerStone ?? 0;
+  const totalCarats = piece.stone?.totalCarats ?? 0;
+  const stoneWeightGrams = piece.stoneWeightGrams;
+  const stoneWeightPerPieceGrams = stoneWeightGrams;
 
   // ── Total ──
-  const totalWeightPerPiece = metalWeightPerPiece + (stoneCount > 0 ? stoneWeightGrams : 0);
-  const totalWeightAll = metalWeightTotal + (stoneCount > 0 ? stoneWeightGrams * metalPieceCount : 0);
+  const totalWeightPerPiece = piece.totalWeightPerPiece;
+  const totalWeightAll = piece.totalWeightAll;
+
 
   return (
     <div className="min-h-full bg-background">

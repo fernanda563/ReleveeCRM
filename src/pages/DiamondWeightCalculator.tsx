@@ -1,4 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
+import { useWeightCalculation } from "@/hooks/useWeightCalculation";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
@@ -514,39 +516,64 @@ const DiamondWeightCalculator = () => {
     }));
   };
 
-  const result = useMemo(() => {
+  const localResult = useMemo(() => {
+    const depth = dims.depth;
     if (cut.isRound) {
       const d = dims.diameter;
-      const depth = dims.depth;
       const carats = d * d * depth * cut.factor;
-      const depthPct = (depth / d) * 100;
       return {
-        carats,
-        mg: Math.round(carats * 200),
+        caratsPerStone: carats,
+        mgPerStone: Math.round(carats * 200),
+        totalCarats: carats * stoneCount,
+        totalMg: Math.round(carats * stoneCount * 200),
         rangeLow: carats * 0.9,
         rangeHigh: carats * 1.1,
-        depthPct,
+        depthPct: (depth / d) * 100,
         formula: `${d.toFixed(2)}² × ${depth.toFixed(2)} × ${cut.factor}`,
       };
-    } else {
-      const l = dims.length;
-      const w = dims.width;
-      const depth = dims.depth;
-      const carats = l * w * depth * cut.factor;
-      const depthPct = (depth / l) * 100;
-      return {
-        carats,
-        mg: Math.round(carats * 200),
-        rangeLow: carats * 0.9,
-        rangeHigh: carats * 1.1,
-        depthPct,
-        formula: `${l.toFixed(2)} × ${w.toFixed(2)} × ${depth.toFixed(2)} × ${cut.factor}`,
-      };
     }
-  }, [dims, cut]);
+    const l = dims.length;
+    const w = dims.width;
+    const carats = l * w * depth * cut.factor;
+    return {
+      caratsPerStone: carats,
+      mgPerStone: Math.round(carats * 200),
+      totalCarats: carats * stoneCount,
+      totalMg: Math.round(carats * stoneCount * 200),
+      rangeLow: carats * 0.9,
+      rangeHigh: carats * 1.1,
+      depthPct: (depth / l) * 100,
+      formula: `${l.toFixed(2)} × ${w.toFixed(2)} × ${depth.toFixed(2)} × ${cut.factor}`,
+    };
+  }, [dims, cut, stoneCount]);
+
+  const { result: backendResult } = useWeightCalculation(
+    {
+      mode: "stone" as const,
+      stone: {
+        cut: selectedCut,
+        diameter: cut.isRound ? dims.diameter : undefined,
+        length: cut.isRound ? undefined : dims.length,
+        width: cut.isRound ? undefined : dims.width,
+        depth: dims.depth,
+        stoneCount: Math.max(1, stoneCount),
+      },
+    },
+    localResult
+  );
+
+  const result = {
+    carats: backendResult.caratsPerStone,
+    mg: backendResult.mgPerStone,
+    rangeLow: backendResult.rangeLow,
+    rangeHigh: backendResult.rangeHigh,
+    depthPct: backendResult.depthPct,
+    formula: backendResult.formula,
+  };
 
   const totalCarats = result.carats * stoneCount;
   const totalMg = Math.round(totalCarats * 200);
+
 
   const stats = [
     {
