@@ -106,13 +106,26 @@ export default function RingWeightCalculator({ onUseWeight, alloy: controlledAll
   const id = SIZE_MAP[size];
   const currentAlloy = ALLOYS[alloy];
 
-  const { weight, volumeCm3 } = useMemo(
-    () => calcWeight(id, width, thickness, currentAlloy.density),
-    [id, width, thickness, currentAlloy.density]
+  const localMetal = useMemo(() => {
+    const { weight, volumeCm3 } = calcWeight(id, width, thickness, currentAlloy.density);
+    return {
+      weightPerPiece: weight,
+      weightTotal: weight * pieceCount,
+      pureGold: weight * currentAlloy.purity,
+      volumeCm3,
+    };
+  }, [id, width, thickness, currentAlloy.density, currentAlloy.purity, pieceCount]);
+
+  const { result: metal } = useWeightCalculation(
+    { mode: "metal" as const, metal: { size, width, thickness, alloy, pieceCount } },
+    localMetal
   );
 
-  const pureGold = weight * currentAlloy.purity;
-  const totalWeight = weight * pieceCount;
+  const weight = metal.weightPerPiece;
+  const volumeCm3 = metal.volumeCm3;
+  const pureGold = metal.pureGold;
+  const totalWeight = metal.weightTotal;
+
 
   // Reference table data
   const tableData = useMemo(() =>
