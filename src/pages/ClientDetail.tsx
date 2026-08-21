@@ -26,6 +26,8 @@ import { RemindersHistory } from "@/components/client-detail/RemindersHistory";
 import { OrdersHistory } from "@/components/client-detail/OrdersHistory";
 import QuotationDialog from "@/components/crm/QuotationDialog";
 import { ClientIneDocuments } from "@/components/crm/ClientIneDocuments";
+import { getContactSourceLabel } from "@/lib/client-schema";
+
 
 
 interface Client {
@@ -202,8 +204,9 @@ const ClientDetail = () => {
                 {client.fuente_contacto && (
                   <div>
                     <p className="text-sm text-muted-foreground mb-1">Fuente de Contacto</p>
-                    <p className="text-sm font-medium">{client.fuente_contacto}</p>
+                    <p className="text-sm font-medium">{getContactSourceLabel(client.fuente_contacto)}</p>
                   </div>
+
                 )}
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">Canal de alta</p>

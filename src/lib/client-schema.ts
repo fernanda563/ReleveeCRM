@@ -29,8 +29,18 @@ export const CONTACT_SOURCES = [
   { value: "recomendacion", label: "Recomendación" },
   { value: "tienda_fisica", label: "Tienda física" },
   { value: "google", label: "Google" },
+  { value: "chatgpt", label: "ChatGPT" },
+  { value: "claude", label: "Claude" },
+  { value: "gemini", label: "Gemini" },
   { value: "otro", label: "Otro" },
 ] as const;
+
+export function getContactSourceLabel(value: string | null | undefined): string {
+  if (!value) return "—";
+  const source = CONTACT_SOURCES.find((s) => s.value === value.toLowerCase());
+  return source?.label ?? value;
+}
+
 
 export const nombreField = z
   .string()
