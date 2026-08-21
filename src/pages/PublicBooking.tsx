@@ -542,52 +542,57 @@ const PublicBooking = () => {
 
         {/* Step 4 — confirmación */}
         {step === 3 && confirmation && (
-          <div className="space-y-6 text-center">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-border">
-              <Check className="h-7 w-7 text-foreground" />
-            </div>
-            <div>
-              <h2 className="text-xl font-semibold text-foreground">Tu cita está confirmada</h2>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Te esperamos, {confirmation.nombre}.
+          <Card className="mx-auto sm:max-w-xl">
+            <CardContent className="space-y-6 pt-6 text-center">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-border">
+                <Check className="h-7 w-7 text-foreground" />
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold text-foreground sm:text-2xl">
+                  Tu cita está confirmada
+                </h2>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Te esperamos, {confirmation.nombre}.
+                </p>
+              </div>
+
+              <div className="space-y-3 rounded-lg border border-border p-5 text-left">
+                <Row label="Folio" value={confirmation.folio} />
+                <Row
+                  label="Fecha"
+                  value={new Intl.DateTimeFormat("es-MX", {
+                    timeZone: confirmation.timezone,
+                    weekday: "long",
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  }).format(new Date(confirmation.fecha))}
+                />
+                <Row
+                  label="Hora"
+                  value={new Intl.DateTimeFormat("es-MX", {
+                    timeZone: confirmation.timezone,
+                    hour: "numeric",
+                    minute: "2-digit",
+                    hour12: true,
+                  }).format(new Date(confirmation.fecha))}
+                />
+                <Row label="Sucursal" value={confirmation.sucursal} />
+                <Row label="Modalidad" value={confirmation.modalidad === "virtual" ? "Virtual" : "Presencial"} />
+                {confirmation.direccion && (
+                  <div className="flex items-start gap-2 pt-1 text-sm text-muted-foreground">
+                    <MapPin className="mt-0.5 h-4 w-4 shrink-0" />
+                    <span>{confirmation.direccion}</span>
+                  </div>
+                )}
+              </div>
+
+              <p className="text-xs text-muted-foreground">
+                Guarda tu folio para cualquier cambio o cancelación.
               </p>
-            </div>
+            </CardContent>
+          </Card>
 
-            <div className="space-y-3 rounded-lg border border-border p-5 text-left">
-              <Row label="Folio" value={confirmation.folio} />
-              <Row
-                label="Fecha"
-                value={new Intl.DateTimeFormat("es-MX", {
-                  timeZone: confirmation.timezone,
-                  weekday: "long",
-                  day: "numeric",
-                  month: "long",
-                  year: "numeric",
-                }).format(new Date(confirmation.fecha))}
-              />
-              <Row
-                label="Hora"
-                value={new Intl.DateTimeFormat("es-MX", {
-                  timeZone: confirmation.timezone,
-                  hour: "numeric",
-                  minute: "2-digit",
-                  hour12: true,
-                }).format(new Date(confirmation.fecha))}
-              />
-              <Row label="Sucursal" value={confirmation.sucursal} />
-              <Row label="Modalidad" value={confirmation.modalidad === "virtual" ? "Virtual" : "Presencial"} />
-              {confirmation.direccion && (
-                <div className="flex items-start gap-2 pt-1 text-sm text-muted-foreground">
-                  <MapPin className="mt-0.5 h-4 w-4 shrink-0" />
-                  <span>{confirmation.direccion}</span>
-                </div>
-              )}
-            </div>
-
-            <p className="text-xs text-muted-foreground">
-              Guarda tu folio para cualquier cambio o cancelación.
-            </p>
-          </div>
         )}
       </div>
     </div>
