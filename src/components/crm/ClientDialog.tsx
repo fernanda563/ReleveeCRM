@@ -52,83 +52,31 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useUserRole } from "@/hooks/useUserRole";
 
-// Helper function to capitalize first letter of each word in real-time
-function capitalizeAsYouType(value: string): string {
-  return value
-    .split(' ')
-    .map(word => {
-      if (word.length === 0) return word;
-      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
-    })
-    .join(' ');
-}
+import {
+  capitalizeAsYouType,
+  capitalizeFirstLetter,
+  cleanPhoneNumber,
+  lastTenDigits,
+  nombreField,
+  apellidoField,
+  emailField,
+  telefonoPrincipalField,
+  telefonoAdicionalField,
+  fuenteContactoField,
+} from "@/lib/client-schema";
+import { ClientIneDocuments } from "@/components/crm/ClientIneDocuments";
+import { uploadClientDocument } from "@/lib/client-documents";
 
-// Helper function to capitalize first letter of each word
-function capitalizeFirstLetter(str: string): string {
-  return str
-    .split(' ')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(' ');
-}
-
-// Helper function to format phone number as (555) 123-4567
-function formatPhoneNumber(value: string): string {
-  // Remove all non-digits
-  const cleaned = value.replace(/\D/g, '');
-  
-  // Apply formatting based on length
-  if (cleaned.length <= 3) {
-    return cleaned;
-  } else if (cleaned.length <= 6) {
-    return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3)}`;
-  } else {
-    return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6, 10)}`;
-  }
-}
-
-// Helper function to clean phone number (remove formatting)
-function cleanPhoneNumber(value: string): string {
-  return value.replace(/\D/g, '');
-}
-
-// Zod schema with validation and normalization
+// Zod schema shared with the public self-registration flow
 const clientFormSchema = z.object({
-  nombre: z
-    .string()
-    .min(1, "El nombre es obligatorio")
-    .max(100, "El nombre no puede exceder 100 caracteres")
-    .regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, "El nombre solo puede contener letras")
-    .transform(capitalizeFirstLetter),
-  
-  apellido: z
-    .string()
-    .min(1, "El apellido es obligatorio")
-    .max(100, "El apellido no puede exceder 100 caracteres")
-    .regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, "El apellido solo puede contener letras")
-    .transform(capitalizeFirstLetter),
-  
-  email: z
-    .string()
-    .min(1, "El correo electrónico es obligatorio")
-    .email({ message: "Formato de correo electrónico inválido" })
-    .max(255, "El correo no puede exceder 255 caracteres")
-    .transform((val) => val.toLowerCase()),
-  
-  telefono_principal: z
-    .string()
-    .min(1, "El teléfono principal es obligatorio")
-    .regex(/^\+\d+\d{10}$/, "El teléfono debe tener exactamente 10 dígitos"),
-  
-  telefono_adicional: z
-    .string()
-    .regex(/^(\+\d+\d{10})?$/, "El teléfono debe tener exactamente 10 dígitos")
-    .optional()
-    .or(z.literal("")),
-  
-  fuente_contacto: z
-    .string()
-    .min(1, "Debe seleccionar cómo se enteró de nosotros"),
+  nombre: nombreField,
+  apellido: apellidoField,
+  email: emailField,
+  telefono_principal: telefonoPrincipalField,
+  telefono_adicional: telefonoAdicionalField,
+  fuente_contacto: fuenteContactoField,
 });
+
 
 type ClientFormValues = z.infer<typeof clientFormSchema>;
 
