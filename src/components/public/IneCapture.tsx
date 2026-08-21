@@ -62,7 +62,7 @@ export function IneCapture({ side, title, hint, uploaded, onUpload }: IneCapture
     <div className="flex h-full flex-col rounded-lg border border-border p-4">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-base font-medium text-foreground">{title}</p>
+          <p className="text-sm font-medium text-foreground">{title}</p>
           <p className="mt-1 text-sm text-muted-foreground">{hint}</p>
         </div>
         {uploaded && !preview && (
@@ -97,13 +97,13 @@ export function IneCapture({ side, title, hint, uploaded, onUpload }: IneCapture
       <div className="mt-4 space-y-2 sm:mt-auto sm:pt-4">
         {preview ? (
           <>
-            <Button className="h-12 w-full text-base" onClick={confirm} disabled={busy}>
+            <Button className="w-full" onClick={confirm} disabled={busy}>
               {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Check className="mr-2 h-4 w-4" />}
               Usar esta foto
             </Button>
             <Button
               variant="outline"
-              className="h-12 w-full text-base"
+              className="w-full"
               onClick={() => primaryRef.current?.click()}
               disabled={busy}
             >
@@ -113,7 +113,7 @@ export function IneCapture({ side, title, hint, uploaded, onUpload }: IneCapture
         ) : (
           <>
             <Button
-              className="h-12 w-full text-base"
+              className="w-full"
               variant={uploaded ? "outline" : "default"}
               onClick={() => primaryRef.current?.click()}
               disabled={busy}
@@ -135,7 +135,7 @@ export function IneCapture({ side, title, hint, uploaded, onUpload }: IneCapture
             </Button>
             <Button
               variant="ghost"
-              className="h-11 w-full text-sm"
+              className="w-full"
               onClick={() => secondaryRef.current?.click()}
               disabled={busy}
             >

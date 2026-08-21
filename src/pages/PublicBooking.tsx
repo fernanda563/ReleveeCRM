@@ -38,7 +38,7 @@ import {
   capitalizeAsYouType,
   clientBaseSchema,
 } from "@/lib/client-schema";
-import { Check, CalendarDays, Loader2, MapPin, ShieldCheck } from "lucide-react";
+import { Check, CalendarDays, Gem, Loader2, MapPin, ShieldCheck } from "lucide-react";
 
 const publicFormSchema = clientBaseSchema.extend({
   privacidad: z.literal(true, {
@@ -230,17 +230,18 @@ const PublicBooking = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="mx-auto w-full max-w-md px-5 pb-16 pt-8 sm:max-w-2xl sm:px-8 sm:pt-12 lg:max-w-3xl lg:pt-16">
-        <header className="mb-8 text-center sm:mb-10">
-          <p className="text-xs uppercase tracking-[0.35em] text-muted-foreground">Relevée</p>
-          <h1 className="mt-3 text-2xl font-semibold text-foreground sm:text-3xl lg:text-4xl">
-            Agenda tu cita
-          </h1>
-          <p className="mt-2 text-sm text-muted-foreground sm:text-base">
-            Registro y reserva en unos minutos, desde cualquier dispositivo.
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
+      <div className="container mx-auto max-w-3xl px-4 py-10">
+        <header className="mb-8 flex flex-col items-center text-center">
+          <div className="rounded-full bg-accent/10 p-3">
+            <Gem className="h-8 w-8 text-accent" />
+          </div>
+          <h1 className="mt-4 text-2xl font-semibold text-foreground">Agenda tu cita</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Joyería Relevée — registro y reserva en unos minutos.
           </p>
         </header>
+
 
         {/* Progress */}
         <ol className="mb-8 flex items-center gap-2 sm:gap-4" aria-label="Progreso">
@@ -264,11 +265,11 @@ const PublicBooking = () => {
         {/* Step 1 — datos */}
         {step === 0 && (
           <Card>
-            <CardHeader className="hidden sm:block">
+            <CardHeader>
               <CardTitle>Tus datos</CardTitle>
               <CardDescription>Necesitamos estos datos para crear tu expediente.</CardDescription>
             </CardHeader>
-            <CardContent className="pt-6 sm:pt-0">
+            <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(submitData)} className="space-y-5 sm:grid sm:grid-cols-2 sm:gap-5 sm:space-y-0">
 
@@ -281,7 +282,7 @@ const PublicBooking = () => {
                     <FormControl>
                       <Input
                         {...field}
-                        className="h-12 text-base"
+                       
                         autoComplete="given-name"
                         onChange={(e) => field.onChange(capitalizeAsYouType(e.target.value))}
                       />
@@ -300,7 +301,7 @@ const PublicBooking = () => {
                     <FormControl>
                       <Input
                         {...field}
-                        className="h-12 text-base"
+                       
                         autoComplete="family-name"
                         onChange={(e) => field.onChange(capitalizeAsYouType(e.target.value))}
                       />
@@ -336,7 +337,7 @@ const PublicBooking = () => {
                         type="email"
                         inputMode="email"
                         autoComplete="email"
-                        className="h-12 text-base"
+                       
                       />
                     </FormControl>
                     <FormMessage />
@@ -353,7 +354,7 @@ const PublicBooking = () => {
                     <FormLabel>¿Cómo se enteró de nosotros? *</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
-                        <SelectTrigger className="h-12 text-base">
+                        <SelectTrigger>
                           <SelectValue placeholder="Selecciona una opción" />
                         </SelectTrigger>
                       </FormControl>
@@ -401,7 +402,7 @@ const PublicBooking = () => {
               />
 
               <div className="sm:col-span-2 sm:flex sm:justify-end">
-                <Button type="submit" className="h-12 w-full text-base sm:w-auto sm:min-w-[200px]" disabled={submitting}>
+                <Button type="submit" className="w-full sm:w-auto sm:min-w-[200px]" disabled={submitting}>
                   {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Continuar
                 </Button>
@@ -416,11 +417,11 @@ const PublicBooking = () => {
         {/* Step 2 — INE */}
         {step === 1 && (
           <Card>
-            <CardHeader className="hidden sm:block">
+            <CardHeader>
               <CardTitle>Identificación oficial</CardTitle>
               <CardDescription>Captura el frente y el reverso de tu INE.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4 pt-6 sm:pt-0">
+            <CardContent className="space-y-4">
               <div className="flex items-start gap-3 rounded-lg border border-border p-4">
                 <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-foreground" />
                 <p className="text-sm text-muted-foreground">
@@ -449,7 +450,7 @@ const PublicBooking = () => {
 
               <div className="sm:flex sm:justify-end">
                 <Button
-                  className="h-12 w-full text-base sm:w-auto sm:min-w-[240px]"
+                  className="w-full sm:w-auto sm:min-w-[240px]"
                   onClick={goToCalendar}
                   disabled={!sides.front || !sides.back}
                 >
@@ -507,7 +508,7 @@ const PublicBooking = () => {
                         key={slot}
                         type="button"
                         onClick={() => setSelectedSlot(slot)}
-                        className={`h-12 rounded-lg border text-base transition-colors ${
+                        className={`h-10 rounded-md border text-sm transition-colors ${
                           selectedSlot === slot
                             ? "border-foreground bg-foreground text-background"
                             : "border-border text-foreground hover:bg-muted"
@@ -527,13 +528,13 @@ const PublicBooking = () => {
                       value={notas}
                       maxLength={500}
                       onChange={(e) => setNotas(e.target.value)}
-                      className="min-h-[88px] text-base"
+                      className="min-h-[88px]"
                     />
                   </div>
 
                   <div className="sm:flex sm:justify-end">
                     <Button
-                      className="h-12 w-full text-base sm:w-auto sm:min-w-[200px]"
+                      className="w-full sm:w-auto sm:min-w-[200px]"
                       onClick={confirmBooking}
                       disabled={!selectedSlot || submitting}
                     >
