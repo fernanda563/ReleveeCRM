@@ -5,15 +5,21 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Separator } from "@/components/ui/separator";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-
 import { Textarea } from "@/components/ui/textarea";
 import { PhoneInput } from "@/components/ui/phone-input";
 import {
@@ -31,6 +37,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { IneCapture } from "@/components/public/IneCapture";
 import { dataUrlBase64 } from "@/lib/image-compression";
 import {
@@ -38,7 +45,7 @@ import {
   capitalizeAsYouType,
   clientBaseSchema,
 } from "@/lib/client-schema";
-import { Check, CalendarDays, Gem, Loader2, MapPin, ShieldCheck } from "lucide-react";
+import { CalendarDays, Check, Gem, Loader2, MapPin, ShieldCheck } from "lucide-react";
 
 const publicFormSchema = clientBaseSchema.extend({
   privacidad: z.literal(true, {
@@ -79,13 +86,17 @@ async function callBooking<T>(action: string, payload: Record<string, unknown> =
     body: { action, ...payload },
   });
   if (error) {
-    let details = error.message;
+    const details = error.message;
     const ctx = (error as { context?: Response }).context;
     if (ctx && typeof ctx.text === "function") {
       try {
         const text = await ctx.clone().text();
         const parsed = JSON.parse(text);
-        return { data: null as T | null, error: parsed.error ?? details, code: parsed.code as string | undefined };
+        return {
+          data: null as T | null,
+          error: (parsed.error as string) ?? details,
+          code: parsed.code as string | undefined,
+        };
       } catch {
         /* keep default */
       }
@@ -95,13 +106,23 @@ async function callBooking<T>(action: string, payload: Record<string, unknown> =
   return { data: data as T, error: null as string | null, code: undefined };
 }
 
+const DetailRow = ({ label, value }: { label: string; value: string }) => (
+  <div className="flex items-baseline justify-between gap-4">
+    <span className="text-sm text-muted-foreground">{label}</span>
+    <span className="text-sm font-medium">{value}</span>
+  </div>
+);
+
 const PublicBooking = () => {
   const [step, setStep] = useState(0);
   const [config, setConfig] = useState<BookingConfig | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
-  const [sides, setSides] = useState<{ front: boolean; back: boolean }>({ front: false, back: false });
+  const [sides, setSides] = useState<{ front: boolean; back: boolean }>({
+    front: false,
+    back: false,
+  });
   const [availability, setAvailability] = useState<DayAvailability[]>([]);
   const [loadingAvailability, setLoadingAvailability] = useState(false);
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
@@ -231,207 +252,188 @@ const PublicBooking = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Top bar — mismo patrón que el sistema */}
-      <header className="border-b border-border">
-        <div className="container mx-auto flex items-center gap-2 px-6 py-4">
-          <Gem className="h-5 w-5 text-foreground" />
-          <span className="text-sm font-semibold tracking-tight text-foreground">
-            Joyería Relevée
-          </span>
+      <header className="border-b">
+        <div className="container flex h-16 items-center gap-2">
+          <Gem className="h-5 w-5" />
+          <span className="font-semibold tracking-tight">Joyería Relevée</span>
         </div>
       </header>
 
-      <main className="container mx-auto px-6 py-8">
-        {/* Page Header */}
-        <div className="mb-8">
-          <h1 className="mb-2 text-3xl font-bold text-foreground">Agenda tu cita</h1>
+      <main className="container max-w-3xl py-10">
+        <div className="mb-8 space-y-1">
+          <h1 className="text-3xl font-bold tracking-tight">Agenda tu cita</h1>
           <p className="text-muted-foreground">
-            Completa tu registro y reserva el horario que mejor te acomode
+            Completa tu registro y reserva el horario que mejor te acomode.
           </p>
         </div>
 
-        {/* Progress */}
-        <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
-          {STEPS.map((label, index) => (
-            <Card
-              key={label}
-              className={`border-border ${index === step ? "bg-muted" : ""}`}
-              aria-current={index === step ? "step" : undefined}
-            >
-              <CardHeader className="flex items-center py-4">
-                <CardTitle className="flex items-center gap-2 text-base">
-                  {index < step ? (
-                    <Check className="h-5 w-5 text-foreground" />
-                  ) : (
-                    <span className="text-sm text-muted-foreground">{index + 1}</span>
-                  )}
-                  {label}
-                </CardTitle>
-              </CardHeader>
-            </Card>
-          ))}
+        <div className="mb-8 space-y-3">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-medium">
+              Paso {Math.min(step + 1, STEPS.length)} de {STEPS.length} · {STEPS[step]}
+            </p>
+            <Badge variant="secondary">
+              {Math.round(((step + 1) / STEPS.length) * 100)}%
+            </Badge>
+          </div>
+          <Progress value={((step + 1) / STEPS.length) * 100} />
         </div>
 
         {formError && (
-          <Card className="mb-6 border-border bg-muted">
-            <CardContent className="py-4 text-sm text-foreground">{formError}</CardContent>
-          </Card>
+          <Alert className="mb-6">
+            <AlertDescription>{formError}</AlertDescription>
+          </Alert>
         )}
 
-
-        {/* Step 1 — datos */}
         {step === 0 && (
           <Card>
             <CardHeader>
               <CardTitle>Tus datos</CardTitle>
-              <CardDescription>Necesitamos estos datos para crear tu expediente.</CardDescription>
+              <CardDescription>
+                Necesitamos estos datos para crear tu expediente.
+              </CardDescription>
             </CardHeader>
-            <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(submitData)} className="space-y-5 sm:grid sm:grid-cols-2 sm:gap-5 sm:space-y-0">
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(submitData)}>
+                <CardContent className="grid gap-4 sm:grid-cols-2">
+                  <FormField
+                    control={form.control}
+                    name="nombre"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nombre</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            autoComplete="given-name"
+                            onChange={(e) =>
+                              field.onChange(capitalizeAsYouType(e.target.value))
+                            }
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-              <FormField
-                control={form.control}
-                name="nombre"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nombre *</FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                       
-                        autoComplete="given-name"
-                        onChange={(e) => field.onChange(capitalizeAsYouType(e.target.value))}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                  <FormField
+                    control={form.control}
+                    name="apellido"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Apellido(s)</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            autoComplete="family-name"
+                            onChange={(e) =>
+                              field.onChange(capitalizeAsYouType(e.target.value))
+                            }
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-              <FormField
-                control={form.control}
-                name="apellido"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Apellido(s) *</FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                       
-                        autoComplete="family-name"
-                        onChange={(e) => field.onChange(capitalizeAsYouType(e.target.value))}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                  <FormField
+                    control={form.control}
+                    name="telefono_principal"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Teléfono / WhatsApp</FormLabel>
+                        <FormControl>
+                          <PhoneInput value={field.value} onChange={field.onChange} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-              <FormField
-                control={form.control}
-                name="telefono_principal"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Teléfono / WhatsApp *</FormLabel>
-                    <FormControl>
-                      <PhoneInput value={field.value} onChange={field.onChange} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Correo electrónico</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            type="email"
+                            inputMode="email"
+                            autoComplete="email"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Correo electrónico *</FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        type="email"
-                        inputMode="email"
-                        autoComplete="email"
-                       
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                  <FormField
+                    control={form.control}
+                    name="fuente_contacto"
+                    render={({ field }) => (
+                      <FormItem className="sm:col-span-2">
+                        <FormLabel>¿Cómo se enteró de nosotros?</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecciona una opción" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {CONTACT_SOURCES.map((source) => (
+                              <SelectItem key={source.value} value={source.value}>
+                                {source.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-              <FormField
-                control={form.control}
-                name="fuente_contacto"
-                render={({ field }) => (
-                  <FormItem className="sm:col-span-2">
-
-                    <FormLabel>¿Cómo se enteró de nosotros? *</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecciona una opción" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {CONTACT_SOURCES.map((source) => (
-                          <SelectItem key={source.value} value={source.value}>
-                            {source.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="privacidad"
-                render={({ field }) => (
-                  <FormItem className="sm:col-span-2">
-                    <div className="flex items-start gap-3 rounded-lg border border-border p-4">
-                      <FormControl>
-                        <Checkbox
-                          checked={!!field.value}
-                          onCheckedChange={(checked) => field.onChange(checked === true)}
-                          className="mt-0.5"
-                        />
-                      </FormControl>
-                      <div>
-                        <p className="text-sm text-foreground">
-                          Acepto el aviso de privacidad y el tratamiento de mis datos e identificación
-                          oficial para fines de atención y seguimiento.
-                        </p>
-                        {config?.privacy_version && (
-                          <p className="mt-1 text-xs text-muted-foreground">
-                            Versión {config.privacy_version}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <div className="sm:col-span-2 sm:flex sm:justify-end">
-                <Button type="submit" className="w-full sm:w-auto sm:min-w-[200px]" disabled={submitting}>
-                  {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Continuar
-                </Button>
-              </div>
-            </form>
-          </Form>
-            </CardContent>
+                  <FormField
+                    control={form.control}
+                    name="privacidad"
+                    render={({ field }) => (
+                      <FormItem className="sm:col-span-2">
+                        <div className="flex items-start gap-3 rounded-md border p-4">
+                          <FormControl>
+                            <Checkbox
+                              checked={!!field.value}
+                              onCheckedChange={(checked) => field.onChange(checked === true)}
+                            />
+                          </FormControl>
+                          <div className="space-y-1 leading-none">
+                            <FormLabel className="font-normal">
+                              Acepto el aviso de privacidad y el tratamiento de mis datos e
+                              identificación oficial para fines de atención y seguimiento.
+                            </FormLabel>
+                            {config?.privacy_version && (
+                              <p className="text-xs text-muted-foreground">
+                                Versión {config.privacy_version}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </CardContent>
+                <CardFooter className="justify-end">
+                  <Button type="submit" disabled={submitting}>
+                    {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Continuar
+                  </Button>
+                </CardFooter>
+              </form>
+            </Form>
           </Card>
-
         )}
 
-        {/* Step 2 — INE */}
         {step === 1 && (
           <Card>
             <CardHeader>
@@ -439,13 +441,13 @@ const PublicBooking = () => {
               <CardDescription>Captura el frente y el reverso de tu INE.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-start gap-3 rounded-lg border border-border p-4">
-                <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-foreground" />
-                <p className="text-sm text-muted-foreground">
-                  Tu identificación se guarda de forma privada y sólo puede consultarla el personal
-                  autorizado de Relevée.
-                </p>
-              </div>
+              <Alert>
+                <ShieldCheck className="h-4 w-4" />
+                <AlertDescription>
+                  Tu identificación se guarda de forma privada y sólo puede consultarla el
+                  personal autorizado de Relevée.
+                </AlertDescription>
+              </Alert>
 
               <div className="grid gap-4 md:grid-cols-2">
                 <IneCapture
@@ -455,7 +457,6 @@ const PublicBooking = () => {
                   uploaded={sides.front}
                   onUpload={(dataUrl) => uploadSide("front", dataUrl)}
                 />
-
                 <IneCapture
                   side="back"
                   title="INE — Reverso"
@@ -464,127 +465,120 @@ const PublicBooking = () => {
                   onUpload={(dataUrl) => uploadSide("back", dataUrl)}
                 />
               </div>
-
-              <div className="sm:flex sm:justify-end">
-                <Button
-                  className="w-full sm:w-auto sm:min-w-[240px]"
-                  onClick={goToCalendar}
-                  disabled={!sides.front || !sides.back}
-                >
-                  <CalendarDays className="mr-2 h-4 w-4" /> Continuar a elegir cita
-                </Button>
-              </div>
             </CardContent>
+            <CardFooter className="justify-end">
+              <Button onClick={goToCalendar} disabled={!sides.front || !sides.back}>
+                <CalendarDays className="mr-2 h-4 w-4" />
+                Continuar a elegir cita
+              </Button>
+            </CardFooter>
           </Card>
         )}
 
-
-        {/* Step 3 — calendario */}
         {step === 2 && (
           <Card>
             <CardHeader>
               <CardTitle>Selecciona tu cita</CardTitle>
               <CardDescription>Elige el día y horario que mejor te acomode.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-5">
+            <CardContent className="space-y-6">
               {loadingAvailability ? (
-                <div className="flex items-center justify-center py-16">
-                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                <div className="space-y-4">
+                  <Skeleton className="h-10 w-full" />
+                  <Skeleton className="h-24 w-full" />
                 </div>
               ) : availability.length === 0 ? (
-                <div className="rounded-lg border border-border p-6 text-center text-sm text-muted-foreground">
-                  Por ahora no hay horarios disponibles. Inténtalo más tarde.
-                </div>
+                <Alert>
+                  <AlertDescription>
+                    Por ahora no hay horarios disponibles. Inténtalo más tarde.
+                  </AlertDescription>
+                </Alert>
               ) : (
                 <>
-                  <div className="-mx-6 overflow-x-auto px-6 sm:mx-0 sm:overflow-visible sm:px-0">
-                    <div className="flex gap-2 pb-2 sm:flex-wrap sm:pb-0">
+                  <div className="space-y-2">
+                    <Label>Día</Label>
+                    <ToggleGroup
+                      type="single"
+                      value={selectedDay ?? ""}
+                      onValueChange={(value) => {
+                        if (!value) return;
+                        setSelectedDay(value);
+                        setSelectedSlot(null);
+                      }}
+                      className="flex flex-wrap justify-start gap-2"
+                    >
                       {availability.map((day) => (
-                        <button
+                        <ToggleGroupItem
                           key={day.date}
-                          type="button"
-                          onClick={() => {
-                            setSelectedDay(day.date);
-                            setSelectedSlot(null);
-                          }}
-                          className={`min-w-[92px] shrink-0 rounded-lg border px-3 py-3 text-sm transition-colors ${
-                            selectedDay === day.date
-                              ? "border-foreground bg-foreground text-background"
-                              : "border-border text-foreground hover:bg-muted"
-                          }`}
+                          value={day.date}
+                          variant="outline"
+                          className="min-w-[104px]"
                         >
                           {formatDayLabel(day.date)}
-                        </button>
+                        </ToggleGroupItem>
                       ))}
-                    </div>
+                    </ToggleGroup>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-5">
-                    {slotsForDay.map((slot) => (
-                      <button
-                        key={slot}
-                        type="button"
-                        onClick={() => setSelectedSlot(slot)}
-                        className={`h-10 rounded-md border text-sm transition-colors ${
-                          selectedSlot === slot
-                            ? "border-foreground bg-foreground text-background"
-                            : "border-border text-foreground hover:bg-muted"
-                        }`}
+                  <Separator />
+
+                  <div className="space-y-2">
+                    <Label>Horario</Label>
+                    {slotsForDay.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">
+                        No hay horarios disponibles para este día.
+                      </p>
+                    ) : (
+                      <ToggleGroup
+                        type="single"
+                        value={selectedSlot ?? ""}
+                        onValueChange={(value) => value && setSelectedSlot(value)}
+                        className="grid grid-cols-2 gap-2 sm:grid-cols-4"
                       >
-                        {formatTime(slot)}
-                      </button>
-                    ))}
+                        {slotsForDay.map((slot) => (
+                          <ToggleGroupItem key={slot} value={slot} variant="outline">
+                            {formatTime(slot)}
+                          </ToggleGroupItem>
+                        ))}
+                      </ToggleGroup>
+                    )}
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm text-muted-foreground" htmlFor="notas">
-                      ¿Algo que debamos saber? (opcional)
-                    </label>
+                    <Label htmlFor="notas">¿Algo que debamos saber? (opcional)</Label>
                     <Textarea
                       id="notas"
                       value={notas}
                       maxLength={500}
                       onChange={(e) => setNotas(e.target.value)}
-                      className="min-h-[88px]"
                     />
-                  </div>
-
-                  <div className="sm:flex sm:justify-end">
-                    <Button
-                      className="w-full sm:w-auto sm:min-w-[200px]"
-                      onClick={confirmBooking}
-                      disabled={!selectedSlot || submitting}
-                    >
-                      {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                      Confirmar cita
-                    </Button>
                   </div>
                 </>
               )}
             </CardContent>
+            <CardFooter className="justify-end">
+              <Button onClick={confirmBooking} disabled={!selectedSlot || submitting}>
+                {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Confirmar cita
+              </Button>
+            </CardFooter>
           </Card>
         )}
 
-
-        {/* Step 4 — confirmación */}
         {step === 3 && confirmation && (
-          <Card className="mx-auto sm:max-w-xl">
-            <CardContent className="space-y-6 pt-6 text-center">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-border">
-                <Check className="h-7 w-7 text-foreground" />
+          <Card>
+            <CardHeader className="items-center text-center">
+              <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-full border">
+                <Check className="h-6 w-6" />
               </div>
-              <div>
-                <h2 className="text-xl font-semibold text-foreground sm:text-2xl">
-                  Tu cita está confirmada
-                </h2>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  Te esperamos, {confirmation.nombre}.
-                </p>
-              </div>
-
-              <div className="space-y-3 rounded-lg border border-border p-5 text-left">
-                <Row label="Folio" value={confirmation.folio} />
-                <Row
+              <CardTitle>Tu cita está confirmada</CardTitle>
+              <CardDescription>Te esperamos, {confirmation.nombre}.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-3 rounded-md border p-4">
+                <DetailRow label="Folio" value={confirmation.folio} />
+                <Separator />
+                <DetailRow
                   label="Fecha"
                   value={new Intl.DateTimeFormat("es-MX", {
                     timeZone: confirmation.timezone,
@@ -594,7 +588,7 @@ const PublicBooking = () => {
                     year: "numeric",
                   }).format(new Date(confirmation.fecha))}
                 />
-                <Row
+                <DetailRow
                   label="Hora"
                   value={new Intl.DateTimeFormat("es-MX", {
                     timeZone: confirmation.timezone,
@@ -603,8 +597,11 @@ const PublicBooking = () => {
                     hour12: true,
                   }).format(new Date(confirmation.fecha))}
                 />
-                <Row label="Sucursal" value={confirmation.sucursal} />
-                <Row label="Modalidad" value={confirmation.modalidad === "virtual" ? "Virtual" : "Presencial"} />
+                <DetailRow label="Sucursal" value={confirmation.sucursal} />
+                <DetailRow
+                  label="Modalidad"
+                  value={confirmation.modalidad === "virtual" ? "Virtual" : "Presencial"}
+                />
                 {confirmation.direccion && (
                   <div className="flex items-start gap-2 pt-1 text-sm text-muted-foreground">
                     <MapPin className="mt-0.5 h-4 w-4 shrink-0" />
@@ -612,25 +609,15 @@ const PublicBooking = () => {
                   </div>
                 )}
               </div>
-
-              <p className="text-xs text-muted-foreground">
+              <p className="text-center text-xs text-muted-foreground">
                 Guarda tu folio para cualquier cambio o cancelación.
               </p>
             </CardContent>
           </Card>
-
         )}
       </main>
     </div>
-
   );
 };
-
-const Row = ({ label, value }: { label: string; value: string }) => (
-  <div className="flex items-baseline justify-between gap-4">
-    <span className="text-xs uppercase tracking-wide text-muted-foreground">{label}</span>
-    <span className="text-right text-sm font-medium text-foreground">{value}</span>
-  </div>
-);
 
 export default PublicBooking;
