@@ -216,47 +216,57 @@ const ClientDialog = ({ open, onOpenChange, client, onSuccess }: ClientDialogPro
     return () => clearTimeout(timeoutId);
   }, [form.watch("email"), client, open]);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.type !== "application/pdf") {
-        toast.error("Solo se permiten archivos PDF");
-        return;
-      }
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error("El archivo no debe superar 5MB");
-        return;
-      }
-      setIneFile(file);
+  // Detección de duplicados por teléfono normalizado (con debounce)
+  useEffect(() => {
+    const phone = form.watch("telefono_principal");
+    const last10 = lastTenDigits(phone || "");
+
+    if (!open || last10.length < 10) {
+      setPhoneExists(false);
+      return;
     }
-  };
 
-  const uploadINE = async (clientId: string): Promise<string | null> => {
-    if (!ineFile) return null;
+    if (client && lastTenDigits(client.telefono_principal) === last10) {
+      setPhoneExists(false);
+      return;
+    }
 
+    const timeoutId = setTimeout(async () => {
+      try {
+        const { data, error } = await supabase
+          .from("clients")
+          .select("id")
+          .ilike("telefono_principal", `%${last10}`)
+          .limit(1);
+
+        if (error) throw error;
+        setPhoneExists(!!data && data.length > 0);
+      } catch (error) {
+        console.error("Error checking phone:", error);
+        setPhoneExists(false);
+      }
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [form.watch("telefono_principal"), client, open]);
+
+  const uploadPendingDocuments = async (clientId: string) => {
+    const entries = Object.entries(pendingDocs) as Array<["front" | "back", File | undefined]>;
+    if (entries.length === 0) return;
     setUploading(true);
-    const fileExt = "pdf";
-    const fileName = `${clientId}_${Date.now()}.${fileExt}`;
-    const filePath = `${clientId}/${fileName}`;
-
-    const { error: uploadError } = await supabase.storage
-      .from("ine-documents")
-      .upload(filePath, ineFile);
-
-    setUploading(false);
-
-    if (uploadError) {
-      toast.error("Error al subir el archivo");
-      console.error(uploadError);
-      return null;
+    try {
+      for (const [side, file] of entries) {
+        if (file) await uploadClientDocument(clientId, file, side);
+      }
+    } catch (error) {
+      console.error("Error uploading client documents:", error);
+      toast.error("El cliente se guardó, pero un documento no se pudo subir");
+    } finally {
+      setUploading(false);
+      setPendingDocs({});
     }
-
-    const { data } = supabase.storage
-      .from("ine-documents")
-      .getPublicUrl(filePath);
-
-    return data.publicUrl;
   };
+
 
   const handleSelectExistingClient = (selectedClient: Client) => {
     form.reset({
