@@ -627,27 +627,12 @@ const ClientDialog = ({ open, onOpenChange, client, onSuccess }: ClientDialogPro
               )}
             />
 
-            <div className="space-y-2">
-              <FormLabel htmlFor="ine">INE (PDF)</FormLabel>
-              <div className="flex items-center gap-2">
-                <Input
-                  id="ine"
-                  type="file"
-                  accept="application/pdf"
-                  onChange={handleFileChange}
-                  disabled={loading || uploading}
-                  className="flex-1"
-                />
-                {ineFile && (
-                  <span className="text-sm text-muted-foreground">
-                    {ineFile.name}
-                  </span>
-                )}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Máximo 5MB. Solo archivos PDF.
-              </p>
-            </div>
+            <ClientIneDocuments
+              clientId={client?.id}
+              pending={pendingDocs}
+              onPendingChange={setPendingDocs}
+            />
+
 
             <div className="flex justify-between items-center gap-3 pt-4">
               {/* Botón de eliminar (solo visible para administradores y cuando se edita un cliente) */}
