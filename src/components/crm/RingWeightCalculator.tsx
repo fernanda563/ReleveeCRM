@@ -1,4 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
+import { useWeightCalculation } from "@/hooks/useWeightCalculation";
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
