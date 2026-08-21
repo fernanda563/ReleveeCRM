@@ -223,24 +223,26 @@ const PublicBooking = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="mx-auto w-full max-w-md px-5 pb-16 pt-8">
-        <header className="mb-8 text-center">
+      <div className="mx-auto w-full max-w-md px-5 pb-16 pt-8 sm:max-w-2xl sm:px-8 sm:pt-12 lg:max-w-3xl lg:pt-16">
+        <header className="mb-8 text-center sm:mb-10">
           <p className="text-xs uppercase tracking-[0.35em] text-muted-foreground">Relevée</p>
-          <h1 className="mt-3 text-2xl font-semibold text-foreground">Agenda tu cita</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Registro y reserva en unos minutos, desde tu teléfono.
+          <h1 className="mt-3 text-2xl font-semibold text-foreground sm:text-3xl lg:text-4xl">
+            Agenda tu cita
+          </h1>
+          <p className="mt-2 text-sm text-muted-foreground sm:text-base">
+            Registro y reserva en unos minutos, desde cualquier dispositivo.
           </p>
         </header>
 
         {/* Progress */}
-        <ol className="mb-8 flex items-center gap-2" aria-label="Progreso">
+        <ol className="mb-8 flex items-center gap-2 sm:gap-4" aria-label="Progreso">
           {STEPS.map((label, index) => (
             <li key={label} className="flex-1">
               <div
                 className={`h-1 rounded-full ${index <= step ? "bg-foreground" : "bg-muted"}`}
                 aria-current={index === step ? "step" : undefined}
               />
-              <span className="mt-2 block text-[11px] text-muted-foreground">{`${index + 1} ${label}`}</span>
+              <span className="mt-2 block text-[11px] text-muted-foreground sm:text-xs">{`${index + 1} ${label}`}</span>
             </li>
           ))}
         </ol>
@@ -253,8 +255,15 @@ const PublicBooking = () => {
 
         {/* Step 1 — datos */}
         {step === 0 && (
+          <Card>
+            <CardHeader className="hidden sm:block">
+              <CardTitle>Tus datos</CardTitle>
+              <CardDescription>Necesitamos estos datos para crear tu expediente.</CardDescription>
+            </CardHeader>
+            <CardContent className="pt-6 sm:pt-0">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(submitData)} className="space-y-5">
+            <form onSubmit={form.handleSubmit(submitData)} className="space-y-5 sm:grid sm:grid-cols-2 sm:gap-5 sm:space-y-0">
+
               <FormField
                 control={form.control}
                 name="nombre"
