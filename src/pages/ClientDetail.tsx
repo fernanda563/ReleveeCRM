@@ -196,15 +196,36 @@ const ClientDetail = () => {
                   </div>
                 )}
               </div>
-              {client.fuente_contacto && (
+              <div className="space-y-3">
+                {client.fuente_contacto && (
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Fuente de Contacto</p>
+                    <p className="text-sm font-medium">{client.fuente_contacto}</p>
+                  </div>
+                )}
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Fuente de Contacto</p>
-                  <p className="text-sm font-medium">{client.fuente_contacto}</p>
+                  <p className="text-sm text-muted-foreground mb-1">Canal de alta</p>
+                  <p className="text-sm font-medium">
+                    {client.registration_channel === "public_self_service"
+                      ? "Auto-registro público"
+                      : "Alta manual en CRM"}
+                  </p>
                 </div>
-              )}
+              </div>
             </div>
           </CardContent>
         </Card>
+
+        {/* Documentos privados (INE) */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Identificación</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ClientIneDocuments clientId={client.id} pending={{}} onPendingChange={() => {}} />
+          </CardContent>
+        </Card>
+
 
         {/* Tabs with History */}
         <Tabs defaultValue="timeline" className="w-full">
