@@ -26,6 +26,8 @@ import { RemindersHistory } from "@/components/client-detail/RemindersHistory";
 import { OrdersHistory } from "@/components/client-detail/OrdersHistory";
 import QuotationDialog from "@/components/crm/QuotationDialog";
 import { ClientIneDocuments } from "@/components/crm/ClientIneDocuments";
+import { getContactSourceLabel } from "@/lib/client-schema";
+
 
 
 interface Client {
