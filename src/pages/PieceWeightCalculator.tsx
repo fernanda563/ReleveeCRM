@@ -252,9 +252,8 @@ const PieceWeightCalculator = () => {
     [innerDiam, bandWidth, thickness, currentAlloy.density]
   );
 
-  const metalWeightPerPiece = metalResult.weight;
-  const metalWeightTotal = metalWeightPerPiece * metalPieceCount;
-  const pureGold = metalWeightPerPiece * currentAlloy.purity;
+  const pureGold = metalResult.weight * currentAlloy.purity;
+
 
   // ── Stone calculations ──
   const dims = stoneValues[selectedCut];
