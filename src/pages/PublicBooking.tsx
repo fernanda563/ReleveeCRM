@@ -38,7 +38,7 @@ import {
   capitalizeAsYouType,
   clientBaseSchema,
 } from "@/lib/client-schema";
-import { Check, CalendarDays, Loader2, MapPin, ShieldCheck } from "lucide-react";
+import { Check, CalendarDays, Gem, Loader2, MapPin, ShieldCheck } from "lucide-react";
 
 const publicFormSchema = clientBaseSchema.extend({
   privacidad: z.literal(true, {
