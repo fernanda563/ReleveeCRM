@@ -316,23 +316,15 @@ const ClientDialog = ({ open, onOpenChange, client, onSuccess }: ClientDialogPro
     setLoading(true);
 
     try {
-      let documentUrl = client?.documento_id_url;
-
       if (client) {
         // Update existing client
-        if (ineFile) {
-          documentUrl = await uploadINE(client.id);
-        }
-
         const { error } = await supabase
           .from("clients")
-          .update({
-            ...values,
-            documento_id_url: documentUrl,
-          })
+          .update({ ...values })
           .eq("id", client.id);
 
         if (error) throw error;
+        await uploadPendingDocuments(client.id);
         toast.success("Cliente actualizado exitosamente");
       } else {
         // Create new client
@@ -345,24 +337,20 @@ const ClientDialog = ({ open, onOpenChange, client, onSuccess }: ClientDialogPro
             telefono_principal: values.telefono_principal,
             telefono_adicional: values.telefono_adicional || null,
             fuente_contacto: values.fuente_contacto,
+            registration_channel: "internal_manual",
           }])
           .select()
           .single();
 
         if (insertError) throw insertError;
 
-        if (ineFile && newClient) {
-          documentUrl = await uploadINE(newClient.id);
-          if (documentUrl) {
-            await supabase
-              .from("clients")
-              .update({ documento_id_url: documentUrl })
-              .eq("id", newClient.id);
-          }
+        if (newClient) {
+          await uploadPendingDocuments(newClient.id);
         }
 
         toast.success("Cliente creado exitosamente");
       }
+
 
       onSuccess();
       onOpenChange(false);
