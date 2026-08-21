@@ -230,37 +230,54 @@ const PublicBooking = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
-      <div className="container mx-auto max-w-3xl px-4 py-10">
-        <header className="mb-8 flex flex-col items-center text-center">
-          <div className="rounded-full bg-accent/10 p-3">
-            <Gem className="h-8 w-8 text-accent" />
-          </div>
-          <h1 className="mt-4 text-2xl font-semibold text-foreground">Agenda tu cita</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Joyería Relevée — registro y reserva en unos minutos.
-          </p>
-        </header>
+    <div className="min-h-screen bg-background">
+      {/* Top bar — mismo patrón que el sistema */}
+      <header className="border-b border-border">
+        <div className="container mx-auto flex items-center gap-2 px-6 py-4">
+          <Gem className="h-5 w-5 text-foreground" />
+          <span className="text-sm font-semibold tracking-tight text-foreground">
+            Joyería Relevée
+          </span>
+        </div>
+      </header>
 
+      <main className="container mx-auto px-6 py-8">
+        {/* Page Header */}
+        <div className="mb-8">
+          <h1 className="mb-2 text-3xl font-bold text-foreground">Agenda tu cita</h1>
+          <p className="text-muted-foreground">
+            Completa tu registro y reserva el horario que mejor te acomode
+          </p>
+        </div>
 
         {/* Progress */}
-        <ol className="mb-8 flex items-center gap-2 sm:gap-4" aria-label="Progreso">
+        <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
           {STEPS.map((label, index) => (
-            <li key={label} className="flex-1">
-              <div
-                className={`h-1 rounded-full ${index <= step ? "bg-foreground" : "bg-muted"}`}
-                aria-current={index === step ? "step" : undefined}
-              />
-              <span className="mt-2 block text-[11px] text-muted-foreground sm:text-xs">{`${index + 1} ${label}`}</span>
-            </li>
+            <Card
+              key={label}
+              className={`border-border ${index === step ? "bg-muted" : ""}`}
+              aria-current={index === step ? "step" : undefined}
+            >
+              <CardHeader className="flex items-center py-4">
+                <CardTitle className="flex items-center gap-2 text-base">
+                  {index < step ? (
+                    <Check className="h-5 w-5 text-foreground" />
+                  ) : (
+                    <span className="text-sm text-muted-foreground">{index + 1}</span>
+                  )}
+                  {label}
+                </CardTitle>
+              </CardHeader>
+            </Card>
           ))}
-        </ol>
+        </div>
 
         {formError && (
-          <div className="mb-5 rounded-md border border-border bg-muted px-4 py-3 text-sm text-foreground">
-            {formError}
-          </div>
+          <Card className="mb-6 border-border bg-muted">
+            <CardContent className="py-4 text-sm text-foreground">{formError}</CardContent>
+          </Card>
         )}
+
 
         {/* Step 1 — datos */}
         {step === 0 && (
@@ -603,8 +620,9 @@ const PublicBooking = () => {
           </Card>
 
         )}
-      </div>
+      </main>
     </div>
+
   );
 };
 
