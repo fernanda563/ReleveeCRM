@@ -53,8 +53,13 @@ export function IneCapture({ side, title, hint, uploaded, onUpload }: IneCapture
     }
   };
 
+  const isTouch =
+    typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches;
+  const primaryRef = isTouch ? cameraRef : galleryRef;
+  const secondaryRef = isTouch ? galleryRef : cameraRef;
+
   return (
-    <div className="rounded-lg border border-border p-4">
+    <div className="flex h-full flex-col rounded-lg border border-border p-4">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-base font-medium text-foreground">{title}</p>
@@ -69,7 +74,11 @@ export function IneCapture({ side, title, hint, uploaded, onUpload }: IneCapture
 
       {preview && (
         <div className="mt-4 overflow-hidden rounded-md border border-border">
-          <img src={preview} alt={`Vista previa de INE ${side === "front" ? "frente" : "reverso"}`} className="w-full" />
+          <img
+            src={preview}
+            alt={`Vista previa de INE ${side === "front" ? "frente" : "reverso"}`}
+            className="w-full"
+          />
         </div>
       )}
 
@@ -85,7 +94,7 @@ export function IneCapture({ side, title, hint, uploaded, onUpload }: IneCapture
       />
       <input ref={galleryRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
 
-      <div className="mt-4 space-y-2">
+      <div className="mt-4 space-y-2 sm:mt-auto sm:pt-4">
         {preview ? (
           <>
             <Button className="h-12 w-full text-base" onClick={confirm} disabled={busy}>
@@ -95,10 +104,10 @@ export function IneCapture({ side, title, hint, uploaded, onUpload }: IneCapture
             <Button
               variant="outline"
               className="h-12 w-full text-base"
-              onClick={() => cameraRef.current?.click()}
+              onClick={() => primaryRef.current?.click()}
               disabled={busy}
             >
-              <RefreshCw className="mr-2 h-4 w-4" /> Volver a tomar
+              <RefreshCw className="mr-2 h-4 w-4" /> Elegir otra imagen
             </Button>
           </>
         ) : (
@@ -106,23 +115,44 @@ export function IneCapture({ side, title, hint, uploaded, onUpload }: IneCapture
             <Button
               className="h-12 w-full text-base"
               variant={uploaded ? "outline" : "default"}
-              onClick={() => cameraRef.current?.click()}
+              onClick={() => primaryRef.current?.click()}
               disabled={busy}
             >
-              {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Camera className="mr-2 h-4 w-4" />}
-              {uploaded ? "Tomar de nuevo" : "Tomar foto"}
+              {busy ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : isTouch ? (
+                <Camera className="mr-2 h-4 w-4" />
+              ) : (
+                <ImageIcon className="mr-2 h-4 w-4" />
+              )}
+              {uploaded
+                ? isTouch
+                  ? "Tomar de nuevo"
+                  : "Subir de nuevo"
+                : isTouch
+                  ? "Tomar foto"
+                  : "Subir archivo"}
             </Button>
             <Button
               variant="ghost"
               className="h-11 w-full text-sm"
-              onClick={() => galleryRef.current?.click()}
+              onClick={() => secondaryRef.current?.click()}
               disabled={busy}
             >
-              <ImageIcon className="mr-2 h-4 w-4" /> Elegir desde la galería
+              {isTouch ? (
+                <>
+                  <ImageIcon className="mr-2 h-4 w-4" /> Elegir desde la galería
+                </>
+              ) : (
+                <>
+                  <Camera className="mr-2 h-4 w-4" /> Usar cámara
+                </>
+              )}
             </Button>
           </>
         )}
       </div>
     </div>
   );
+
 }

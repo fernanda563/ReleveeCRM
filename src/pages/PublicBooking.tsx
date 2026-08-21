@@ -6,6 +6,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+
 import { Textarea } from "@/components/ui/textarea";
 import { PhoneInput } from "@/components/ui/phone-input";
 import {
@@ -223,24 +231,26 @@ const PublicBooking = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="mx-auto w-full max-w-md px-5 pb-16 pt-8">
-        <header className="mb-8 text-center">
+      <div className="mx-auto w-full max-w-md px-5 pb-16 pt-8 sm:max-w-2xl sm:px-8 sm:pt-12 lg:max-w-3xl lg:pt-16">
+        <header className="mb-8 text-center sm:mb-10">
           <p className="text-xs uppercase tracking-[0.35em] text-muted-foreground">Relevée</p>
-          <h1 className="mt-3 text-2xl font-semibold text-foreground">Agenda tu cita</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Registro y reserva en unos minutos, desde tu teléfono.
+          <h1 className="mt-3 text-2xl font-semibold text-foreground sm:text-3xl lg:text-4xl">
+            Agenda tu cita
+          </h1>
+          <p className="mt-2 text-sm text-muted-foreground sm:text-base">
+            Registro y reserva en unos minutos, desde cualquier dispositivo.
           </p>
         </header>
 
         {/* Progress */}
-        <ol className="mb-8 flex items-center gap-2" aria-label="Progreso">
+        <ol className="mb-8 flex items-center gap-2 sm:gap-4" aria-label="Progreso">
           {STEPS.map((label, index) => (
             <li key={label} className="flex-1">
               <div
                 className={`h-1 rounded-full ${index <= step ? "bg-foreground" : "bg-muted"}`}
                 aria-current={index === step ? "step" : undefined}
               />
-              <span className="mt-2 block text-[11px] text-muted-foreground">{`${index + 1} ${label}`}</span>
+              <span className="mt-2 block text-[11px] text-muted-foreground sm:text-xs">{`${index + 1} ${label}`}</span>
             </li>
           ))}
         </ol>
@@ -253,8 +263,15 @@ const PublicBooking = () => {
 
         {/* Step 1 — datos */}
         {step === 0 && (
+          <Card>
+            <CardHeader className="hidden sm:block">
+              <CardTitle>Tus datos</CardTitle>
+              <CardDescription>Necesitamos estos datos para crear tu expediente.</CardDescription>
+            </CardHeader>
+            <CardContent className="pt-6 sm:pt-0">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(submitData)} className="space-y-5">
+            <form onSubmit={form.handleSubmit(submitData)} className="space-y-5 sm:grid sm:grid-cols-2 sm:gap-5 sm:space-y-0">
+
               <FormField
                 control={form.control}
                 name="nombre"
@@ -331,7 +348,8 @@ const PublicBooking = () => {
                 control={form.control}
                 name="fuente_contacto"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="sm:col-span-2">
+
                     <FormLabel>¿Cómo se enteró de nosotros? *</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
@@ -356,7 +374,7 @@ const PublicBooking = () => {
                 control={form.control}
                 name="privacidad"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="sm:col-span-2">
                     <div className="flex items-start gap-3 rounded-lg border border-border p-4">
                       <FormControl>
                         <Checkbox
@@ -382,179 +400,207 @@ const PublicBooking = () => {
                 )}
               />
 
-              <Button type="submit" className="h-12 w-full text-base" disabled={submitting}>
-                {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Continuar
-              </Button>
+              <div className="sm:col-span-2 sm:flex sm:justify-end">
+                <Button type="submit" className="h-12 w-full text-base sm:w-auto sm:min-w-[200px]" disabled={submitting}>
+                  {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Continuar
+                </Button>
+              </div>
             </form>
           </Form>
+            </CardContent>
+          </Card>
+
         )}
 
         {/* Step 2 — INE */}
         {step === 1 && (
-          <div className="space-y-4">
-            <div className="flex items-start gap-3 rounded-lg border border-border p-4">
-              <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-foreground" />
-              <p className="text-sm text-muted-foreground">
-                Tu identificación se guarda de forma privada y sólo puede consultarla el personal
-                autorizado de Relevée.
-              </p>
-            </div>
+          <Card>
+            <CardHeader className="hidden sm:block">
+              <CardTitle>Identificación oficial</CardTitle>
+              <CardDescription>Captura el frente y el reverso de tu INE.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4 pt-6 sm:pt-0">
+              <div className="flex items-start gap-3 rounded-lg border border-border p-4">
+                <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-foreground" />
+                <p className="text-sm text-muted-foreground">
+                  Tu identificación se guarda de forma privada y sólo puede consultarla el personal
+                  autorizado de Relevée.
+                </p>
+              </div>
 
-            <IneCapture
-              side="front"
-              title="INE — Frente"
-              hint="Coloca tu identificación sobre una superficie plana y captura el frente completo."
-              uploaded={sides.front}
-              onUpload={(dataUrl) => uploadSide("front", dataUrl)}
-            />
+              <div className="grid gap-4 md:grid-cols-2">
+                <IneCapture
+                  side="front"
+                  title="INE — Frente"
+                  hint="Coloca tu identificación sobre una superficie plana y captura el frente completo."
+                  uploaded={sides.front}
+                  onUpload={(dataUrl) => uploadSide("front", dataUrl)}
+                />
 
-            <IneCapture
-              side="back"
-              title="INE — Reverso"
-              hint="Ahora captura el reverso, cuidando que se lea con claridad."
-              uploaded={sides.back}
-              onUpload={(dataUrl) => uploadSide("back", dataUrl)}
-            />
+                <IneCapture
+                  side="back"
+                  title="INE — Reverso"
+                  hint="Ahora captura el reverso, cuidando que se lea con claridad."
+                  uploaded={sides.back}
+                  onUpload={(dataUrl) => uploadSide("back", dataUrl)}
+                />
+              </div>
 
-            <Button
-              className="h-12 w-full text-base"
-              onClick={goToCalendar}
-              disabled={!sides.front || !sides.back}
-            >
-              <CalendarDays className="mr-2 h-4 w-4" /> Continuar a elegir cita
-            </Button>
-          </div>
+              <div className="sm:flex sm:justify-end">
+                <Button
+                  className="h-12 w-full text-base sm:w-auto sm:min-w-[240px]"
+                  onClick={goToCalendar}
+                  disabled={!sides.front || !sides.back}
+                >
+                  <CalendarDays className="mr-2 h-4 w-4" /> Continuar a elegir cita
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         )}
+
 
         {/* Step 3 — calendario */}
         {step === 2 && (
-          <div className="space-y-5">
-            <h2 className="text-lg font-medium text-foreground">Selecciona tu cita</h2>
+          <Card>
+            <CardHeader>
+              <CardTitle>Selecciona tu cita</CardTitle>
+              <CardDescription>Elige el día y horario que mejor te acomode.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              {loadingAvailability ? (
+                <div className="flex items-center justify-center py-16">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </div>
+              ) : availability.length === 0 ? (
+                <div className="rounded-lg border border-border p-6 text-center text-sm text-muted-foreground">
+                  Por ahora no hay horarios disponibles. Inténtalo más tarde.
+                </div>
+              ) : (
+                <>
+                  <div className="-mx-6 overflow-x-auto px-6 sm:mx-0 sm:overflow-visible sm:px-0">
+                    <div className="flex gap-2 pb-2 sm:flex-wrap sm:pb-0">
+                      {availability.map((day) => (
+                        <button
+                          key={day.date}
+                          type="button"
+                          onClick={() => {
+                            setSelectedDay(day.date);
+                            setSelectedSlot(null);
+                          }}
+                          className={`min-w-[92px] shrink-0 rounded-lg border px-3 py-3 text-sm transition-colors ${
+                            selectedDay === day.date
+                              ? "border-foreground bg-foreground text-background"
+                              : "border-border text-foreground hover:bg-muted"
+                          }`}
+                        >
+                          {formatDayLabel(day.date)}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
 
-            {loadingAvailability ? (
-              <div className="flex items-center justify-center py-16">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-              </div>
-            ) : availability.length === 0 ? (
-              <div className="rounded-lg border border-border p-6 text-center text-sm text-muted-foreground">
-                Por ahora no hay horarios disponibles. Inténtalo más tarde.
-              </div>
-            ) : (
-              <>
-                <div className="-mx-5 overflow-x-auto px-5">
-                  <div className="flex gap-2 pb-2">
-                    {availability.map((day) => (
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-5">
+                    {slotsForDay.map((slot) => (
                       <button
-                        key={day.date}
+                        key={slot}
                         type="button"
-                        onClick={() => {
-                          setSelectedDay(day.date);
-                          setSelectedSlot(null);
-                        }}
-                        className={`min-w-[92px] rounded-lg border px-3 py-3 text-sm ${
-                          selectedDay === day.date
+                        onClick={() => setSelectedSlot(slot)}
+                        className={`h-12 rounded-lg border text-base transition-colors ${
+                          selectedSlot === slot
                             ? "border-foreground bg-foreground text-background"
-                            : "border-border text-foreground"
+                            : "border-border text-foreground hover:bg-muted"
                         }`}
                       >
-                        {formatDayLabel(day.date)}
+                        {formatTime(slot)}
                       </button>
                     ))}
                   </div>
-                </div>
 
-                <div className="grid grid-cols-2 gap-2">
-                  {slotsForDay.map((slot) => (
-                    <button
-                      key={slot}
-                      type="button"
-                      onClick={() => setSelectedSlot(slot)}
-                      className={`h-12 rounded-lg border text-base ${
-                        selectedSlot === slot
-                          ? "border-foreground bg-foreground text-background"
-                          : "border-border text-foreground"
-                      }`}
+                  <div className="space-y-2">
+                    <label className="text-sm text-muted-foreground" htmlFor="notas">
+                      ¿Algo que debamos saber? (opcional)
+                    </label>
+                    <Textarea
+                      id="notas"
+                      value={notas}
+                      maxLength={500}
+                      onChange={(e) => setNotas(e.target.value)}
+                      className="min-h-[88px] text-base"
+                    />
+                  </div>
+
+                  <div className="sm:flex sm:justify-end">
+                    <Button
+                      className="h-12 w-full text-base sm:w-auto sm:min-w-[200px]"
+                      onClick={confirmBooking}
+                      disabled={!selectedSlot || submitting}
                     >
-                      {formatTime(slot)}
-                    </button>
-                  ))}
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm text-muted-foreground" htmlFor="notas">
-                    ¿Algo que debamos saber? (opcional)
-                  </label>
-                  <Textarea
-                    id="notas"
-                    value={notas}
-                    maxLength={500}
-                    onChange={(e) => setNotas(e.target.value)}
-                    className="min-h-[88px] text-base"
-                  />
-                </div>
-
-                <Button
-                  className="h-12 w-full text-base"
-                  onClick={confirmBooking}
-                  disabled={!selectedSlot || submitting}
-                >
-                  {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Confirmar cita
-                </Button>
-              </>
-            )}
-          </div>
+                      {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      Confirmar cita
+                    </Button>
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
         )}
+
 
         {/* Step 4 — confirmación */}
         {step === 3 && confirmation && (
-          <div className="space-y-6 text-center">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-border">
-              <Check className="h-7 w-7 text-foreground" />
-            </div>
-            <div>
-              <h2 className="text-xl font-semibold text-foreground">Tu cita está confirmada</h2>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Te esperamos, {confirmation.nombre}.
+          <Card className="mx-auto sm:max-w-xl">
+            <CardContent className="space-y-6 pt-6 text-center">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-border">
+                <Check className="h-7 w-7 text-foreground" />
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold text-foreground sm:text-2xl">
+                  Tu cita está confirmada
+                </h2>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Te esperamos, {confirmation.nombre}.
+                </p>
+              </div>
+
+              <div className="space-y-3 rounded-lg border border-border p-5 text-left">
+                <Row label="Folio" value={confirmation.folio} />
+                <Row
+                  label="Fecha"
+                  value={new Intl.DateTimeFormat("es-MX", {
+                    timeZone: confirmation.timezone,
+                    weekday: "long",
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  }).format(new Date(confirmation.fecha))}
+                />
+                <Row
+                  label="Hora"
+                  value={new Intl.DateTimeFormat("es-MX", {
+                    timeZone: confirmation.timezone,
+                    hour: "numeric",
+                    minute: "2-digit",
+                    hour12: true,
+                  }).format(new Date(confirmation.fecha))}
+                />
+                <Row label="Sucursal" value={confirmation.sucursal} />
+                <Row label="Modalidad" value={confirmation.modalidad === "virtual" ? "Virtual" : "Presencial"} />
+                {confirmation.direccion && (
+                  <div className="flex items-start gap-2 pt-1 text-sm text-muted-foreground">
+                    <MapPin className="mt-0.5 h-4 w-4 shrink-0" />
+                    <span>{confirmation.direccion}</span>
+                  </div>
+                )}
+              </div>
+
+              <p className="text-xs text-muted-foreground">
+                Guarda tu folio para cualquier cambio o cancelación.
               </p>
-            </div>
+            </CardContent>
+          </Card>
 
-            <div className="space-y-3 rounded-lg border border-border p-5 text-left">
-              <Row label="Folio" value={confirmation.folio} />
-              <Row
-                label="Fecha"
-                value={new Intl.DateTimeFormat("es-MX", {
-                  timeZone: confirmation.timezone,
-                  weekday: "long",
-                  day: "numeric",
-                  month: "long",
-                  year: "numeric",
-                }).format(new Date(confirmation.fecha))}
-              />
-              <Row
-                label="Hora"
-                value={new Intl.DateTimeFormat("es-MX", {
-                  timeZone: confirmation.timezone,
-                  hour: "numeric",
-                  minute: "2-digit",
-                  hour12: true,
-                }).format(new Date(confirmation.fecha))}
-              />
-              <Row label="Sucursal" value={confirmation.sucursal} />
-              <Row label="Modalidad" value={confirmation.modalidad === "virtual" ? "Virtual" : "Presencial"} />
-              {confirmation.direccion && (
-                <div className="flex items-start gap-2 pt-1 text-sm text-muted-foreground">
-                  <MapPin className="mt-0.5 h-4 w-4 shrink-0" />
-                  <span>{confirmation.direccion}</span>
-                </div>
-              )}
-            </div>
-
-            <p className="text-xs text-muted-foreground">
-              Guarda tu folio para cualquier cambio o cancelación.
-            </p>
-          </div>
         )}
       </div>
     </div>
