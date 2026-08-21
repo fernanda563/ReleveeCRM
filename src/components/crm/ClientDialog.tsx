@@ -569,7 +569,13 @@ const ClientDialog = ({ open, onOpenChange, client, onSuccess }: ClientDialogPro
                         placeholder="5551234567"
                       />
                     </FormControl>
+                    {phoneExists && (
+                      <p className="text-sm text-muted-foreground">
+                        Este teléfono ya está registrado con otro cliente
+                      </p>
+                    )}
                     <FormMessage />
+
                   </FormItem>
                 )}
               />
