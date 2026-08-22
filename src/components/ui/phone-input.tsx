@@ -165,12 +165,11 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, PhoneInputProps>(
         <Input
           ref={ref}
           type="tel"
-          value={phoneNumber}
+          value={formatPhoneNumber(countryCode, phoneNumber)}
           onChange={handlePhoneChange}
           disabled={disabled}
           placeholder={placeholder || "1234567890"}
           className="flex-1"
-          maxLength={PHONE_VALIDATIONS[countryCode]?.maxLength || 15}
         />
       </div>
     );
