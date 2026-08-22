@@ -38,7 +38,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { Calendar } from "@/components/ui/calendar";
+import { LargeCalendar } from "@/components/public/LargeCalendar";
 import { es } from "date-fns/locale";
 
 import { IneCapture } from "@/components/public/IneCapture";
@@ -718,11 +718,15 @@ const PublicBooking = () => {
               </CardTitle>
               <CardDescription>Elige el día y horario que mejor te acomode.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent>
               {loadingAvailability ? (
-                <div className="space-y-4">
-                  <Skeleton className="h-10 w-full" />
-                  <Skeleton className="h-24 w-full" />
+                <div className="grid grid-cols-1 lg:grid-cols-[1.25fr_1fr] gap-6 items-start">
+                  <Skeleton className="h-[380px] w-full" />
+                  <div className="space-y-4">
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-24 w-full" />
+                  </div>
                 </div>
               ) : availability.length === 0 ? (
                 <Alert>
@@ -731,18 +735,16 @@ const PublicBooking = () => {
                   </AlertDescription>
                 </Alert>
               ) : (
-                <>
-                  <div className="space-y-2">
-                    <Label>Día</Label>
-                    <div className="flex justify-center rounded-md border border-border">
-                      <Calendar
+                <div className="grid grid-cols-1 lg:grid-cols-[1.25fr_1fr] gap-6 items-start">
+                  <div className="space-y-3">
+                    <Label className="text-base">Día</Label>
+                    <div className="flex justify-center rounded-md border border-border p-2">
+                      <LargeCalendar
                         mode="single"
                         locale={es}
                         selected={selectedDay ? parseDayKey(selectedDay) : undefined}
                         defaultMonth={
-                          selectedDay
-                            ? parseDayKey(selectedDay)
-                            : availableDates[0]
+                          selectedDay ? parseDayKey(selectedDay) : availableDates[0]
                         }
                         onSelect={(date) => {
                           if (!date) return;
@@ -755,7 +757,6 @@ const PublicBooking = () => {
                         fromDate={availableDates[0]}
                         toDate={availableDates[availableDates.length - 1]}
                         initialFocus
-                        className="p-3 pointer-events-auto"
                       />
                     </div>
                     {selectedDay && (
@@ -765,41 +766,46 @@ const PublicBooking = () => {
                     )}
                   </div>
 
+                  <div className="space-y-5">
+                    <div className="space-y-3">
+                      <Label className="text-base">Horario</Label>
+                      {slotsForDay.length === 0 ? (
+                        <p className="text-sm text-muted-foreground">
+                          No hay horarios disponibles para este día.
+                        </p>
+                      ) : (
+                        <ToggleGroup
+                          type="single"
+                          value={selectedSlot ?? ""}
+                          onValueChange={(value) => value && setSelectedSlot(value)}
+                          className="grid grid-cols-2 gap-2"
+                        >
+                          {slotsForDay.map((slot) => (
+                            <ToggleGroupItem
+                              key={slot}
+                              value={slot}
+                              variant="outline"
+                              className="h-11 justify-center text-sm"
+                            >
+                              {formatTime(slot)}
+                            </ToggleGroupItem>
+                          ))}
+                        </ToggleGroup>
+                      )}
+                    </div>
 
-                  <Separator />
-
-                  <div className="space-y-2">
-                    <Label>Horario</Label>
-                    {slotsForDay.length === 0 ? (
-                      <p className="text-sm text-muted-foreground">
-                        No hay horarios disponibles para este día.
-                      </p>
-                    ) : (
-                      <ToggleGroup
-                        type="single"
-                        value={selectedSlot ?? ""}
-                        onValueChange={(value) => value && setSelectedSlot(value)}
-                        className="grid grid-cols-2 gap-2 sm:grid-cols-4"
-                      >
-                        {slotsForDay.map((slot) => (
-                          <ToggleGroupItem key={slot} value={slot} variant="outline">
-                            {formatTime(slot)}
-                          </ToggleGroupItem>
-                        ))}
-                      </ToggleGroup>
-                    )}
+                    <div className="space-y-2">
+                      <Label htmlFor="notas">¿Algo que debamos saber? (opcional)</Label>
+                      <Textarea
+                        id="notas"
+                        value={notas}
+                        maxLength={500}
+                        onChange={(e) => setNotas(e.target.value)}
+                        className="min-h-[100px]"
+                      />
+                    </div>
                   </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="notas">¿Algo que debamos saber? (opcional)</Label>
-                    <Textarea
-                      id="notas"
-                      value={notas}
-                      maxLength={500}
-                      onChange={(e) => setNotas(e.target.value)}
-                    />
-                  </div>
-                </>
+                </div>
               )}
             </CardContent>
             <CardFooter className="justify-between">
