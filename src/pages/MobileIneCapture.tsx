@@ -2,14 +2,16 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { IneCapture } from "@/components/public/IneCapture";
 import { useThemeInitializer } from "@/hooks/useThemeInitializer";
 import { dataUrlBase64 } from "@/lib/image-compression";
 import { callBooking } from "@/lib/public-booking-api";
-import { Check, ShieldCheck } from "lucide-react";
+import { Check, Monitor, RotateCcw, ShieldCheck } from "lucide-react";
 
 type Sides = { front: boolean; back: boolean };
 
