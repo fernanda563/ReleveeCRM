@@ -291,13 +291,11 @@ const PublicBooking = () => {
     <div className="min-h-screen bg-background">
       <header className="border-b">
         <div className="container mx-auto flex h-20 items-center gap-2 px-6">
-          <div className="h-12 overflow-hidden flex items-center justify-center">
-            <img
-              src="/images/relevee-logo.png"
-              alt="Relevée"
-              className="h-48 w-auto dark:invert"
-            />
-          </div>
+          <img
+            src="/images/relevee-logo.png"
+            alt="Relevée"
+            className="h-16 w-auto dark:invert"
+          />
         </div>
       </header>
 
