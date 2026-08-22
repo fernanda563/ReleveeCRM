@@ -301,7 +301,7 @@ const PublicBooking = () => {
         </div>
       </header>
 
-      <main className="container mx-auto px-6 py-8">
+      <main className="container mx-auto max-w-3xl px-6 py-8">
         <div className="mb-8 space-y-1">
           <h1 className="text-3xl font-bold text-foreground mb-2">Agenda tu cita</h1>
           <p className="text-muted-foreground">
