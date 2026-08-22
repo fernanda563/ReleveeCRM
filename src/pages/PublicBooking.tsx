@@ -572,7 +572,16 @@ const PublicBooking = () => {
                 </>
               )}
             </CardContent>
-            <CardFooter className="justify-end">
+            <CardFooter className="justify-between">
+              <Button
+                variant="outline"
+                onClick={() => setStep(1)}
+                type="button"
+                disabled={submitting}
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Regresar
+              </Button>
               <Button onClick={confirmBooking} disabled={!selectedSlot || submitting}>
                 {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Confirmar cita
