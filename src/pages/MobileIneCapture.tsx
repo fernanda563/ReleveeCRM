@@ -14,7 +14,7 @@ import { Check, ShieldCheck } from "lucide-react";
 type Sides = { front: boolean; back: boolean };
 
 const MobileIneCapture = () => {
-  useThemeInitializer();
+  const { ready: themeReady } = useThemeInitializer();
   const { token } = useParams<{ token: string }>();
   const [loading, setLoading] = useState(true);
   const [sides, setSides] = useState<Sides>({ front: false, back: false });
@@ -58,6 +58,18 @@ const MobileIneCapture = () => {
   };
 
   const done = Number(sides.front) + Number(sides.back);
+
+  if (!themeReady) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto max-w-2xl space-y-4 px-6 py-8">
+          <Skeleton className="h-10 w-2/3" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-64 w-full" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">

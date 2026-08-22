@@ -1,9 +1,11 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { applyThemeColors, parseThemeFromCSS } from '@/lib/apply-css-variables';
 import { ThemeColors } from '@/lib/theme-presets';
 
 export const useThemeInitializer = () => {
+  const [ready, setReady] = useState(false);
+
   useEffect(() => {
     const initializeTheme = async () => {
       try {
@@ -52,9 +54,13 @@ export const useThemeInitializer = () => {
         }
       } catch (error) {
         console.error('Error initializing theme:', error);
+      } finally {
+        setReady(true);
       }
     };
 
     initializeTheme();
   }, []); // Solo ejecutar una vez al montar
+
+  return { ready };
 };
