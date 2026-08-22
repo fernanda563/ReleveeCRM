@@ -104,18 +104,39 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, PhoneInputProps>(
 
     const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       // Solo permitir dígitos
-      const newNumber = e.target.value.replace(/\D/g, '');
-      
+      const rawNumber = e.target.value.replace(/\D/g, "");
+
       // Obtener límite de longitud según el código de país
       const validation = PHONE_VALIDATIONS[countryCode];
       const maxLength = validation?.maxLength || 15;
-      
+
       // Limitar según el código de país
-      if (newNumber.length <= maxLength) {
-        setPhoneNumber(newNumber);
-        const fullNumber = newNumber ? `${countryCode}${newNumber}` : countryCode;
+      if (rawNumber.length <= maxLength) {
+        setPhoneNumber(rawNumber);
+        const fullNumber = rawNumber ? `${countryCode}${rawNumber}` : countryCode;
         onChange?.(fullNumber);
       }
+    };
+
+    // Aplica una máscara visual que separa la LADA del resto del número
+    const formatPhoneNumber = (code: string, digits: string): string => {
+      if (!digits) return "";
+      if (code === "+52") {
+        // México: LADA de 2 dígitos para 33, 55, 81; de 3 dígitos para el resto
+        if (
+          digits.startsWith("33") ||
+          digits.startsWith("55") ||
+          digits.startsWith("81")
+        ) {
+          return [digits.slice(0, 2), digits.slice(2, 6), digits.slice(6, 10)]
+            .filter(Boolean)
+            .join(" ");
+        }
+        return [digits.slice(0, 3), digits.slice(3, 6), digits.slice(6, 10)]
+          .filter(Boolean)
+          .join(" ");
+      }
+      return digits;
     };
 
     return (
@@ -144,12 +165,11 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, PhoneInputProps>(
         <Input
           ref={ref}
           type="tel"
-          value={phoneNumber}
+          value={formatPhoneNumber(countryCode, phoneNumber)}
           onChange={handlePhoneChange}
           disabled={disabled}
           placeholder={placeholder || "1234567890"}
           className="flex-1"
-          maxLength={PHONE_VALIDATIONS[countryCode]?.maxLength || 15}
         />
       </div>
     );
