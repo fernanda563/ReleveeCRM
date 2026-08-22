@@ -38,6 +38,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Calendar } from "@/components/ui/calendar";
+import { es } from "date-fns/locale";
+
 import { IneCapture } from "@/components/public/IneCapture";
 import { QRCodeSVG } from "qrcode.react";
 import { useThemeInitializer } from "@/hooks/useThemeInitializer";
