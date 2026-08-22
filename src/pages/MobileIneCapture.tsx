@@ -74,16 +74,17 @@ const MobileIneCapture = () => {
       </header>
 
 
-      <main className="mx-auto w-full max-w-md px-4 py-6">
-        <div className="mb-6 space-y-1">
-          <h1 className="text-2xl font-bold text-foreground">Captura tu INE</h1>
-          <p className="text-sm text-muted-foreground">
+      <main className="container mx-auto max-w-2xl px-6 py-8">
+        <div className="mb-8 space-y-1">
+          <h1 className="text-3xl font-bold text-foreground mb-2">Captura tu INE</h1>
+          <p className="text-muted-foreground">
             Toma una foto del frente y del reverso. Al terminar, tu registro continúa en la
             computadora automáticamente.
           </p>
         </div>
 
-        <div className="mb-6 space-y-3">
+        <div className="mb-8 space-y-3">
+
           <div className="flex items-center justify-between">
             <p className="text-sm font-medium">{done} de 2 fotos listas</p>
             <Badge variant="secondary">{done * 50}%</Badge>
