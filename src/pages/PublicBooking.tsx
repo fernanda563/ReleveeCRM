@@ -127,7 +127,7 @@ const DetailRow = ({ label, value }: { label: string; value: string }) => (
 );
 
 const PublicBooking = () => {
-  useThemeInitializer();
+  const { ready: themeReady } = useThemeInitializer();
   const [step, setStep] = useState(0);
   const [config, setConfig] = useState<BookingConfig | null>(null);
   const [token, setToken] = useState<string | null>(null);
