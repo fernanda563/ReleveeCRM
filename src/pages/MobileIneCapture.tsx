@@ -14,7 +14,7 @@ import { Check, ShieldCheck } from "lucide-react";
 type Sides = { front: boolean; back: boolean };
 
 const MobileIneCapture = () => {
-  useThemeInitializer();
+  const { ready: themeReady } = useThemeInitializer();
   const { token } = useParams<{ token: string }>();
   const [loading, setLoading] = useState(true);
   const [sides, setSides] = useState<Sides>({ front: false, back: false });
