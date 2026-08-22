@@ -170,9 +170,9 @@ const PublicBooking = () => {
     });
   }, []);
 
-  // Polls for photos uploaded from the phone via the QR flow.
+  // Polls for photos uploaded from the phone via the QR flow (desktop only).
   useEffect(() => {
-    if (step !== 1 || !token || (sides.front && sides.back)) return;
+    if (isMobileDevice || step !== 1 || !token || (sides.front && sides.back)) return;
     let active = true;
     const poll = async () => {
       const { data } = await callBooking<{ front: boolean; back: boolean }>("document_status", {
@@ -186,7 +186,7 @@ const PublicBooking = () => {
       active = false;
       window.clearInterval(id);
     };
-  }, [step, token, sides.front, sides.back]);
+  }, [isMobileDevice, step, token, sides.front, sides.back]);
 
 
   const timezone = config?.timezone ?? "America/Mexico_City";
