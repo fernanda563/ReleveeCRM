@@ -242,7 +242,9 @@ Deno.serve(async (req) => {
     }
 
     // --- actions below require a valid registration session ---
-    const body = ["upload_document", "book"].includes(action) ? await req.json() : {};
+    const body = ["upload_document", "book", "document_status"].includes(action)
+      ? await req.json()
+      : {};
 
     async function resolveSession(token: string) {
       const { data } = await supabaseAdmin
