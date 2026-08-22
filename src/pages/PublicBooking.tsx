@@ -715,28 +715,37 @@ const PublicBooking = () => {
                 <>
                   <div className="space-y-2">
                     <Label>Día</Label>
-                    <ToggleGroup
-                      type="single"
-                      value={selectedDay ?? ""}
-                      onValueChange={(value) => {
-                        if (!value) return;
-                        setSelectedDay(value);
-                        setSelectedSlot(null);
-                      }}
-                      className="flex flex-wrap justify-start gap-2"
-                    >
-                      {availability.map((day) => (
-                        <ToggleGroupItem
-                          key={day.date}
-                          value={day.date}
-                          variant="outline"
-                          className="min-w-[104px]"
-                        >
-                          {formatDayLabel(day.date)}
-                        </ToggleGroupItem>
-                      ))}
-                    </ToggleGroup>
+                    <div className="flex justify-center rounded-md border border-border">
+                      <Calendar
+                        mode="single"
+                        locale={es}
+                        selected={selectedDay ? parseDayKey(selectedDay) : undefined}
+                        defaultMonth={
+                          selectedDay
+                            ? parseDayKey(selectedDay)
+                            : availableDates[0]
+                        }
+                        onSelect={(date) => {
+                          if (!date) return;
+                          setSelectedDay(toDayKey(date));
+                          setSelectedSlot(null);
+                        }}
+                        disabled={(date) =>
+                          !availability.some((d) => d.date === toDayKey(date))
+                        }
+                        fromDate={availableDates[0]}
+                        toDate={availableDates[availableDates.length - 1]}
+                        initialFocus
+                        className="p-3 pointer-events-auto"
+                      />
+                    </div>
+                    {selectedDay && (
+                      <p className="text-sm text-muted-foreground">
+                        {formatDayLabel(selectedDay)}
+                      </p>
+                    )}
                   </div>
+
 
                   <Separator />
 
