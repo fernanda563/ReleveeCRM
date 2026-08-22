@@ -128,6 +128,7 @@ const DetailRow = ({ label, value }: { label: string; value: string }) => (
 
 const PublicBooking = () => {
   const { ready: themeReady } = useThemeInitializer();
+  const isMobileDevice = useIsMobileDevice();
   const [step, setStep] = useState(0);
   const [config, setConfig] = useState<BookingConfig | null>(null);
   const [token, setToken] = useState<string | null>(null);
