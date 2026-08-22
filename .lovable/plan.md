@@ -1,16 +1,33 @@
+# Aplicar el tema del sistema en la vista de captura de INE
 
+## Qué está pasando realmente
 
-## Plan: Grosor de pared — step 0.1 mm y máximo 4 mm
+La vista `/captura-ine/:token` **sí** usa componentes de shadcn/ui (Card, Alert, Badge, Progress, Button, Skeleton). Lo que no se está aplicando es **el tema de la marca**: colores, radios y tokens que sí ves en el dashboard.
 
-### Cambios en 2 archivos
+Causa verificada: el hook que carga el tema consulta la tabla `system_settings`, y esa tabla solo tiene permisos de lectura para administradores autenticados. En una vista pública (sin sesión) la consulta responde con error 400 — se ve en la consola del navegador al abrir `/captura-ine/test-token` — y la página se queda con los colores por defecto del CSS base en lugar del tema configurado.
 
-**`src/components/crm/RingWeightCalculator.tsx`** y **`src/pages/PieceWeightCalculator.tsx`** — mismos cambios en ambos:
+Por eso los intentos anteriores (cambiar tarjetas, encabezado, tipografías) nunca resolvieron el problema: el marcado ya era correcto, faltaban los tokens del tema.
 
-1. **THICKNESS_LABELS** — agregar entrada `3.5: "Muy gruesa"` y `4: "Extra gruesa"` (los valores intermedios como 1.7 usarán el fallback `${thickness} mm`)
+## Solución
 
-2. **Input numérico** — cambiar `step={0.5}` → `step={0.1}`, `max={3}` → `max={4}`, y el redondeo de `* 2) / 2` (round a 0.5) → `* 10) / 10` (round a 0.1), clamp a `max 4`
+1. **Permitir lectura pública solo de la configuración de apariencia**
+   - Nueva política de lectura en `system_settings` limitada a `category = 'appearance'` para visitantes no autenticados, más el permiso de acceso correspondiente.
+   - El resto de categorías (empresa, firma electrónica, metales, notificaciones, regional) siguen siendo privadas: la política filtra por categoría, no abre la tabla completa.
+   - Nota: los valores de apariencia son colores y presets, no hay datos sensibles ahí.
 
-3. **Slider** — actualmente usa una conversión indirecta (`(thickness - 1) * 2`, step 1, max 4) que solo permite saltos de 0.5. Cambiar a slider directo: `value={[thickness]}`, `min={1}`, `max={4}`, `step={0.1}`, `onValueChange={([v]) => setThickness(Math.round(v * 10) / 10)}`
+2. **Hacer que las vistas públicas esperen al tema**
+   - Ajustar el hook de tema para exponer un estado de "tema cargado" y que `/captura-ine` y `/agendar-cita` no muestren la interfaz hasta que se apliquen los tokens, evitando el parpadeo de colores por defecto.
 
-4. **Etiqueta del rango** — cambiar `3 mm` → `4 mm`
+3. **Verificación**
+   - Abrir `/captura-ine/<token>` sin sesión en móvil y escritorio y comparar los tokens aplicados (`--background`, `--primary`, `--radius`) contra el dashboard; deben coincidir.
+   - Confirmar que ya no aparece el error 400 en consola.
+   - Confirmar que una consulta pública a otras categorías de `system_settings` sigue devolviendo vacío.
 
+## Detalles técnicos
+
+- Migración SQL:
+  - `CREATE POLICY "Public can read appearance settings" ON public.system_settings FOR SELECT TO anon, authenticated USING (category = 'appearance');`
+  - `GRANT SELECT ON public.system_settings TO anon;`
+- `src/hooks/useThemeInitializer.ts`: devolver `ready: boolean`; filtrar la consulta con `.eq('category','appearance')`.
+- `src/pages/MobileIneCapture.tsx` y `src/pages/PublicBooking.tsx`: usar ese estado para renderizar un `Skeleton` mientras carga el tema.
+- No se cambia el marcado de las tarjetas ni de `IneCapture`; ya siguen el patrón del sistema.
