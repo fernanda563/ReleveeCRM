@@ -168,6 +168,25 @@ const PublicBooking = () => {
     });
   }, []);
 
+  // Polls for photos uploaded from the phone via the QR flow.
+  useEffect(() => {
+    if (step !== 1 || !token || (sides.front && sides.back)) return;
+    let active = true;
+    const poll = async () => {
+      const { data } = await callBooking<{ front: boolean; back: boolean }>("document_status", {
+        token,
+      });
+      if (active && data) setSides({ front: data.front, back: data.back });
+    };
+    const id = window.setInterval(poll, 4000);
+    poll();
+    return () => {
+      active = false;
+      window.clearInterval(id);
+    };
+  }, [step, token, sides.front, sides.back]);
+
+
   const timezone = config?.timezone ?? "America/Mexico_City";
 
   const formatTime = (iso: string) =>
