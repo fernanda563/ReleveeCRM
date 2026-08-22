@@ -41,6 +41,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { IneCapture } from "@/components/public/IneCapture";
 import { QRCodeSVG } from "qrcode.react";
 import { useThemeInitializer } from "@/hooks/useThemeInitializer";
+import { useIsMobileDevice } from "@/hooks/use-mobile-device";
 import { dataUrlBase64 } from "@/lib/image-compression";
 import {
   CONTACT_SOURCES,
@@ -128,6 +129,7 @@ const DetailRow = ({ label, value }: { label: string; value: string }) => (
 
 const PublicBooking = () => {
   const { ready: themeReady } = useThemeInitializer();
+  const isMobileDevice = useIsMobileDevice();
   const [step, setStep] = useState(0);
   const [config, setConfig] = useState<BookingConfig | null>(null);
   const [token, setToken] = useState<string | null>(null);
@@ -168,9 +170,9 @@ const PublicBooking = () => {
     });
   }, []);
 
-  // Polls for photos uploaded from the phone via the QR flow.
+  // Polls for photos uploaded from the phone via the QR flow (desktop only).
   useEffect(() => {
-    if (step !== 1 || !token || (sides.front && sides.back)) return;
+    if (isMobileDevice || step !== 1 || !token || (sides.front && sides.back)) return;
     let active = true;
     const poll = async () => {
       const { data } = await callBooking<{ front: boolean; back: boolean }>("document_status", {
@@ -184,7 +186,7 @@ const PublicBooking = () => {
       active = false;
       window.clearInterval(id);
     };
-  }, [step, token, sides.front, sides.back]);
+  }, [isMobileDevice, step, token, sides.front, sides.back]);
 
 
   const timezone = config?.timezone ?? "America/Mexico_City";
@@ -492,7 +494,66 @@ const PublicBooking = () => {
           </Card>
         )}
 
-        {step === 1 && (
+        {step === 1 && isMobileDevice && (
+          <Card className="border-border">
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <ShieldCheck className="h-5 w-5 text-foreground" />
+                Identificación oficial
+              </CardTitle>
+              <CardDescription>
+                Toma una foto del frente y del reverso de tu INE con la cámara de este celular.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Alert>
+                <ShieldCheck className="h-4 w-4" />
+                <AlertDescription>
+                  Tu identificación se guarda de forma privada y sólo puede consultarla el
+                  personal autorizado de Relevée.
+                </AlertDescription>
+              </Alert>
+
+              <IneCapture
+                side="front"
+                title="INE — Frente"
+                hint="Coloca tu identificación sobre una superficie plana y captura el frente completo."
+                uploaded={sides.front}
+                preferCamera
+                onUpload={(dataUrl) => uploadSide("front", dataUrl)}
+              />
+              <IneCapture
+                side="back"
+                title="INE — Reverso"
+                hint="Ahora captura el reverso, cuidando que se lea con claridad."
+                uploaded={sides.back}
+                preferCamera
+                onUpload={(dataUrl) => uploadSide("back", dataUrl)}
+              />
+            </CardContent>
+            <CardFooter className="flex-col gap-2 sm:flex-row sm:justify-between">
+              <Button
+                variant="outline"
+                onClick={() => setStep(0)}
+                type="button"
+                className="w-full sm:w-auto"
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Regresar
+              </Button>
+              <Button
+                onClick={goToCalendar}
+                disabled={!sides.front || !sides.back}
+                className="w-full sm:w-auto"
+              >
+                <CalendarDays className="mr-2 h-4 w-4" />
+                Continuar a elegir cita
+              </Button>
+            </CardFooter>
+          </Card>
+        )}
+
+        {step === 1 && !isMobileDevice && (
           <Card className="border-border">
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
@@ -626,6 +687,7 @@ const PublicBooking = () => {
             </CardFooter>
           </Card>
         )}
+
 
 
         {step === 2 && (
