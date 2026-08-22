@@ -46,7 +46,7 @@ import {
   capitalizeAsYouType,
   clientBaseSchema,
 } from "@/lib/client-schema";
-import { CalendarDays, Check, Gem, Loader2, MapPin, ShieldCheck, User } from "lucide-react";
+import { ArrowLeft, CalendarDays, Check, Gem, Loader2, MapPin, ShieldCheck, User } from "lucide-react";
 
 const publicFormSchema = clientBaseSchema.extend({
   privacidad: z.literal(true, {
@@ -475,7 +475,11 @@ const PublicBooking = () => {
                 />
               </div>
             </CardContent>
-            <CardFooter className="justify-end">
+            <CardFooter className="justify-between">
+              <Button variant="outline" onClick={() => setStep(0)} type="button">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Regresar
+              </Button>
               <Button onClick={goToCalendar} disabled={!sides.front || !sides.back}>
                 <CalendarDays className="mr-2 h-4 w-4" />
                 Continuar a elegir cita
@@ -568,7 +572,16 @@ const PublicBooking = () => {
                 </>
               )}
             </CardContent>
-            <CardFooter className="justify-end">
+            <CardFooter className="justify-between">
+              <Button
+                variant="outline"
+                onClick={() => setStep(1)}
+                type="button"
+                disabled={submitting}
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Regresar
+              </Button>
               <Button onClick={confirmBooking} disabled={!selectedSlot || submitting}>
                 {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Confirmar cita
