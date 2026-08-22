@@ -38,6 +38,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Calendar } from "@/components/ui/calendar";
+import { es } from "date-fns/locale";
+
 import { IneCapture } from "@/components/public/IneCapture";
 import { QRCodeSVG } from "qrcode.react";
 import { useThemeInitializer } from "@/hooks/useThemeInitializer";
@@ -209,6 +212,22 @@ const PublicBooking = () => {
       month: "short",
     }).format(date);
   };
+
+  const parseDayKey = (dateKey: string) => {
+    const [y, m, d] = dateKey.split("-").map(Number);
+    return new Date(y, m - 1, d);
+  };
+
+  const toDayKey = (date: Date) =>
+    `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(
+      date.getDate(),
+    ).padStart(2, "0")}`;
+
+  const availableDates = useMemo(
+    () => availability.map((d) => parseDayKey(d.date)),
+    [availability],
+  );
+
 
   const slotsForDay = useMemo(
     () => availability.find((d) => d.date === selectedDay)?.slots ?? [],
@@ -715,28 +734,37 @@ const PublicBooking = () => {
                 <>
                   <div className="space-y-2">
                     <Label>Día</Label>
-                    <ToggleGroup
-                      type="single"
-                      value={selectedDay ?? ""}
-                      onValueChange={(value) => {
-                        if (!value) return;
-                        setSelectedDay(value);
-                        setSelectedSlot(null);
-                      }}
-                      className="flex flex-wrap justify-start gap-2"
-                    >
-                      {availability.map((day) => (
-                        <ToggleGroupItem
-                          key={day.date}
-                          value={day.date}
-                          variant="outline"
-                          className="min-w-[104px]"
-                        >
-                          {formatDayLabel(day.date)}
-                        </ToggleGroupItem>
-                      ))}
-                    </ToggleGroup>
+                    <div className="flex justify-center rounded-md border border-border">
+                      <Calendar
+                        mode="single"
+                        locale={es}
+                        selected={selectedDay ? parseDayKey(selectedDay) : undefined}
+                        defaultMonth={
+                          selectedDay
+                            ? parseDayKey(selectedDay)
+                            : availableDates[0]
+                        }
+                        onSelect={(date) => {
+                          if (!date) return;
+                          setSelectedDay(toDayKey(date));
+                          setSelectedSlot(null);
+                        }}
+                        disabled={(date) =>
+                          !availability.some((d) => d.date === toDayKey(date))
+                        }
+                        fromDate={availableDates[0]}
+                        toDate={availableDates[availableDates.length - 1]}
+                        initialFocus
+                        className="p-3 pointer-events-auto"
+                      />
+                    </div>
+                    {selectedDay && (
+                      <p className="text-sm text-muted-foreground">
+                        {formatDayLabel(selectedDay)}
+                      </p>
+                    )}
                   </div>
+
 
                   <Separator />
 
