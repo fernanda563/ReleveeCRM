@@ -11,9 +11,11 @@ interface IneCaptureProps {
   hint: string;
   uploaded: boolean;
   onUpload: (dataUrl: string) => Promise<boolean>;
+  /** Forces the camera as the primary action (mobile capture view). */
+  preferCamera?: boolean;
 }
 
-export function IneCapture({ side, title, hint, uploaded, onUpload }: IneCaptureProps) {
+export function IneCapture({ side, title, hint, uploaded, onUpload, preferCamera }: IneCaptureProps) {
   const cameraRef = useRef<HTMLInputElement>(null);
   const galleryRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -54,9 +56,11 @@ export function IneCapture({ side, title, hint, uploaded, onUpload }: IneCapture
   };
 
   const isTouch =
-    typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches;
+    preferCamera ||
+    (typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches);
   const primaryRef = isTouch ? cameraRef : galleryRef;
   const secondaryRef = isTouch ? galleryRef : cameraRef;
+
 
   return (
     <div className="flex h-full flex-col rounded-lg border border-border p-4">
