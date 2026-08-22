@@ -292,9 +292,9 @@ const PublicBooking = () => {
       <header className="border-b">
         <div className="container mx-auto flex h-20 items-center gap-2 px-6">
           <img
-            src="/images/relevee-wordmark.png"
+            src="/images/relevee-logo.png"
             alt="Relevée"
-            className="h-8 w-auto dark:invert"
+            className="h-16 w-auto dark:invert"
           />
 
         </div>
