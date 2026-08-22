@@ -38,7 +38,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { Calendar } from "@/components/ui/calendar";
+import { LargeCalendar } from "@/components/public/LargeCalendar";
 import { es } from "date-fns/locale";
 
 import { IneCapture } from "@/components/public/IneCapture";
