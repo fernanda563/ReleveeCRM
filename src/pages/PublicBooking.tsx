@@ -191,6 +191,27 @@ const PublicBooking = () => {
     };
   }, [isMobileDevice, step, token, sides.front, sides.back]);
 
+  // TEMP DEBUG: expose helpers for visual testing
+  useEffect(() => {
+    (window as unknown as { __publicBookingDebug?: Record<string, unknown> }).__publicBookingDebug = {
+      setStep,
+      setAvailability,
+      setSelectedDay,
+      setLoadingAvailability,
+      goToCalendar: () => {
+        const mockDays = [
+          { date: "2026-08-24", slots: ["2026-08-24T10:00:00-06:00", "2026-08-24T11:00:00-06:00"] },
+          { date: "2026-08-25", slots: ["2026-08-25T10:00:00-06:00", "2026-08-25T11:00:00-06:00"] },
+        ];
+        setAvailability(mockDays);
+        setSelectedDay(mockDays[0].date);
+        setLoadingAvailability(false);
+        setStep(2);
+      },
+    };
+  }, [setStep, setAvailability, setSelectedDay, setLoadingAvailability]);
+
+
 
   const timezone = config?.timezone ?? "America/Mexico_City";
 
