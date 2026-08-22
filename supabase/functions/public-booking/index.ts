@@ -283,7 +283,7 @@ Deno.serve(async (req) => {
       const path = `${session.client_id}/ine-${parsed.data.side}-${Date.now()}.${ext}`;
 
       const { error: uploadError } = await supabaseAdmin.storage
-        .from("ine-documents")
+        .from("client-documents")
         .upload(path, bytes, { contentType: parsed.data.mime_type, upsert: false });
 
       if (uploadError) {
