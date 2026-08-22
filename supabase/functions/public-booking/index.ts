@@ -317,6 +317,30 @@ Deno.serve(async (req) => {
       return json({ ok: true, side: parsed.data.side });
     }
 
+    if (action === "document_status") {
+      if (rateLimited(`status:${ip}`, 300, 10 * 60_000)) {
+        return json({ error: "Demasiadas consultas. Intenta más tarde." }, 429);
+      }
+
+      const parsedToken = z.object({ token: z.string().uuid() }).safeParse(body);
+      if (!parsedToken.success) return json({ error: "Sesión inválida" }, 400);
+
+      const session = await resolveSession(parsedToken.data.token);
+      if (!session) return json({ error: "Tu sesión expiró. Vuelve a comenzar." }, 401);
+
+      const { data: docs } = await supabaseAdmin
+        .from("client_documents")
+        .select("document_side")
+        .eq("client_id", session.client_id)
+        .eq("document_type", "ine")
+        .neq("status", "replaced");
+
+      const sidesFound = new Set((docs ?? []).map((d) => d.document_side));
+      return json({ front: sidesFound.has("front"), back: sidesFound.has("back") });
+    }
+
+
+
     if (action === "availability") {
       if (rateLimited(`avail:${ip}`, 60, 10 * 60_000)) {
         return json({ error: "Demasiadas consultas. Intenta más tarde." }, 429);
