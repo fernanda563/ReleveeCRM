@@ -287,6 +287,18 @@ const PublicBooking = () => {
     setStep(3);
   };
 
+  if (!themeReady) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto space-y-4 px-6 py-8">
+          <Skeleton className="h-10 w-1/2" />
+          <Skeleton className="h-4 w-2/3" />
+          <Skeleton className="h-64 w-full" />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b">
