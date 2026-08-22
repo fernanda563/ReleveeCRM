@@ -256,8 +256,11 @@ const PublicBooking = () => {
     <div className="min-h-screen bg-background">
       <header className="border-b">
         <div className="container mx-auto flex h-16 items-center gap-2 px-6">
-          <Gem className="h-5 w-5" />
-          <span className="font-semibold tracking-tight">Joyería Relevée</span>
+          <img
+            src="/images/relevee-logo.png"
+            alt="Relevée"
+            className="h-8 w-auto"
+          />
         </div>
       </header>
 
