@@ -450,9 +450,12 @@ const PublicBooking = () => {
                 <ShieldCheck className="h-5 w-5 text-foreground" />
                 Identificación oficial
               </CardTitle>
-              <CardDescription>Captura el frente y el reverso de tu INE.</CardDescription>
+              <CardDescription>
+                Escanea el código QR con tu celular para tomar las fotos del frente y el reverso de
+                tu INE.
+              </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6">
               <Alert>
                 <ShieldCheck className="h-4 w-4" />
                 <AlertDescription>
@@ -461,22 +464,106 @@ const PublicBooking = () => {
                 </AlertDescription>
               </Alert>
 
-              <div className="grid gap-4 md:grid-cols-2">
-                <IneCapture
-                  side="front"
-                  title="INE — Frente"
-                  hint="Coloca tu identificación sobre una superficie plana y captura el frente completo."
-                  uploaded={sides.front}
-                  onUpload={(dataUrl) => uploadSide("front", dataUrl)}
-                />
-                <IneCapture
-                  side="back"
-                  title="INE — Reverso"
-                  hint="Ahora captura el reverso, cuidando que se lea con claridad."
-                  uploaded={sides.back}
-                  onUpload={(dataUrl) => uploadSide("back", dataUrl)}
-                />
+              <div className="grid gap-6 md:grid-cols-[auto_1fr] md:items-start">
+                <div className="flex flex-col items-center gap-3 rounded-lg border border-border p-4">
+                  {captureUrl ? (
+                    <div className="rounded-md bg-background p-2">
+                      <QRCodeSVG value={captureUrl} size={188} level="M" includeMargin={false} />
+                    </div>
+                  ) : (
+                    <Skeleton className="h-[204px] w-[204px]" />
+                  )}
+                  <p className="text-xs text-muted-foreground text-center">
+                    Válido sólo para este registro
+                  </p>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="space-y-3">
+                    <div className="flex items-start gap-3">
+                      <Smartphone className="mt-0.5 h-5 w-5 shrink-0 text-foreground" />
+                      <div>
+                        <p className="text-sm font-medium">1. Abre la cámara de tu celular</p>
+                        <p className="text-sm text-muted-foreground">
+                          Escanea el código y abre el enlace que aparece.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <Camera className="mt-0.5 h-5 w-5 shrink-0 text-foreground" />
+                      <div>
+                        <p className="text-sm font-medium">2. Toma las dos fotos</p>
+                        <p className="text-sm text-muted-foreground">
+                          Frente y reverso de tu INE, con buena luz y sin reflejos.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <Check className="mt-0.5 h-5 w-5 shrink-0 text-foreground" />
+                      <div>
+                        <p className="text-sm font-medium">3. Regresa a esta pantalla</p>
+                        <p className="text-sm text-muted-foreground">
+                          Se actualiza sola en cuanto recibamos tus fotos.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  <div className="space-y-2">
+                    {(["front", "back"] as const).map((side) => (
+                      <div
+                        key={side}
+                        className="flex items-center justify-between rounded-md border border-border px-3 py-2"
+                      >
+                        <span className="text-sm">
+                          {side === "front" ? "INE — Frente" : "INE — Reverso"}
+                        </span>
+                        {sides[side] ? (
+                          <Badge variant="secondary" className="gap-1">
+                            <Check className="h-3.5 w-3.5" /> Recibida
+                          </Badge>
+                        ) : (
+                          <span className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" /> Esperando foto
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="px-0"
+                    onClick={() => setShowManualUpload((v) => !v)}
+                  >
+                    {showManualUpload
+                      ? "Ocultar carga desde esta computadora"
+                      : "¿Sin celular? Subir archivos desde esta computadora"}
+                  </Button>
+                </div>
               </div>
+
+              {showManualUpload && (
+                <div className="grid gap-4 md:grid-cols-2">
+                  <IneCapture
+                    side="front"
+                    title="INE — Frente"
+                    hint="Sube una imagen clara del frente de tu identificación."
+                    uploaded={sides.front}
+                    onUpload={(dataUrl) => uploadSide("front", dataUrl)}
+                  />
+                  <IneCapture
+                    side="back"
+                    title="INE — Reverso"
+                    hint="Sube una imagen clara del reverso de tu identificación."
+                    uploaded={sides.back}
+                    onUpload={(dataUrl) => uploadSide("back", dataUrl)}
+                  />
+                </div>
+              )}
             </CardContent>
             <CardFooter className="justify-between">
               <Button variant="outline" onClick={() => setStep(0)} type="button">
@@ -490,6 +577,7 @@ const PublicBooking = () => {
             </CardFooter>
           </Card>
         )}
+
 
         {step === 2 && (
           <Card className="border-border">
