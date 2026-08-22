@@ -39,6 +39,7 @@ import {
 } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { IneCapture } from "@/components/public/IneCapture";
+import { QRCodeSVG } from "qrcode.react";
 import { useThemeInitializer } from "@/hooks/useThemeInitializer";
 import { dataUrlBase64 } from "@/lib/image-compression";
 import {
@@ -46,7 +47,18 @@ import {
   capitalizeAsYouType,
   clientBaseSchema,
 } from "@/lib/client-schema";
-import { ArrowLeft, CalendarDays, Check, Loader2, MapPin, ShieldCheck, User } from "lucide-react";
+import {
+  ArrowLeft,
+  CalendarDays,
+  Camera,
+  Check,
+  Loader2,
+  MapPin,
+  ShieldCheck,
+  Smartphone,
+  User,
+} from "lucide-react";
+
 
 const publicFormSchema = clientBaseSchema.extend({
   privacidad: z.literal(true, {
