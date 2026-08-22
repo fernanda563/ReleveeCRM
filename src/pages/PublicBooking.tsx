@@ -253,15 +253,15 @@ const PublicBooking = () => {
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b">
-        <div className="container flex h-16 items-center gap-2">
+        <div className="container mx-auto flex h-16 items-center gap-2 px-6">
           <Gem className="h-5 w-5" />
           <span className="font-semibold tracking-tight">Joyería Relevée</span>
         </div>
       </header>
 
-      <main className="container max-w-3xl py-10">
+      <main className="container mx-auto px-6 py-8">
         <div className="mb-8 space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight">Agenda tu cita</h1>
+          <h1 className="text-3xl font-bold text-foreground mb-2">Agenda tu cita</h1>
           <p className="text-muted-foreground">
             Completa tu registro y reserva el horario que mejor te acomode.
           </p>
