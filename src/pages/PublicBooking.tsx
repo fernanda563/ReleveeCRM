@@ -255,11 +255,11 @@ const PublicBooking = () => {
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b">
-        <div className="container mx-auto flex h-16 items-center gap-2 px-6">
+        <div className="container mx-auto flex h-20 items-center gap-2 px-6">
           <img
             src="/images/relevee-logo.png"
             alt="Relevée"
-            className="h-8 w-auto"
+            className="h-12 w-auto"
           />
         </div>
       </header>
