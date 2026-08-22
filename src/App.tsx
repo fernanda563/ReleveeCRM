@@ -6,6 +6,7 @@ import Dashboard from "./pages/Dashboard";
 import Auth from "./pages/Auth";
 import Sign from "./pages/Sign";
 import PublicBooking from "./pages/PublicBooking";
+import MobileIneCapture from "./pages/MobileIneCapture";
 
 import CRM from "./pages/CRM";
 import ClientDetail from "./pages/ClientDetail";
@@ -42,6 +43,7 @@ const App = () => (
           <Route path="/auth" element={<Auth />} />
           <Route path="/sign" element={<Sign />} />
           <Route path="/agendar-cita" element={<PublicBooking />} />
+          <Route path="/captura-ine/:token" element={<MobileIneCapture />} />
           <Route path="/stl-viewer-fullscreen" element={<STLViewerFullscreen />} />
 
       <Route element={<DashboardLayout />}>
