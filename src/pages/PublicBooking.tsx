@@ -39,6 +39,7 @@ import {
 } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { IneCapture } from "@/components/public/IneCapture";
+import { useThemeInitializer } from "@/hooks/useThemeInitializer";
 import { dataUrlBase64 } from "@/lib/image-compression";
 import {
   CONTACT_SOURCES,
@@ -114,6 +115,7 @@ const DetailRow = ({ label, value }: { label: string; value: string }) => (
 );
 
 const PublicBooking = () => {
+  useThemeInitializer();
   const [step, setStep] = useState(0);
   const [config, setConfig] = useState<BookingConfig | null>(null);
   const [token, setToken] = useState<string | null>(null);
