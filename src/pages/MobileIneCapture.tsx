@@ -62,10 +62,17 @@ const MobileIneCapture = () => {
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b">
-        <div className="flex h-16 items-center px-4">
-          <img src="/images/relevee-logo.png" alt="Relevée" className="h-9 w-auto" />
+        <div className="container mx-auto flex h-20 items-center justify-center px-6">
+          <div className="flex h-full items-center justify-center">
+            <img
+              src="/images/relevee-logo.png"
+              alt="Relevée"
+              className="h-10 max-h-full w-auto object-contain dark:invert"
+            />
+          </div>
         </div>
       </header>
+
 
       <main className="mx-auto w-full max-w-md px-4 py-6">
         <div className="mb-6 space-y-1">
