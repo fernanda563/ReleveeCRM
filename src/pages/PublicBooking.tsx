@@ -475,7 +475,11 @@ const PublicBooking = () => {
                 />
               </div>
             </CardContent>
-            <CardFooter className="justify-end">
+            <CardFooter className="justify-between">
+              <Button variant="outline" onClick={() => setStep(0)} type="button">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Regresar
+              </Button>
               <Button onClick={goToCalendar} disabled={!sides.front || !sides.back}>
                 <CalendarDays className="mr-2 h-4 w-4" />
                 Continuar a elegir cita
