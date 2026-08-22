@@ -41,6 +41,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { IneCapture } from "@/components/public/IneCapture";
 import { QRCodeSVG } from "qrcode.react";
 import { useThemeInitializer } from "@/hooks/useThemeInitializer";
+import { useIsMobileDevice } from "@/hooks/use-mobile-device";
 import { dataUrlBase64 } from "@/lib/image-compression";
 import {
   CONTACT_SOURCES,
