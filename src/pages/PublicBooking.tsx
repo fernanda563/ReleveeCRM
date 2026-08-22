@@ -286,16 +286,20 @@ const PublicBooking = () => {
         )}
 
         {step === 0 && (
-          <Card>
+          <Card className="border-border">
             <CardHeader>
-              <CardTitle>Tus datos</CardTitle>
+              <CardTitle className="text-base flex items-center gap-2">
+                <User className="h-5 w-5 text-foreground" />
+                Tus datos
+              </CardTitle>
               <CardDescription>
                 Necesitamos estos datos para crear tu expediente.
               </CardDescription>
             </CardHeader>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(submitData)}>
-                <CardContent className="grid gap-4 sm:grid-cols-2">
+                <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
                   <FormField
                     control={form.control}
                     name="nombre"
