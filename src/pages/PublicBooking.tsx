@@ -45,7 +45,7 @@ import {
   capitalizeAsYouType,
   clientBaseSchema,
 } from "@/lib/client-schema";
-import { CalendarDays, Check, Gem, Loader2, MapPin, ShieldCheck } from "lucide-react";
+import { CalendarDays, Check, Gem, Loader2, MapPin, ShieldCheck, User } from "lucide-react";
 
 const publicFormSchema = clientBaseSchema.extend({
   privacidad: z.literal(true, {
@@ -305,7 +305,7 @@ const PublicBooking = () => {
                     name="nombre"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Nombre</FormLabel>
+                        <FormLabel>Nombre *</FormLabel>
                         <FormControl>
                           <Input
                             {...field}
@@ -325,7 +325,7 @@ const PublicBooking = () => {
                     name="apellido"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Apellido(s)</FormLabel>
+                        <FormLabel>Apellido(s) *</FormLabel>
                         <FormControl>
                           <Input
                             {...field}
@@ -345,7 +345,7 @@ const PublicBooking = () => {
                     name="telefono_principal"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Teléfono / WhatsApp</FormLabel>
+                        <FormLabel>Teléfono / WhatsApp *</FormLabel>
                         <FormControl>
                           <PhoneInput value={field.value} onChange={field.onChange} />
                         </FormControl>
@@ -359,7 +359,7 @@ const PublicBooking = () => {
                     name="email"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Correo electrónico</FormLabel>
+                        <FormLabel>Correo Electrónico *</FormLabel>
                         <FormControl>
                           <Input
                             {...field}
@@ -378,7 +378,7 @@ const PublicBooking = () => {
                     name="fuente_contacto"
                     render={({ field }) => (
                       <FormItem className="sm:col-span-2">
-                        <FormLabel>¿Cómo se enteró de nosotros?</FormLabel>
+                        <FormLabel>¿Cómo se enteró de nosotros? *</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger>
@@ -439,9 +439,12 @@ const PublicBooking = () => {
         )}
 
         {step === 1 && (
-          <Card>
+          <Card className="border-border">
             <CardHeader>
-              <CardTitle>Identificación oficial</CardTitle>
+              <CardTitle className="text-base flex items-center gap-2">
+                <ShieldCheck className="h-5 w-5 text-foreground" />
+                Identificación oficial
+              </CardTitle>
               <CardDescription>Captura el frente y el reverso de tu INE.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -480,9 +483,12 @@ const PublicBooking = () => {
         )}
 
         {step === 2 && (
-          <Card>
+          <Card className="border-border">
             <CardHeader>
-              <CardTitle>Selecciona tu cita</CardTitle>
+              <CardTitle className="text-base flex items-center gap-2">
+                <CalendarDays className="h-5 w-5 text-foreground" />
+                Selecciona tu cita
+              </CardTitle>
               <CardDescription>Elige el día y horario que mejor te acomode.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -570,12 +576,12 @@ const PublicBooking = () => {
         )}
 
         {step === 3 && confirmation && (
-          <Card>
+          <Card className="border-border">
             <CardHeader className="items-center text-center">
               <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-full border">
                 <Check className="h-6 w-6" />
               </div>
-              <CardTitle>Tu cita está confirmada</CardTitle>
+              <CardTitle className="text-base">Tu cita está confirmada</CardTitle>
               <CardDescription>Te esperamos, {confirmation.nombre}.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
