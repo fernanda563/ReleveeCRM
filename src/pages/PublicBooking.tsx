@@ -294,7 +294,7 @@ const PublicBooking = () => {
           <img
             src="/images/relevee-logo.png"
             alt="Relevée"
-            className="h-12 w-auto"
+            className="h-9 w-auto dark:invert"
           />
         </div>
       </header>
