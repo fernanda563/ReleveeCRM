@@ -192,6 +192,9 @@ const PublicBooking = () => {
   }, [isMobileDevice, step, token, sides.front, sides.back]);
 
 
+
+
+
   const timezone = config?.timezone ?? "America/Mexico_City";
 
   const formatTime = (iso: string) =>
@@ -373,86 +376,117 @@ const PublicBooking = () => {
             </CardHeader>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(submitData)}>
-                <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <CardContent className="space-y-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
-                  <FormField
-                    control={form.control}
-                    name="nombre"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Nombre *</FormLabel>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            autoComplete="given-name"
-                            onChange={(e) =>
-                              field.onChange(capitalizeAsYouType(e.target.value))
-                            }
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                    <FormField
+                      control={form.control}
+                      name="nombre"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Nombre *</FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              autoComplete="given-name"
+                              onChange={(e) =>
+                                field.onChange(capitalizeAsYouType(e.target.value))
+                              }
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                  <FormField
-                    control={form.control}
-                    name="apellido"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Apellido(s) *</FormLabel>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            autoComplete="family-name"
-                            onChange={(e) =>
-                              field.onChange(capitalizeAsYouType(e.target.value))
-                            }
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                    <FormField
+                      control={form.control}
+                      name="apellido"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Apellido(s) *</FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              autoComplete="family-name"
+                              onChange={(e) =>
+                                field.onChange(capitalizeAsYouType(e.target.value))
+                              }
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                  <FormField
-                    control={form.control}
-                    name="telefono_principal"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Teléfono / WhatsApp *</FormLabel>
-                        <FormControl>
-                          <PhoneInput value={field.value} onChange={field.onChange} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                    <FormField
+                      control={form.control}
+                      name="telefono_principal"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Teléfono / WhatsApp *</FormLabel>
+                          <FormControl>
+                            <PhoneInput value={field.value} onChange={field.onChange} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Correo Electrónico *</FormLabel>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            type="email"
-                            inputMode="email"
-                            autoComplete="email"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Correo Electrónico *</FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              type="email"
+                              inputMode="email"
+                              autoComplete="email"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="privacidad"
+                      render={({ field }) => (
+                        <FormItem className="sm:col-span-2">
+                          <div className="flex items-start gap-3 rounded-md border p-4">
+                            <FormControl>
+                              <Checkbox
+                                checked={!!field.value}
+                                onCheckedChange={(checked) => field.onChange(checked === true)}
+                              />
+                            </FormControl>
+                            <div className="space-y-1 leading-none">
+                              <FormLabel className="font-normal">
+                                Acepto el aviso de privacidad y el tratamiento de mis datos e
+                                identificación oficial para fines de atención y seguimiento.
+                              </FormLabel>
+                              {config?.privacy_version && (
+                                <p className="text-xs text-muted-foreground">
+                                  Versión {config.privacy_version}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
 
                   <FormField
                     control={form.control}
                     name="fuente_contacto"
                     render={({ field }) => (
-                      <FormItem className="sm:col-span-2">
+                      <FormItem className="w-full">
                         <FormLabel>¿Cómo se enteró de nosotros? *</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
@@ -468,35 +502,6 @@ const PublicBooking = () => {
                             ))}
                           </SelectContent>
                         </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="privacidad"
-                    render={({ field }) => (
-                      <FormItem className="sm:col-span-2">
-                        <div className="flex items-start gap-3 rounded-md border p-4">
-                          <FormControl>
-                            <Checkbox
-                              checked={!!field.value}
-                              onCheckedChange={(checked) => field.onChange(checked === true)}
-                            />
-                          </FormControl>
-                          <div className="space-y-1 leading-none">
-                            <FormLabel className="font-normal">
-                              Acepto el aviso de privacidad y el tratamiento de mis datos e
-                              identificación oficial para fines de atención y seguimiento.
-                            </FormLabel>
-                            {config?.privacy_version && (
-                              <p className="text-xs text-muted-foreground">
-                                Versión {config.privacy_version}
-                              </p>
-                            )}
-                          </div>
-                        </div>
                         <FormMessage />
                       </FormItem>
                     )}
