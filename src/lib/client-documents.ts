@@ -14,7 +14,7 @@ export interface ClientDocument {
   created_at: string;
 }
 
-const BUCKET = "ine-documents";
+const BUCKET = "client-documents";
 
 export async function fetchClientDocuments(clientId: string): Promise<ClientDocument[]> {
   const { data, error } = await supabase
