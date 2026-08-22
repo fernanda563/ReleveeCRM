@@ -143,6 +143,10 @@ const PublicBooking = () => {
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [notas, setNotas] = useState("");
   const [confirmation, setConfirmation] = useState<Confirmation | null>(null);
+  const [showManualUpload, setShowManualUpload] = useState(false);
+
+  const captureUrl = token ? `${window.location.origin}/captura-ine/${token}` : null;
+
 
   const form = useForm<PublicFormValues>({
     resolver: zodResolver(publicFormSchema),
